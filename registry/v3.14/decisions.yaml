@@ -1,0 +1,10 @@
+version: 3.14.0
+inherits: ../v3.13/decisions.yaml
+decisions:
+  - id: OD-023
+    status: RESOLVED
+    note: Duffel Stays secildi (provider_id duffel_stays, 2026-10-05). Uretim kullanimi Stays erisiminin acilmasina ve provider_capabilities FRESH/STALE kanitina baglidir.
+  - id: OD-024
+    status: RESOLVED
+    note: ROUND_TRIP+EXACT (giris=gidis, cikis=donus), yalniz yetiskin, room_count>=1 (kullanici girdisi), city varis noktasinin kalici koordinatlari, yaricap 5 km. ONE_WAY, FLEXIBLE ve cocuk/bebek desteklenmez.
+open_decisions: [OD-001, OD-008, OD-011, OD-012, OD-013, OD-014, OD-015, OD-016, OD-020, OD-021, OD-022, ADR-006, ADR-007, ADR-010]

@@ -1,0 +1,13 @@
+version: 3.5.0
+inherits: ../../v3.4/registries/reason_error.yaml
+new_records: []
+reused_records:
+  - id: RC-VALIDATION-TRIP-REQUEST-INCOMPLETE
+    refs: [TRIP-001, FLT-002, lifecycle:FlightSearchJob]
+  - id: RC-RESOURCE-NOT-FOUND
+    refs: [TRIP-001, FLT-002, lifecycle:FlightSearchJob]
+contract_gaps:
+  - id: GAP-FLT-CRITERIA-001
+    description: v3.4 öncesi TripRequest ilişkisi olmayan işin yürütülememesi ve sağlayıcının kriteri (ör. havacılık kimliği olmayan konum) desteklememesi için kanonik reason/error kodu yoktur; FlightSearchJob.error.code null ve Türkçe mesajla döner. Yeni kod bu deltada icat edilmez.
+    decision_ref: OD-022
+note: Yeni reason/error semantiği eklenmedi.

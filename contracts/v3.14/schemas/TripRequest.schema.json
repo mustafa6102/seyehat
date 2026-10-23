@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.14:TripRequest",
+  "title": "TripRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "status": {"type": "string", "enum": ["DRAFT", "SEARCHABLE"]},
+    "origin_place": {"$ref": "../../schemas/LocationRef.schema.json"},
+    "destination_place": {"$ref": "../../schemas/LocationRef.schema.json"},
+    "journey_type": {"type": ["string", "null"], "enum": ["ONE_WAY", "ROUND_TRIP", null]},
+    "outbound_date": {"anyOf": [{"$ref": "../../v3.9/schemas/TravelDate.schema.json"}, {"type": "null"}]},
+    "return_date": {"anyOf": [{"$ref": "../../v3.9/schemas/TravelDate.schema.json"}, {"type": "null"}]},
+    "date_window": {"type": ["object", "null"], "readOnly": true, "deprecated": true},
+    "traveler_count": {"type": "integer", "minimum": 1},
+    "passenger_composition": {"anyOf": [{"$ref": "../../v3.12/schemas/PassengerComposition.schema.json"}, {"type": "null"}]},
+    "preferences": {"type": ["object", "null"]},
+    "room_count": {"type": "integer", "minimum": 1, "description": "v3.14 isteğe bağlı: konaklama araması için kullanıcının açıkça girdiği oda sayısı. Yoksa yanıtta yer almaz; sunucu varsaymaz. TripRequest SEARCHABLE durumunu etkilemez."}
+  },
+  "required": ["status", "origin_place", "destination_place", "traveler_count"],
+  "allOf": [
+    {"if": {"required": ["return_date"], "properties": {"return_date": {"not": {"type": "null"}}}}, "then": {"required": ["journey_type"], "properties": {"journey_type": {"const": "ROUND_TRIP"}}}},
+    {"if": {"required": ["date_window"], "properties": {"date_window": {"not": {"type": "null"}}}}, "then": {"properties": {"journey_type": {"type": "null"}, "outbound_date": {"type": "null"}, "return_date": {"type": "null"}}}},
+    {"if": {"required": ["status", "journey_type"], "properties": {"status": {"const": "SEARCHABLE"}, "journey_type": {"const": "ONE_WAY"}}}, "then": {"required": ["outbound_date"], "properties": {"outbound_date": {"not": {"type": "null"}}}}},
+    {"if": {"required": ["status", "journey_type"], "properties": {"status": {"const": "SEARCHABLE"}, "journey_type": {"const": "ROUND_TRIP"}}}, "then": {"required": ["outbound_date", "return_date"], "properties": {"outbound_date": {"not": {"type": "null"}}, "return_date": {"not": {"type": "null"}}}}}
+  ],
+  "x-contract-id": "SCH-TripRequest",
+  "x-version": "3.14",
+  "x-status": "ACTIVE",
+  "x-replaces": "urn:ai-seyahat:v3.12:TripRequest",
+  "x-requirement-refs": ["TRIP-001", "RULE-TRIP-001-06", "FR-TRIP-001-04", "FR-ACC-001-06"],
+  "x-open-decisions": ["OD-020", "OD-021", "OD-022"],
+  "x-note": "v3.14: v3.12'ye geriye uyumlu ek - isteğe bağlı room_count. Public yer temsili v3.2 LocationRef olarak kalır; iç kalıcı yerler SCH-LocationRef v3.14 (isteğe bağlı aviation_identity ve coordinates) taşır. v3.9 yolculuk/tarih ve v3.12 yolcu dağılımı kuralları değişmez."
+}

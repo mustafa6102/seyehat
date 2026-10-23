@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.3:Traveler",
+  "title": "Traveler",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {"type": "string", "x-requirement-refs": ["TRV-001"]},
+    "trip_id": {"type": "string", "x-requirement-refs": ["RULE-TRV-001-01", "AC-TRV-001-01"]},
+    "age_category": {"type": "string", "x-requirement-refs": ["FR-TRV-001-01"]},
+    "nationalities": {"type": "array", "items": {"type": "string"}, "x-requirement-refs": ["RULE-TRV-001-02"]},
+    "travel_documents": {"type": "array", "items": {"$ref": "../../schemas/TravelerDocument.schema.json"}, "x-requirement-refs": ["RULE-TRV-001-02", "AC-TRV-001-02"]},
+    "held_visas": {"type": "array", "items": {"$ref": "./Visa.schema.json"}, "x-requirement-refs": ["RULE-TRV-001-02", "FR-TRV-001-01"]},
+    "residence_permits": {"type": "array", "items": {"$ref": "./ResidencePermit.schema.json"}, "x-requirement-refs": ["RULE-TRV-001-02", "FR-TRV-001-01"]}
+  },
+  "required": ["id", "trip_id", "age_category", "nationalities", "travel_documents", "held_visas", "residence_permits"],
+  "x-contract-id": "SCH-Traveler",
+  "x-version": "3.3",
+  "x-status": "ACTIVE",
+  "x-replaces": "urn:ai-seyahat:v3.2:Traveler",
+  "x-requirement-refs": ["TRV-001", "PLT-PII-001", "PLT-AUTH-001"],
+  "x-open-decisions": ["OD-013", "ADR-010"]
+}

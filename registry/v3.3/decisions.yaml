@@ -1,0 +1,19 @@
+version: 3.3.0
+inherits: ../registry_master.js
+decisions:
+  - id: ADR-009
+    title: OLTP veritabanı motoru
+    status: ACCEPTED
+    decision: MySQL 8
+    scope: Laravel 12 web/API OLTP
+    excluded: PostgreSQL
+  - id: ADR-007
+    status: OPEN
+    impact: Current Laravel 12 web/API implementation için non-blocking; mobil istemci kapsamı açılmadı.
+  - id: ADR-010
+    status: OPEN
+  - id: ADR-011
+    status: ACCEPTED
+    decision: Asenkron iş + polling
+    consequences: OP-startFlightSearch kalıcı job oluşturur; OP-pollFlightSearch güvenli ve idempotent GET ile snapshot döndürür; SSE ve WebSocket kapsam dışıdır.
+open_decisions: [OD-001, OD-008, OD-012, OD-013, OD-015, ADR-007, ADR-010]

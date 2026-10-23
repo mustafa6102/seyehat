@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.15:PoiDiscoveryJob",
+  "title": "PoiDiscoveryJob",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "search_id": {"type": "string"},
+    "trip_request_id": {"type": "string"},
+    "status": {"type": "string", "enum": ["QUEUED", "RUNNING", "PARTIAL", "COMPLETED", "FAILED", "EXPIRED"], "x-lifecycle": "PoiDiscoveryJobStatus"},
+    "result": {
+      "oneOf": [
+        {"type": "object", "additionalProperties": false, "properties": {"pois": {"type": "array", "items": {"$ref": "./Poi.schema.json"}}}, "required": ["pois"]},
+        {"type": "null"}
+      ],
+      "description": "Keşfedilen adaylar. Sıralama öneri değildir; tercih/uygunluk sıralaması (FR-POI-001-01, DAY-001) bu sürümde yoktur. Adaylar uygulanabilir plan öğesi değildir (RULE-POI-001-06)."
+    },
+    "error": {
+      "oneOf": [
+        {"type": "object", "additionalProperties": false, "properties": {"code": {"type": ["string", "null"]}, "message_tr": {"type": "string"}}, "required": ["code", "message_tr"]},
+        {"type": "null"}
+      ]
+    },
+    "expires_at": {"type": ["string", "null"], "format": "date-time"}
+  },
+  "required": ["search_id", "trip_request_id", "status", "result", "error", "expires_at"],
+  "x-contract-id": "SCH-PoiDiscoveryJob",
+  "x-version": "3.15",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["POI-001", "FR-POI-001-03", "AC-POI-001-04"],
+  "x-open-decisions": ["OD-025", "OD-026"],
+  "description": "ADR-011 asenkron iş + yoklama deseni (sağlayıcı aramaları için mevcut mimari); durumlar SCH-FlightSearchJob ile aynıdır."
+}

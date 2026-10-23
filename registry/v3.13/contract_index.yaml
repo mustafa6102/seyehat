@@ -1,0 +1,8 @@
+version: 3.13.0
+inherits: ../v3.12/contract_index.yaml
+contracts:
+  - {id: SCH-TripRequestFlightSelection, path: contracts/v3.13/schemas/TripRequestFlightSelection.schema.json, status: ACTIVE, audience: PUBLIC}
+  - {id: OP-getTripRequestFlightSelection, path: contracts/v3.13/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-selectTripRequestFlight, path: contracts/v3.13/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-reconfirmTripRequestFlight, path: contracts/v3.13/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-repriceOffer, path: contracts/v3.13/openapi/m1a.openapi.yaml, status: ACTIVE, note: 'Yanıt değişmedi; seçim yan etkisi belgelendi.'}

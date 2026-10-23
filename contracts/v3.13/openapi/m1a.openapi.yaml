@@ -1,0 +1,147 @@
+openapi: 3.1.0
+info:
+  title: AI Seyahat Planlayıcısı M1A API v3.13 delta
+  version: 3.13.0
+  description: v3.9.0 M1A delta'sını devralan versioned contract delta. Yalnız aşağıdaki operasyonlar eklenir veya belgelenir; diğerleri önceki tanımla aynıdır.
+servers: []
+x-inherits: ../../v3.9/openapi/m1a.openapi.yaml
+paths:
+  /trip-requests/{tripRequestId}/flight-selection:
+    get:
+      operationId: getTripRequestFlightSelection
+      x-contract-id: OP-getTripRequestFlightSelection
+      x-status: ACTIVE
+      x-requirement-refs: [FLT-REPRICE-001, FR-FLT-REPRICE-001-03, AC-FLT-REPRICE-001-10, AC-FLT-REPRICE-001-11]
+      x-open-decisions: [ADR-010]
+      description: TripRequest'in uçuş seçimini döndürür. Durum okuma anında değerlendirilir; expires_at geçmişse seçim EXPIRED olarak döner (TRN-FSEL-03). Seyahat Planım ekranı seçili uçuşu, verified_price, verified_at ve status alanlarını bu kayıttan gösterir.
+      parameters:
+        - {name: tripRequestId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: Seçim mevcut.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/TripRequestFlightSelection.schema.json}
+        '404':
+          description: TripRequest yok veya henüz uçuş seçilmedi. RC-RESOURCE-NOT-FOUND.
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+    put:
+      operationId: selectTripRequestFlight
+      x-contract-id: OP-selectTripRequestFlight
+      x-status: ACTIVE
+      x-requirement-refs: [FLT-REPRICE-001, RULE-FLT-REPRICE-001-04, RULE-FLT-REPRICE-001-05, RULE-FLT-REPRICE-001-06, FR-FLT-REPRICE-001-02, AC-FLT-REPRICE-001-08, AC-FLT-REPRICE-001-09, AC-FLT-REPRICE-001-12, AC-FLT-REPRICE-001-13]
+      x-open-decisions: [OD-021, ADR-010]
+      description: >-
+        Sunucuda saklanan kanonik teklifi TripRequest için seçer (TRN-FSEL-01). İstek yalnız teklif kimliğini ve kullanıcının gördüğü
+        doğrulama zamanını taşır; fiyat ve uçuş verisi tarayıcıdan kabul edilmez. Koşullar: teklif bu TripRequest'in bir uçuş arama
+        sonucunda yer almalı, sunucudaki en son doğrulama sonucu CURRENT olmalı (veya CHANGED ve accept_changed_offer=true), süresi
+        dolmamış olmalı ve expected_verified_at bu sonucun captured_at değerine eşit olmalıdır. Başarılı seçim mevcut seçimin yerine geçer.
+      parameters:
+        - {name: tripRequestId, in: path, required: true, schema: {type: string}}
+        - {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1, maxLength: 255}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                offer_id: {type: string, minLength: 1, description: 'SCH-FlightOffer.provider_offer_id; yalnız tanımlayıcıdır.'}
+                expected_verified_at: {type: string, format: date-time, description: 'Kullanıcıya gösterilen doğrulama sonucunun captured_at değeri.'}
+                accept_changed_offer: {type: boolean, default: false, description: 'En son sonuç CHANGED ise yeni doğrulanmış teklifin açık kabulü.'}
+              required: [offer_id, expected_verified_at]
+      responses:
+        '200':
+          description: Seçim CURRENT olarak saklandı.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/TripRequestFlightSelection.schema.json}
+        '400':
+          description: Eksik Idempotency-Key veya istek sözleşmeye uymuyor. RC-VALIDATION-SCHEMA.
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+        '404':
+          description: TripRequest veya sunucuda saklı teklif bulunamadı. RC-RESOURCE-NOT-FOUND.
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+        '409':
+          description: >-
+            Seçim yapılmadı; mevcut seçim değişmedi. OFFER_NOT_SELECTABLE (teklif bu TripRequest'in arama sonucu değil, en son sonuç
+            UNVERIFIED veya doğrulama yok); OFFER_CHANGED (sonuç CHANGED ve açık kabul yok, ya da expected_verified_at uyuşmuyor);
+            OFFER_EXPIRED (teklif süresi dolmuş); IDEMPOTENCY_KEY_CONFLICT (anahtar farklı bir istek için kullanılmış).
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+  /trip-requests/{tripRequestId}/flight-selection/reconfirm:
+    post:
+      operationId: reconfirmTripRequestFlight
+      x-contract-id: OP-reconfirmTripRequestFlight
+      x-status: ACTIVE
+      x-requirement-refs: [FLT-REPRICE-001, RULE-FLT-REPRICE-001-05, AC-FLT-REPRICE-001-10]
+      x-open-decisions: [ADR-010]
+      description: >-
+        RECONFIRMATION_REQUIRED seçimi, aynı provider_offer_id için sunucuda saklı en son doğrulanmış teklifin kullanıcı tarafından açıkça
+        kabulüyle CURRENT yapar (TRN-FSEL-04). Teklif görüntüsü, verified_price, verified_at ve expires_at bu doğrulanmış teklifle değiştirilir.
+      parameters:
+        - {name: tripRequestId, in: path, required: true, schema: {type: string}}
+        - {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1, maxLength: 255}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                expected_verified_at: {type: string, format: date-time, description: 'Kullanıcıya gösterilen yeni doğrulama sonucunun captured_at değeri.'}
+              required: [expected_verified_at]
+      responses:
+        '200':
+          description: Seçim yeniden onaylandı ve CURRENT oldu.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/TripRequestFlightSelection.schema.json}
+        '400':
+          description: Eksik Idempotency-Key veya istek sözleşmeye uymuyor. RC-VALIDATION-SCHEMA.
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+        '404':
+          description: TripRequest veya seçim bulunamadı. RC-RESOURCE-NOT-FOUND.
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+        '409':
+          description: >-
+            Yeniden onay yapılmadı. OFFER_NOT_SELECTABLE (seçim RECONFIRMATION_REQUIRED değil veya saklı doğrulanmış teklif yok);
+            OFFER_CHANGED (expected_verified_at uyuşmuyor); OFFER_EXPIRED (doğrulanmış teklifin süresi dolmuş; seçim EXPIRED olur);
+            IDEMPOTENCY_KEY_CONFLICT.
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+  /offers/{offerId}/reprice:
+    post:
+      operationId: repriceOffer
+      x-contract-id: OP-repriceOffer
+      x-status: ACTIVE
+      x-requirement-refs: [FLT-REPRICE-001, AC-FLT-REPRICE-001-03, AC-FLT-REPRICE-001-04, AC-FLT-REPRICE-001-05, AC-FLT-REPRICE-001-06, AC-FLT-REPRICE-001-07, AC-FLT-REPRICE-001-10]
+      description: v3.4 tanımı değişmedi. v3.13 yan etkisi - sonuç CHANGED ise ve teklif bir TripRequest'in CURRENT seçimiyse, seçim RECONFIRMATION_REQUIRED olur (TRN-FSEL-02); seçim içeriği değiştirilmez. UNVERIFIED veya zaman aşımı sonucu seçim durumunu değiştirmez.
+      parameters:
+        - {name: offerId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: Canonical reprice result.
+          content:
+            application/json:
+              schema: {$ref: ../../v3.4/schemas/RepriceResult.schema.json}
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+      x-warning-codes: [RC-EVIDENCE-OFFER-CHANGED, RC-EVIDENCE-OFFER-EXPIRED, RC-EVIDENCE-REPRICE-UNVERIFIED, RC-PROVIDER-TIMEOUT]

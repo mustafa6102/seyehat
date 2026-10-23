@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.14:LocationRef",
+  "title": "LocationRef",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {"type": "string"},
+    "value": {"type": "string", "description": "Katalog kimliği (geonames:<id> genel katalogda, duffel:<place id> havacılık kataloğunda). v3.8 ile aynı."},
+    "iana_timezone": {"type": "string"},
+    "aviation_identity": {"$ref": "../../v3.8/schemas/AviationIdentity.schema.json", "readOnly": true, "description": "v3.8 ile aynı; sunucu atar."},
+    "coordinates": {
+      "type": "object",
+      "additionalProperties": false,
+      "readOnly": true,
+      "properties": {
+        "latitude": {"type": "number", "minimum": -90, "maximum": 90},
+        "longitude": {"type": "number", "minimum": -180, "maximum": 180}
+      },
+      "required": ["latitude", "longitude"],
+      "description": "İsteğe bağlı, sunucu tarafından atanır: sunucuda doğrulanan seçili katalog kaydının (Duffel Places seçim belirteci veya yeniden çözülen GeoNames kaydı) koordinatları. İstemci girdisi kabul edilmez; katalog koordinat vermezse alan yoktur. Havalimanı koordinatı konaklama bölgesi olarak kullanılmaz (ACC-001)."
+    }
+  },
+  "required": ["kind", "value", "iana_timezone"],
+  "allOf": [
+    {"if": {"required": ["aviation_identity"], "properties": {"kind": {"const": "airport"}}}, "then": {"properties": {"aviation_identity": {"properties": {"type": {"const": "IATA_AIRPORT"}}}}}},
+    {"if": {"required": ["aviation_identity"], "properties": {"kind": {"const": "city"}}}, "then": {"properties": {"aviation_identity": {"properties": {"type": {"const": "IATA_CITY"}}}}}},
+    {"if": {"required": ["aviation_identity"]}, "then": {"properties": {"kind": {"enum": ["airport", "city"]}}}}
+  ],
+  "x-contract-id": "SCH-LocationRef",
+  "x-version": "3.14",
+  "x-status": "ACTIVE",
+  "x-audience": "INTERNAL",
+  "x-replaces": "urn:ai-seyahat:v3.8:LocationRef",
+  "x-requirement-refs": ["TRIP-001", "FLT-002", "ACC-001", "RULE-ACC-001-04"],
+  "x-open-decisions": ["OD-022"],
+  "x-note": "v3.14: v3.8'e geriye uyumlu ek - isteğe bağlı readOnly coordinates. Mevcut kayıtlar değişmez; koordinatsız kayıtlar konaklama araması için desteklenmez. Public /api/v1 SCH-TripRequest temsili değişmez: istek aviation_identity/coordinates kabul etmez, yanıt taşımaz."
+}

@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.9:FlightSearchCriteria",
+  "title": "FlightSearchCriteria",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trip_request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "x-requirement-refs": [
+        "TRIP-001",
+        "FLT-002"
+      ],
+      "description": "Kriterin türetildiği SEARCHABLE TripRequest (v3.4 FlightSearchJob.trip_request_id)."
+    },
+    "origin_place": {
+      "$ref": "../../v3.8/schemas/LocationRef.schema.json",
+      "x-requirement-refs": [
+        "RULE-TRIP-001-01",
+        "FR-TRIP-001-02"
+      ],
+      "description": "TripRequest.origin_place ile birebir aynı (SCH-LocationRef v3.8, aviation_identity dahil); dönüştürülmez. Sağlayıcı çağrısı için kind airport + IATA_AIRPORT veya kind city + IATA_CITY gerekir; aksi halde iş adapter çağrılmadan FAILED olur."
+    },
+    "destination_place": {
+      "$ref": "../../v3.8/schemas/LocationRef.schema.json",
+      "x-requirement-refs": [
+        "RULE-TRIP-001-01",
+        "FR-TRIP-001-02"
+      ],
+      "description": "TripRequest.destination_place ile birebir aynı (SCH-LocationRef v3.8, aviation_identity dahil); dönüştürülmez. Sağlayıcı çağrısı için kind airport + IATA_AIRPORT veya kind city + IATA_CITY gerekir; aksi halde iş adapter çağrılmadan FAILED olur."
+    },
+    "journey_type": {
+      "type": "string",
+      "enum": [
+        "ONE_WAY",
+        "ROUND_TRIP"
+      ],
+      "description": "TripRequest.journey_type aynen.",
+      "x-requirement-refs": [
+        "RULE-TRIP-001-04"
+      ]
+    },
+    "outbound_date": {
+      "$ref": "./TravelDate.schema.json",
+      "x-requirement-refs": [
+        "FR-TRIP-001-03"
+      ],
+      "description": "TripRequest.outbound_date aynen; dönüştürülmez, aralıktan tarih seçilmez."
+    },
+    "return_date": {
+      "$ref": "./TravelDate.schema.json",
+      "x-requirement-refs": [
+        "FR-TRIP-001-03",
+        "RULE-TRIP-001-05"
+      ],
+      "description": "Yalnız ROUND_TRIP; TripRequest.return_date aynen. ROUND_TRIP için latest(return_date) < earliest(outbound_date) geçersizdir (RULE-TRIP-001-05). Başka örtüşme/aralık seçimi kuralı yoktur."
+    },
+    "traveler_count": {
+      "allOf": [
+        {
+          "$ref": "../../schemas/TripRequest.schema.json#/properties/traveler_count"
+        }
+      ],
+      "x-requirement-refs": [
+        "RULE-TRIP-001-03"
+      ],
+      "description": "Toplam yolcu sayısı; yolcu tipi dağılımı taşınmaz (OD-020, OD-022)."
+    }
+  },
+  "required": [
+    "trip_request_id",
+    "origin_place",
+    "destination_place",
+    "journey_type",
+    "outbound_date",
+    "traveler_count"
+  ],
+  "x-contract-id": "SCH-FlightSearchCriteria",
+  "x-version": "3.9",
+  "x-status": "ACTIVE",
+  "x-audience": "INTERNAL",
+  "x-requirement-refs": [
+    "TRIP-001",
+    "FLT-002",
+    "PLT-REL-001"
+  ],
+  "x-open-decisions": [
+    "OD-022",
+    "OD-020"
+  ],
+  "x-note": "Yalnız SEARCHABLE TripRequest alanlarının dönüştürülmemiş kopyasıdır ve provider adapter sınırında kullanılır. v3.9: date_window yerine journey_type + outbound_date (+ ROUND_TRIP için return_date); EXACT/FLEXIBLE anlamı v3.7 ile aynı, FLEXIBLE sınırları dahil, tarihler saat dilimsiz takvim tarihidir. ROUND_TRIP için latest(return_date) < earliest(outbound_date) geçersizdir (RULE-TRIP-001-05). Başka örtüşme/aralık seçimi kuralı yoktur. Eski (v3.2 date_window) veya geçersiz yolculuk kriter üretmez; iş adapter çağrılmadan FAILED olur (GAP-FLT-CRITERIA-001). Konum semantiği v3.8 ile aynıdır. Yolcu tipi OD-020 kapsamında OPEN kalır.",
+  "x-replaces": "urn:ai-seyahat:v3.8:FlightSearchCriteria",
+  "oneOf": [
+    {
+      "properties": {
+        "journey_type": {
+          "const": "ONE_WAY"
+        }
+      },
+      "not": {
+        "required": [
+          "return_date"
+        ]
+      },
+      "description": "ONE_WAY: return_date yok."
+    },
+    {
+      "properties": {
+        "journey_type": {
+          "const": "ROUND_TRIP"
+        }
+      },
+      "required": [
+        "return_date"
+      ],
+      "description": "ROUND_TRIP: return_date zorunlu."
+    }
+  ]
+}

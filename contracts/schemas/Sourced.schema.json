@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.2:Sourced",
+  "title": "Sourced",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "value": {
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "provider/user",
+        "verification": "OPEN",
+        "security": "OPEN",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-004"
+        ]
+      }
+    },
+    "certainty": {
+      "type": "string",
+      "enum": [
+        "EXACT",
+        "ESTIMATED",
+        "UNKNOWN"
+      ],
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "provider/user",
+        "verification": "source",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-004"
+        ]
+      }
+    },
+    "source_reference": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "provider",
+        "verification": "source",
+        "security": "masked as needed",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-004"
+        ]
+      }
+    },
+    "fetched_at": {
+      "type": "string",
+      "format": "date-time",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "system",
+        "verification": "timestamp",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-004"
+        ]
+      }
+    },
+    "verified_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "system",
+        "verification": "timestamp",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-004"
+        ]
+      }
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "provider/policy",
+        "verification": "timestamp",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-004"
+        ]
+      }
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "FRESH",
+        "STALE",
+        "EXPIRED",
+        "UNVERIFIED"
+      ],
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "derived",
+        "verification": "VerificationStatus",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-004"
+        ]
+      }
+    }
+  },
+  "required": [
+    "value",
+    "certainty",
+    "source_reference",
+    "fetched_at",
+    "verification_status"
+  ],
+  "x-contract-id": "SCH-Sourced",
+  "x-version": "3.2",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": [
+    "BUS-004"
+  ]
+}

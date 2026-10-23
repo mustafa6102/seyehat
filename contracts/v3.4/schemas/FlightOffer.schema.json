@@ -1,0 +1,333 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.4:FlightOffer",
+  "title": "FlightOffer",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "provider_offer_id": {
+      "type": "string",
+      "x-requirement-refs": [
+        "FLT-002"
+      ]
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "CURRENT",
+        "CHANGED",
+        "EXPIRED",
+        "UNVERIFIED"
+      ],
+      "x-requirement-refs": [
+        "FLT-REPRICE-001"
+      ]
+    },
+    "price": {
+      "$ref": "../../v3.3/schemas/DerivedMoney.schema.json",
+      "x-requirement-refs": [
+        "FLT-002",
+        "FLT-005"
+      ]
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "x-requirement-refs": [
+        "FLT-002"
+      ]
+    },
+    "baggage": {
+      "oneOf": [
+        {
+          "$ref": "../../v3.3/schemas/BaggageAllowance.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-requirement-refs": [
+        "FLT-002",
+        "FLT-005"
+      ]
+    },
+    "bookable": {
+      "type": "boolean",
+      "x-requirement-refs": [
+        "RULE-FLT-002-03",
+        "AC-FLT-002-02"
+      ],
+      "description": "Yalnız PRV-001 production search ve book capability kanıtı olan kaynakta true olabilir; search-only sonuç false kalır. Yönlendirme/booking akışı OD-015/OD-011 kararına bağlıdır ve bu alanla açılmaz."
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/offer_source"
+      },
+      "x-requirement-refs": [
+        "FR-FLT-002-01",
+        "AC-FLT-002-01"
+      ]
+    },
+    "segments": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/flight_segment"
+      },
+      "x-requirement-refs": [
+        "FR-FLT-002-01",
+        "FR-FLT-002-03",
+        "AC-FLT-002-03",
+        "AC-FLT-002-06"
+      ]
+    }
+  },
+  "required": [
+    "provider_offer_id",
+    "state",
+    "price",
+    "expires_at",
+    "baggage",
+    "bookable",
+    "sources",
+    "segments"
+  ],
+  "$defs": {
+    "segment_time": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "local_datetime": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
+          "x-requirement-refs": [
+            "RULE-FLT-002-05",
+            "AC-FLT-002-06"
+          ]
+        },
+        "iana_timezone": {
+          "type": "string",
+          "minLength": 1,
+          "x-requirement-refs": [
+            "RULE-FLT-002-05",
+            "AC-FLT-002-06"
+          ]
+        },
+        "utc_instant": {
+          "type": "string",
+          "format": "date-time",
+          "x-requirement-refs": [
+            "RULE-FLT-002-05",
+            "AC-FLT-002-06"
+          ]
+        }
+      },
+      "required": [
+        "local_datetime",
+        "iana_timezone",
+        "utc_instant"
+      ],
+      "x-note": "Bölüm 6.4: IANA timezone + local datetime + UTC instant birlikte taşınır; yalnız offset taşınmaz."
+    },
+    "flight_segment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "operating_carrier": {
+          "type": "string",
+          "minLength": 1,
+          "x-requirement-refs": [
+            "FR-FLT-002-01",
+            "FR-FLT-002-03"
+          ]
+        },
+        "operating_flight_number": {
+          "type": "string",
+          "minLength": 1,
+          "x-requirement-refs": [
+            "FR-FLT-002-01",
+            "FR-FLT-002-03"
+          ]
+        },
+        "marketing_flight_references": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "x-requirement-refs": [
+            "FR-FLT-002-03",
+            "AC-FLT-002-03"
+          ]
+        },
+        "carrier_model": {
+          "type": "string",
+          "enum": [
+            "FULL_SERVICE",
+            "LCC",
+            "HYBRID",
+            "UNKNOWN"
+          ],
+          "x-enum-ref": "CarrierModel",
+          "x-requirement-refs": [
+            "RULE-FLT-002-04",
+            "AC-FLT-002-04"
+          ]
+        },
+        "departure": {
+          "$ref": "#/$defs/segment_time",
+          "x-requirement-refs": [
+            "RULE-FLT-002-05",
+            "AC-FLT-002-06"
+          ]
+        },
+        "arrival": {
+          "$ref": "#/$defs/segment_time",
+          "x-requirement-refs": [
+            "RULE-FLT-002-05",
+            "AC-FLT-002-06"
+          ]
+        },
+        "duration_minutes": {
+          "type": "integer",
+          "minimum": 0,
+          "x-requirement-refs": [
+            "RULE-FLT-002-05",
+            "AC-FLT-002-06"
+          ],
+          "description": "UTC instant farkından hesaplanır."
+        }
+      },
+      "required": [
+        "operating_carrier",
+        "operating_flight_number",
+        "marketing_flight_references",
+        "carrier_model",
+        "departure",
+        "arrival",
+        "duration_minutes"
+      ],
+      "x-note": "Segment sırası dizi sırasıdır (FR-FLT-002-03). Segment kalkış/varış konumu (havalimanı/LocationRef) FLT-002 veri tanımında yer almadığı için bu sürümde taşınmaz; OD-022."
+    },
+    "offer_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider_id": {
+          "type": "string",
+          "minLength": 1,
+          "x-requirement-refs": [
+            "FR-FLT-002-01",
+            "AC-FLT-002-01"
+          ]
+        },
+        "provider_offer_id": {
+          "type": "string",
+          "minLength": 1,
+          "x-requirement-refs": [
+            "AC-FLT-002-01"
+          ]
+        },
+        "provider_role": {
+          "type": "string",
+          "enum": [
+            "AGGREGATOR",
+            "GDS",
+            "DIRECT_SUPPLIER",
+            "AFFILIATE",
+            "UNKNOWN"
+          ],
+          "x-enum-ref": "ProviderRole",
+          "x-requirement-refs": [
+            "RULE-FLT-002-04",
+            "AC-FLT-002-04"
+          ]
+        },
+        "distribution_channel": {
+          "type": "string",
+          "enum": [
+            "NDC",
+            "GDS_EDIFACT",
+            "DIRECT_API",
+            "OTHER",
+            "UNKNOWN"
+          ],
+          "x-enum-ref": "DistributionChannel",
+          "x-requirement-refs": [
+            "FR-FLT-002-01",
+            "RULE-FLT-002-04",
+            "AC-FLT-002-04"
+          ]
+        },
+        "fetched_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-requirement-refs": [
+            "FR-FLT-002-01"
+          ]
+        },
+        "verified_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "x-requirement-refs": [
+            "FR-FLT-002-01"
+          ]
+        },
+        "expires_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "x-requirement-refs": [
+            "FR-FLT-002-01"
+          ]
+        },
+        "verification_status": {
+          "type": "string",
+          "enum": [
+            "FRESH",
+            "STALE",
+            "EXPIRED",
+            "UNVERIFIED"
+          ],
+          "x-requirement-refs": [
+            "FR-FLT-002-01"
+          ]
+        }
+      },
+      "required": [
+        "provider_id",
+        "provider_offer_id",
+        "provider_role",
+        "distribution_channel",
+        "fetched_at",
+        "verified_at",
+        "expires_at",
+        "verification_status"
+      ],
+      "x-note": "Ham provider payload veya provider SDK alanı taşınmaz (RULE-FLT-002-01)."
+    }
+  },
+  "x-contract-id": "SCH-FlightOffer",
+  "x-version": "3.4",
+  "x-status": "ACTIVE",
+  "x-replaces": "urn:ai-seyahat:v3.3:FlightOffer",
+  "x-requirement-refs": [
+    "FLT-002",
+    "FLT-005",
+    "FLT-REPRICE-001"
+  ],
+  "x-open-decisions": [
+    "OD-022",
+    "OD-015"
+  ]
+}

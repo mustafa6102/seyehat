@@ -1,0 +1,24 @@
+version: 3.9.0
+inherits: ../../v3.8/registries/traceability.yaml
+requirement_to_contract:
+  - requirement: RULE-TRIP-001-04
+    artifacts: [schema:TripRequest.schema.json, schema:FlightSearchCriteria.schema.json, openapi:OP-createTripRequest]
+    tests: [TS-TRIP-001-05, TS-TRIP-001-06]
+  - requirement: RULE-TRIP-001-05
+    artifacts: [schema:TravelDate.schema.json, schema:TripRequest.schema.json, schema:FlightSearchCriteria.schema.json]
+    tests: [TS-TRIP-001-05, TS-TRIP-001-06]
+  - requirement: FR-TRIP-001-03
+    artifacts: [schema:TripRequest.schema.json, schema:TravelDate.schema.json]
+  - requirement: RULE-TRIP-001-02
+    artifacts: [schema:TravelDate.schema.json]
+    note: Kesin/esnek ayrımı yön başına korunur.
+  - requirement: AC-TRIP-001-03
+    artifacts: [openapi:OP-createTripRequest]
+    tests: [TS-TRIP-001-06]
+  - requirement: TRIP-001
+    artifacts: [schema:TripRequest.schema.json]
+    tests: [TS-TRIP-001-07]
+    note: Eski date_window kayıtları readOnly/legacy olarak korunur ve uçuş aramasına giremez.
+  - requirement: FLT-002
+    artifacts: [schema:FlightSearchCriteria.schema.json]
+    open_decisions: [OD-022]

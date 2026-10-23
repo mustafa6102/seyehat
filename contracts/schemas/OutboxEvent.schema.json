@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.2:OutboxEvent",
+  "title": "OutboxEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trip_id": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "CONFIDENTIAL",
+        "source_of_truth": "domain",
+        "verification": "OPEN",
+        "security": "masked logs",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "ADR-003"
+        ]
+      }
+    },
+    "revision_id": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "CONFIDENTIAL",
+        "source_of_truth": "domain",
+        "verification": "OPEN",
+        "security": "masked logs",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "ADR-003"
+        ]
+      }
+    },
+    "sequence": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "system",
+        "verification": "ADR-008 OPEN",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "ADR-008"
+        ]
+      }
+    },
+    "correlation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "system",
+        "verification": "OPEN",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "NFR-OBS-001"
+        ]
+      }
+    }
+  },
+  "required": [
+    "trip_id",
+    "revision_id"
+  ],
+  "x-contract-id": "SCH-OutboxEvent",
+  "x-version": "3.2",
+  "x-status": "PROVISIONAL",
+  "x-requirement-refs": [
+    "ADR-003",
+    "ADR-008"
+  ]
+}

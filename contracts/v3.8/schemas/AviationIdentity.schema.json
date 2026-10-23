@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.8:AviationIdentity",
+  "title": "AviationIdentity",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "IATA_AIRPORT",
+        "IATA_CITY"
+      ],
+      "description": "IATA_AIRPORT: IATA havalimanı konum kodu. IATA_CITY: IATA şehir (metropol alanı) kodu. Aynı üç harf iki türde ayrı kimliklerdir."
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "description": "Üç büyük harfli IATA konum kodu."
+    }
+  },
+  "required": [
+    "type",
+    "code"
+  ],
+  "x-contract-id": "SCH-AviationIdentity",
+  "x-version": "3.8",
+  "x-status": "ACTIVE",
+  "x-audience": "INTERNAL",
+  "x-requirement-refs": [
+    "TRIP-001",
+    "FLT-002"
+  ],
+  "x-open-decisions": [
+    "OD-022"
+  ],
+  "x-metadata": {
+    "classification": "PUBLIC",
+    "source_of_truth": "provider",
+    "verification": "normalized",
+    "security": "standard",
+    "retention_ref": "OD-013",
+    "requirement_refs": [
+      "TRIP-001",
+      "FLT-002"
+    ]
+  },
+  "x-note": "Sağlayıcıdan bağımsız havacılık konum kimliğidir. Sağlayıcı adı, sağlayıcı kaynak kimliği (ör. Duffel place id), erişim anahtarı veya ham sağlayıcı verisi taşımaz. Yalnız sunucunun havacılık konum kataloğundan normalize ettiği sonuçtan atanır; istemci tarafından gönderilen kod kabul edilmez."
+}

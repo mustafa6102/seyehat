@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.2:ProviderCapability",
+  "title": "ProviderCapability",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "operation": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "provider governance",
+        "verification": "evidence",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-005"
+        ]
+      }
+    },
+    "supported": {
+      "type": "boolean",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "provider governance",
+        "verification": "evidence",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-005"
+        ]
+      }
+    },
+    "status": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "provider governance",
+        "verification": "OPEN",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-005"
+        ]
+      }
+    }
+  },
+  "required": [
+    "operation",
+    "supported",
+    "status"
+  ],
+  "x-contract-id": "SCH-ProviderCapability",
+  "x-version": "3.2",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": [
+    "BUS-005"
+  ]
+}

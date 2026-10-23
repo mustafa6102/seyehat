@@ -1,0 +1,9 @@
+version: 3.6.0
+inherits: ../../v3.5/registries/reason_error.yaml
+new_records: []
+reused_records: []
+contract_gaps:
+  - id: GAP-FLT-CRITERIA-001
+    description: Uçuş sağlayıcısında temsil edilemeyen konum (station türü veya kanonik havacılık kimliği olmayan konum) için de kanonik reason/error kodu yoktur; FlightSearchJob.error.code null ve Türkçe mesajla döner.
+    decision_ref: OD-022
+note: Yeni reason/error semantiği eklenmedi.

@@ -1,0 +1,8 @@
+version: 3.6.0
+inherits: ../../v3.5/registries/lifecycle.yaml
+changes:
+  - machine: FlightSearchJob
+    semantics_changed: false
+    contract_surface: schema:FlightSearchCriteria.schema.json
+    note: Kriterdeki başlangıç veya varış konumu uçuş sağlayıcısında temsil edilemiyorsa (station türü veya kanonik havacılık kimliği yok) sağlayıcı çağrılmaz; mevcut RUNNING -> FAILED geçişi error.code null ve Türkçe mesajla uygulanır. Durumlar ve geçişler değişmedi.
+    refs: [ADR-011, TRIP-001, RULE-TRIP-001-01, FLT-002, GND-001, OD-022]

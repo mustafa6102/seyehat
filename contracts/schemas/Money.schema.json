@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.2:Money",
+  "title": "Money",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "minor_units": {
+      "type": "integer",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "provider/domain",
+        "verification": "OPEN",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-002"
+        ]
+      }
+    },
+    "currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "provider/domain",
+        "verification": "ISO 4217",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-002"
+        ]
+      }
+    }
+  },
+  "required": [
+    "minor_units",
+    "currency"
+  ],
+  "x-contract-id": "SCH-Money",
+  "x-version": "3.2",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": [
+    "BUS-002"
+  ]
+}

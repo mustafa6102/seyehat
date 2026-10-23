@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.2:Derived",
+  "title": "Derived",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "value": {
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "derived",
+        "verification": "OPEN",
+        "security": "OPEN",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-004"
+        ]
+      }
+    },
+    "certainty": {
+      "type": "string",
+      "enum": [
+        "EXACT",
+        "ESTIMATED",
+        "UNKNOWN"
+      ],
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "derived",
+        "verification": "lineage",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-004"
+        ]
+      }
+    },
+    "input_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "derived",
+        "verification": "lineage",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "NFR-AUD-001"
+        ]
+      }
+    },
+    "calculation_version": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "system",
+        "verification": "version",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "NFR-AUD-001"
+        ]
+      }
+    },
+    "calculated_at": {
+      "type": "string",
+      "format": "date-time",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "system",
+        "verification": "timestamp",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "NFR-AUD-001"
+        ]
+      }
+    }
+  },
+  "required": [
+    "value",
+    "certainty",
+    "input_refs",
+    "calculation_version",
+    "calculated_at"
+  ],
+  "x-contract-id": "SCH-Derived",
+  "x-version": "3.2",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": [
+    "BUS-004",
+    "NFR-AUD-001"
+  ]
+}

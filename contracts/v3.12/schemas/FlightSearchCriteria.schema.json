@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.12:FlightSearchCriteria",
+  "title": "FlightSearchCriteria",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trip_request_id": {"type": "string", "minLength": 1, "maxLength": 255},
+    "origin_place": {"$ref": "../../v3.8/schemas/LocationRef.schema.json"},
+    "destination_place": {"$ref": "../../v3.8/schemas/LocationRef.schema.json"},
+    "journey_type": {"type": "string", "enum": ["ONE_WAY", "ROUND_TRIP"]},
+    "outbound_date": {"$ref": "../../v3.9/schemas/TravelDate.schema.json"},
+    "return_date": {"$ref": "../../v3.9/schemas/TravelDate.schema.json"},
+    "traveler_count": {"type": "integer", "minimum": 1},
+    "passenger_composition": {"anyOf": [{"$ref": "./PassengerComposition.schema.json"}, {"type": "null"}]}
+  },
+  "required": ["trip_request_id", "origin_place", "destination_place", "journey_type", "outbound_date", "traveler_count"],
+  "x-contract-id": "SCH-FlightSearchCriteria",
+  "x-version": "3.12",
+  "x-status": "ACTIVE",
+  "x-audience": "INTERNAL",
+  "x-replaces": "urn:ai-seyahat:v3.9:FlightSearchCriteria",
+  "x-requirement-refs": ["TRIP-001", "FLT-002", "PLT-REL-001", "RULE-TRIP-001-06"],
+  "x-open-decisions": ["OD-020", "OD-021", "OD-022"],
+  "x-note": "TripRequest passenger_composition değerini değiştirmeden taşır. Provider eşlemesi yalnız güvenle temsil edilebilen kriterler içindir."
+}

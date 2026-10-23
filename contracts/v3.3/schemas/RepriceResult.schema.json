@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.3:RepriceResult",
+  "title": "RepriceResult",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "previous": {"$ref": "./OfferSnapshot.schema.json", "x-requirement-refs": ["FLT-REPRICE-001"]},
+    "current": {"$ref": "./OfferSnapshot.schema.json", "x-requirement-refs": ["FLT-REPRICE-001"]},
+    "changes": {"$ref": "./OfferChangeSet.schema.json", "x-requirement-refs": ["RULE-FLT-REPRICE-001-03"]},
+    "reason_codes": {"type": "array", "items": {"type": "string", "enum": ["RC-EVIDENCE-OFFER-CHANGED", "RC-EVIDENCE-OFFER-EXPIRED", "RC-PROVIDER-TIMEOUT", "RC-EVIDENCE-REPRICE-UNVERIFIED"]}, "uniqueItems": true, "x-requirement-refs": ["FLT-REPRICE-001"]},
+    "previous_approval_valid": {"type": "boolean", "x-requirement-refs": ["RULE-FLT-REPRICE-001-03", "AC-FLT-REPRICE-001-03", "AC-FLT-REPRICE-001-06"]},
+    "continuation_allowed": {"type": "boolean", "x-requirement-refs": ["RULE-FLT-REPRICE-001-02", "AC-FLT-REPRICE-001-03", "AC-FLT-REPRICE-001-04", "AC-FLT-REPRICE-001-05", "AC-FLT-REPRICE-001-06"]},
+    "reprice_capability": {"$ref": "./ProviderCapability.schema.json", "x-requirement-refs": ["FR-FLT-REPRICE-001-01"]}
+  },
+  "required": ["previous", "current", "changes", "reason_codes", "previous_approval_valid", "continuation_allowed", "reprice_capability"],
+  "x-contract-id": "SCH-RepriceResult",
+  "x-version": "3.3",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["FLT-REPRICE-001"]
+}

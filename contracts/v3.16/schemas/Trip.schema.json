@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.16:Trip",
+  "title": "Trip",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trip_id": {"type": "string", "minLength": 1, "readOnly": true, "description": "Sunucunun verdiği opak kimlik."},
+    "trip_request_id": {"type": "string", "minLength": 1, "readOnly": true, "description": "Trip'i doğuran TripRequest; kalıcıdır ve değişmez. Bir TripRequest en fazla bir Trip'e sahiptir (OD-021)."},
+    "created_at": {"type": "string", "format": "date-time", "readOnly": true}
+  },
+  "required": ["trip_id", "trip_request_id", "created_at"],
+  "x-contract-id": "SCH-Trip",
+  "x-version": "3.16",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["TRIP-BLD-001", "FR-TRIP-BLD-001-01", "RULE-TRIP-BLD-001-04"],
+  "x-open-decisions": ["ADR-010", "OD-013"],
+  "description": "Plan yaşam döngüsünün kalıcı aggregate root'u (OD-021 RESOLVED). İlk başarılı plan değişikliğinde PlanRevision 1 ile aynı transaction'da tembel olarak oluşturulur. Uçuş/konaklama seçimleri TripRequest'e ait kalır ve Trip'e taşınmaz. Traveler.trip_id bu trip_id'yi hedefler (RULE-TRV-001-01)."
+}

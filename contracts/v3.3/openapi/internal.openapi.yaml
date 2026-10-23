@@ -1,0 +1,26 @@
+openapi: 3.1.0
+info:
+  title: AI Seyahat Planlayıcısı Internal Provider API v3.3 delta
+  version: 3.3.0
+  description: v3.2.2 internal API baseline'ını devralan versioned delta.
+servers: []
+x-inherits: ../../openapi/internal.openapi.yaml
+paths:
+  /provider-capabilities:
+    get:
+      operationId: getInternalProviderCapabilities
+      x-contract-id: OP-getInternalProviderCapabilities
+      x-status: ACTIVE
+      x-requirement-refs: [PRV-001, AC-PRV-001-01, AC-PRV-001-02, AC-PRV-001-03]
+      responses:
+        '200':
+          description: Capability evidence ve freshness bilgisi.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/ProviderCapability.schema.json}
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+      x-open-decisions: [OD-001, OD-008, ADR-010]

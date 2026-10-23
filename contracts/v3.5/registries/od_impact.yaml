@@ -1,0 +1,19 @@
+version: 3.5.0
+inherits: ../../v3.4/registries/od_impact.yaml
+decisions:
+  - id: OD-022
+    title: TripRequest'ten sağlayıcı uçuş arama kriterlerine eşleme
+    status: PARTIALLY_RESOLVED
+    resolved:
+      - SCH-FlightSearchCriteria (v3.5) SEARCHABLE TripRequest'in origin_place, destination_place, date_window ve traveler_count alanlarının dönüştürülmemiş kopyasıdır ve trip_request_id taşır.
+      - preferences uçuş arama kriteri değildir.
+      - Adapter kanonik kriteri FlightSearch Contracts sınırında alır; kriter tarayıcıdan tekrar alınmaz.
+    remaining_open:
+      - LocationRef havacılık kimliği taşımaz; GeoNames kimliği sağlayıcı kimliği olarak kullanılamaz ve konum -> havalimanı eşleme katmanı tanımlı değil.
+      - Konum türlerinin (city, airport, station, supported_location) uçuş aramasına uygunluğu ve city -> airport genişletmesi tanımlı değil.
+      - date_window iç yapısı (SCH-TripRequest doğrulama OPEN), gidiş/dönüş yönü, tek yön/gidiş-dönüş ve esnek aralık genişletmesi tanımlı değil.
+      - traveler_count dışındaki yolcu tipi dağılımı tanımlı değil (OD-020 bağımlılığı).
+      - Kabin sınıfı, yolculuk tipi ve segment kalkış/varış konum gösterimi tanımlı değil.
+      - Desteklenmeyen kriter için kanonik reason/error kodu yok (GAP-FLT-CRITERIA-001).
+    blocks_development: [production flight provider execution]
+    impact_status: BLOCKED

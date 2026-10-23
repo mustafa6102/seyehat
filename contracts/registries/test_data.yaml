@@ -1,0 +1,70 @@
+version: 3.2.2
+production_pii_allowed: false
+provider_fixtures:
+- id: FX-001
+  scenario: duplicate/codeshare
+  source: Kaydedilmiş sandbox yanıtı
+  payload_status: OPEN
+  owner: ATANMADI
+  refs:
+  - FLT-002
+- id: FX-002
+  scenario: search-only
+  source: Kaydedilmiş sandbox yanıtı
+  payload_status: OPEN
+  owner: ATANMADI
+  refs:
+  - FLT-002
+- id: FX-003
+  scenario: fiyat değişimi
+  source: Kaydedilmiş sandbox yanıtı
+  payload_status: OPEN
+  owner: ATANMADI
+  refs:
+  - FLT-REPRICE-001
+- id: FX-004
+  scenario: timeout
+  source: Kaydedilmiş sandbox yanıtı
+  payload_status: OPEN
+  owner: ATANMADI
+  refs:
+  - FLT-REPRICE-001
+  - PLT-REL-001
+- id: FX-005
+  scenario: expired offer
+  source: Kaydedilmiş sandbox yanıtı
+  payload_status: OPEN
+  owner: ATANMADI
+  refs:
+  - FLT-REPRICE-001
+- id: FX-006
+  scenario: DST
+  source: Kaydedilmiş sandbox yanıtı
+  payload_status: OPEN
+  owner: ATANMADI
+  refs:
+  - FLT-002
+- id: FX-007
+  scenario: bilinmeyen bagaj
+  source: Kaydedilmiş sandbox yanıtı
+  payload_status: OPEN
+  owner: ATANMADI
+  refs:
+  - FLT-005
+golden_set:
+  phase: M4
+  status: PLANNED
+  cases:
+  - id: GC-001
+    status: PLANNED
+    scope: Kritik claim grounding/hallucination
+    owner: ATANMADI
+    refs:
+    - NFR-AI-001
+  coverage_targets:
+  - critical price
+  - time
+  - link
+  - compliance claim
+  - UNKNOWN handling
+  - evidence slot grounding

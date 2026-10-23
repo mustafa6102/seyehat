@@ -1,0 +1,16 @@
+version: 3.15.0
+inherits: ../v3.14/contract_index.yaml
+contracts:
+  - {id: SCH-Poi, path: contracts/v3.15/schemas/Poi.schema.json, status: ACTIVE, audience: PUBLIC}
+  - {id: SCH-PoiDiscoveryCriteria, path: contracts/v3.15/schemas/PoiDiscoveryCriteria.schema.json, status: ACTIVE, audience: INTERNAL}
+  - {id: SCH-PoiDiscoveryJob, path: contracts/v3.15/schemas/PoiDiscoveryJob.schema.json, status: ACTIVE, audience: PUBLIC}
+  - {id: SCH-PoiVerificationResult, path: contracts/v3.15/schemas/PoiVerificationResult.schema.json, status: ACTIVE, audience: PUBLIC}
+  - {id: OP-startPoiDiscovery, path: contracts/v3.15/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-pollPoiDiscovery, path: contracts/v3.15/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-getPoi, path: contracts/v3.15/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-verifyPoi, path: contracts/v3.15/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: CFG-POI-SEARCH-RADIUS, path: contracts/v3.15/registries/config.yaml, status: ACTIVE}
+  - {id: CFG-POI-MAX-RESULTS, path: contracts/v3.15/registries/config.yaml, status: ACTIVE}
+  - {id: CFG-POI-OVERPASS-ENDPOINT, path: contracts/v3.15/registries/config.yaml, status: ACTIVE}
+  - {id: CFG-POI-DISCOVERY-TAG-FILTER, path: contracts/v3.15/registries/config.yaml, status: ACTIVE}
+  - {id: CFG-POI-EVIDENCE-FRESHNESS, path: contracts/v3.15/registries/config.yaml, status: OPEN}

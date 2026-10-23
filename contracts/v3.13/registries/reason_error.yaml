@@ -1,0 +1,36 @@
+version: 3.13.0
+inherits: ../../v3.9/registries/reason_error.yaml
+new_records:
+  - id: RC-DECISION-OFFER-NOT-SELECTABLE
+    kind: ERROR
+    category: DECISION
+    machine_code: OFFER_NOT_SELECTABLE
+    http_status: 409
+    audit_reason_code: OFFER_NOT_SELECTABLE
+    message_key_tr: error.offer_not_selectable
+    default_message_tr: Bu teklif şu anda seçilemez. Teklifi yeniden doğrulayın veya yeni bir arama yapın.
+    retryable: false
+    user_actionable: true
+    severity: WARN
+    fallback: Mevcut seçim değişmez; kullanıcı teklifi yeniden doğrular veya yeni arama yapar.
+    pii_safe_logging: true
+    refs: [FLT-REPRICE-001, RULE-FLT-REPRICE-001-04, AC-FLT-REPRICE-001-09, OP-selectTripRequestFlight, OP-reconfirmTripRequestFlight]
+reused_records:
+  - id: RC-EVIDENCE-OFFER-CHANGED
+    machine_code: OFFER_CHANGED
+    applies_to: [RULE-FLT-REPRICE-001-05, AC-FLT-REPRICE-001-10, AC-FLT-REPRICE-001-13]
+    note: OP-selectTripRequestFlight / OP-reconfirmTripRequestFlight için ErrorEnvelope.error.code olarak HTTP 409 ile döner (açık kabul yok veya expected_verified_at uyuşmuyor). OP-repriceOffer uyarı semantiği değişmedi.
+  - id: RC-EVIDENCE-OFFER-EXPIRED
+    machine_code: OFFER_EXPIRED
+    applies_to: [AC-FLT-REPRICE-001-09, AC-FLT-REPRICE-001-11]
+    note: Süresi dolmuş teklif seçim/yeniden onay için HTTP 409 ile reddedilir; TRN-FSEL-03 reason kaydıdır.
+  - id: RC-RESOURCE-NOT-FOUND
+    applies_to: [OP-getTripRequestFlightSelection, OP-selectTripRequestFlight, OP-reconfirmTripRequestFlight]
+    note: TripRequest, seçim veya sunucuda saklı teklif yoksa HTTP 404.
+  - id: RC-VALIDATION-SCHEMA
+    applies_to: [OP-selectTripRequestFlight, OP-reconfirmTripRequestFlight]
+    note: Eksik Idempotency-Key, tanımsız alan (fiyat/uçuş verisi dahil) veya geçersiz tarih biçimi HTTP 400.
+  - id: RC-CONFLICT-IDEMPOTENCY-KEY
+    applies_to: [OP-selectTripRequestFlight, OP-reconfirmTripRequestFlight]
+    note: Aynı anahtar farklı istek gövdesi veya TripRequest için kullanılırsa HTTP 409.
+contract_gaps: []

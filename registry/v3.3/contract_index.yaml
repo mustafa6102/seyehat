@@ -1,0 +1,26 @@
+version: 3.3.0
+inherits: ../contract_index.yaml
+contracts:
+  - {id: SCH-Visa, path: contracts/v3.3/schemas/Visa.schema.json, status: ACTIVE}
+  - {id: SCH-ResidencePermit, path: contracts/v3.3/schemas/ResidencePermit.schema.json, status: ACTIVE}
+  - {id: SCH-Traveler, path: contracts/v3.3/schemas/Traveler.schema.json, status: ACTIVE, replaces: 'urn:ai-seyahat:v3.2:Traveler'}
+  - {id: SCH-DerivedMoney, path: contracts/v3.3/schemas/DerivedMoney.schema.json, status: ACTIVE}
+  - {id: SCH-AncillaryFee, path: contracts/v3.3/schemas/AncillaryFee.schema.json, status: ACTIVE}
+  - {id: SCH-BaggageAllowance, path: contracts/v3.3/schemas/BaggageAllowance.schema.json, status: ACTIVE}
+  - {id: SCH-FlightOffer, path: contracts/v3.3/schemas/FlightOffer.schema.json, status: ACTIVE, replaces: 'urn:ai-seyahat:v3.2:FlightOffer'}
+  - {id: SCH-FareConditionSnapshot, path: contracts/v3.3/schemas/FareConditionSnapshot.schema.json, status: ACTIVE}
+  - {id: SCH-OfferSnapshot, path: contracts/v3.3/schemas/OfferSnapshot.schema.json, status: ACTIVE, replaces: 'urn:ai-seyahat:v3.2:OfferSnapshot'}
+  - {id: SCH-OfferChangeSet, path: contracts/v3.3/schemas/OfferChangeSet.schema.json, status: ACTIVE}
+  - {id: SCH-RepriceResult, path: contracts/v3.3/schemas/RepriceResult.schema.json, status: ACTIVE}
+  - {id: SCH-ProviderCapability, path: contracts/v3.3/schemas/ProviderCapability.schema.json, status: ACTIVE, replaces: 'urn:ai-seyahat:v3.2:ProviderCapability'}
+  - {id: SCH-FlightSearchResult, path: contracts/v3.3/schemas/FlightSearchResult.schema.json, status: ACTIVE, replaces: 'urn:ai-seyahat:contracts:FlightSearchResult:3.2.1'}
+  - {id: SCH-FlightSearchStartResponse, path: contracts/v3.3/schemas/FlightSearchStartResponse.schema.json, status: ACTIVE}
+  - {id: SCH-FlightSearchJob, path: contracts/v3.3/schemas/FlightSearchJob.schema.json, status: ACTIVE}
+  - {id: OP-createTraveler, path: contracts/v3.3/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-getTraveler, path: contracts/v3.3/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-startFlightSearch, path: contracts/v3.3/openapi/m1a.openapi.yaml, status: ACTIVE, decision_ref: ADR-011}
+  - {id: OP-pollFlightSearch, path: contracts/v3.3/openapi/m1a.openapi.yaml, status: ACTIVE, decision_ref: ADR-011}
+  - {id: OP-getOffer, path: contracts/v3.3/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-repriceOffer, path: contracts/v3.3/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-createPartnerRedirect, path: contracts/v3.3/openapi/m1a.openapi.yaml, status: PROVISIONAL, decision_ref: OD-015}
+  - {id: OP-getInternalProviderCapabilities, path: contracts/v3.3/openapi/internal.openapi.yaml, status: ACTIVE}

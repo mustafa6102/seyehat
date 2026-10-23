@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:contracts:FlightSearchResult:3.2.1",
+  "title": "FlightSearchResult",
+  "type": "object",
+  "x-contract-id": "SCH-FlightSearchResult",
+  "x-requirement-refs": [
+    "FLT-002",
+    "RANK-001"
+  ],
+  "properties": {
+    "offers": {
+      "type": "array",
+      "items": {
+        "$ref": "FlightOffer.schema.json"
+      },
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "domain",
+        "verification": "See FlightOffer",
+        "security": "PII yok; log policy uygulanır",
+        "retention_ref": "OPEN",
+        "requirement_refs": [
+          "FLT-002"
+        ]
+      }
+    },
+    "ranking": {
+      "$ref": "RankingResult.schema.json",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "derived",
+        "verification": "Deterministic comparator",
+        "security": "PII yok",
+        "retention_ref": "OPEN",
+        "requirement_refs": [
+          "RANK-001"
+        ]
+      }
+    }
+  },
+  "required": [
+    "offers",
+    "ranking"
+  ],
+  "additionalProperties": false
+}

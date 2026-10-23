@@ -1,0 +1,88 @@
+version: 3.16.0
+inherits: ../../v3.15/registries/traceability.yaml
+requirement_to_contract:
+  - requirement: FR-TRIP-BLD-001-01
+    artifacts: [schema:Trip.schema.json, schema:PlanRevision.schema.json, lifecycle:TRN-PLANREVISION-01, lifecycle:TRN-PLANREVISION-02, asyncapi:EVT-PlanRevisionCreated]
+    tests: [TS-TRIP-BLD-001-03, TS-TRIP-BLD-001-05]
+    open_decisions: [ADR-010, OD-013, ADR-008]
+  - requirement: FR-TRIP-BLD-001-02
+    artifacts: [schema:PlanRevision.schema.json]
+    tests: [TS-TRIP-BLD-001-03, TS-TRIP-BLD-001-06]
+  - requirement: FR-TRIP-BLD-001-03
+    artifacts: [openapi:OP-getTripRequestPlan, openapi:OP-addTripPlanPoiItem, openapi:OP-removeTripPlanItem, schema:TripPlan.schema.json]
+    tests: [TS-TRIP-BLD-001-04, TS-TRIP-BLD-001-05, TS-TRIP-BLD-001-06]
+    note: Operasyonlar ACTIVE; bearerAuth (OIDC, SCH-PrincipalRef) ve TripRequest owner kuralı (RULE-PLT-AUTH-001-04..06).
+  - requirement: RULE-TRIP-BLD-001-03
+    artifacts: [schema:ItineraryItem.schema.json]
+    tests: [TS-TRIP-BLD-001-05]
+    open_decisions: [OD-013, OD-025]
+  - requirement: RULE-TRIP-BLD-001-04
+    artifacts: [schema:Trip.schema.json, lifecycle:TRN-PLANREVISION-02]
+    tests: [TS-TRIP-BLD-001-05]
+  - requirement: RULE-TRIP-BLD-001-05
+    artifacts: [schema:ItineraryItem.schema.json]
+    tests: [TS-TRIP-BLD-001-05]
+  - requirement: AC-TRIP-BLD-001-04
+    artifacts: [openapi:OP-getTripRequestPlan]
+    tests: [TS-TRIP-BLD-001-04]
+  - requirement: AC-TRIP-BLD-001-05
+    artifacts: [openapi:OP-addTripPlanPoiItem, lifecycle:TRN-PLANREVISION-02]
+    tests: [TS-TRIP-BLD-001-05]
+  - requirement: AC-TRIP-BLD-001-06
+    artifacts: [openapi:OP-removeTripPlanItem, lifecycle:TRN-PLANREVISION-01]
+    tests: [TS-TRIP-BLD-001-06]
+  - requirement: PLT-CONC-001
+    artifacts: [openapi:OP-addTripPlanPoiItem, openapi:OP-removeTripPlanItem, lifecycle:TRN-PLANREVISION-01]
+    tests: [TS-PLT-CONC-001-01]
+    note: expected_revision_version If-Match "<version>" olarak taşınır (OD-027).
+  - requirement: RULE-PLT-AUTH-001-04
+    artifacts: [openapi:OP-getTripRequestPlan, openapi:OP-addTripPlanPoiItem, openapi:OP-removeTripPlanItem]
+    tests: [TS-PLT-AUTH-001-04, TS-PLT-AUTH-001-05]
+    authorization_tests: [AUTH-TS-001, AUTH-TS-007, AUTH-TS-097, AUTH-TS-103]
+    open_decisions: [ADR-010]
+    note: ACTIVE; principal SCH-PrincipalRef (ADR-010 kimlik doğrulama kısmı RESOLVED).
+  - requirement: RULE-PLT-AUTH-001-05
+    artifacts: [schema:Trip.schema.json, schema:PlanRevision.schema.json]
+    tests: [TS-PLT-AUTH-001-05]
+    authorization_tests: [AUTH-TS-002, AUTH-TS-008, AUTH-TS-098, AUTH-TS-104]
+    open_decisions: [ADR-010]
+    note: Owner Trip/PlanRevision'da saklanmaz ve yanıtlarda yer almaz; collaborator satırları POLICY-TRIP-001 (üyelik yok, ret).
+  - requirement: RULE-PLT-AUTH-001-06
+    tests: [TS-PLT-AUTH-001-06]
+    open_decisions: [ADR-010]
+  - requirement: FR-PLT-AUTH-001-02
+    artifacts: [openapi:OP-addTripPlanPoiItem, openapi:OP-removeTripPlanItem, lifecycle:TRN-PLANREVISION-02]
+    tests: [TS-PLT-AUTH-001-05]
+    open_decisions: [ADR-010]
+  - requirement: RULE-PLT-AUTH-001-07
+    artifacts: [schema:PrincipalRef.schema.json, config:CFG-AUTH-OIDC-ISSUER]
+    tests: [TS-PLT-AUTH-001-07, TS-PLT-AUTH-001-08]
+  - requirement: RULE-PLT-AUTH-001-08
+    artifacts: [schema:PrincipalRef.schema.json]
+    tests: [TS-PLT-AUTH-001-08]
+    note: NFR-SEC-001 ile hizalı; token ve principal kamu şemalarında, loglarda ve outbox'ta yok.
+  - requirement: FR-PLT-AUTH-001-03
+    artifacts: [config:CFG-AUTH-OIDC-ISSUER, config:CFG-AUTH-OIDC-AUDIENCE]
+    tests: [TS-PLT-AUTH-001-07, TS-PLT-AUTH-001-09]
+  - requirement: AC-PLT-AUTH-001-07
+    tests: [TS-PLT-AUTH-001-07]
+  - requirement: AC-PLT-AUTH-001-08
+    artifacts: [schema:PrincipalRef.schema.json]
+    tests: [TS-PLT-AUTH-001-08]
+    authorization_tests: [AUTH-TS-001]
+  - requirement: AC-PLT-AUTH-001-09
+    artifacts: [config:CFG-AUTH-OIDC-ISSUER, config:CFG-AUTH-OIDC-AUDIENCE]
+    tests: [TS-PLT-AUTH-001-09]
+  - requirement: RULE-DAY-001-03
+    note: Domain Feasibility Gate girdileri tanımsız; gün/saat ataması ve uygulanabilirlik BLOCKED.
+  - requirement: RULE-POI-001-02
+    tests: [TS-POI-001-01]
+    note: Planlanmamış öğe uygulanabilirlik iddiası taşımaz; değerlendirme DAY-001 gate'ine aittir.
+  - requirement: FR-POI-001-04
+    artifacts: [openapi:OP-verifyPoi, schema:PoiVerificationResult.schema.json]
+    tests: [TS-POI-001-06]
+    note: v3.16 sağlayıcı farkındalıklı düzeltme (OD-025).
+  - requirement: AC-POI-001-06
+    artifacts: [openapi:OP-verifyPoi, schema:PoiVerificationResult.schema.json]
+    tests: [TS-POI-001-06]
+    note: v3.16 sağlayıcı farkındalıklı düzeltme (OD-025).

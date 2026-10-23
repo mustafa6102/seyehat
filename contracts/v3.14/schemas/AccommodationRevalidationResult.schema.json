@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.14:AccommodationRevalidationResult",
+  "title": "AccommodationRevalidationResult",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "previous": {"$ref": "#/$defs/snapshot"},
+    "current": {"$ref": "#/$defs/snapshot"},
+    "changes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "price_changed": {"type": "boolean", "description": "total_price değeri, completeness, bilinen alt sınır veya bilinmeyen kalemler değişti."},
+        "mandatory_fees_changed": {"type": "boolean"},
+        "availability_changed": {"type": "boolean", "description": "Teklif artık sağlayıcıda mevcut değil veya oda/tarih değişti."},
+        "cancellation_changed": {"type": "boolean"},
+        "critical_change": {"type": "boolean", "description": "Yukarıdakilerden biri true ise true."}
+      },
+      "required": ["price_changed", "mandatory_fees_changed", "availability_changed", "cancellation_changed", "critical_change"]
+    },
+    "reason_codes": {"type": "array", "items": {"type": "string"}}
+  },
+  "required": ["previous", "current", "changes", "reason_codes"],
+  "$defs": {
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "offer": {"$ref": "./AccommodationOffer.schema.json"},
+        "captured_at": {"type": "string", "format": "date-time"}
+      },
+      "required": ["offer", "captured_at"]
+    }
+  },
+  "x-contract-id": "SCH-AccommodationRevalidationResult",
+  "x-version": "3.14",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["ACC-001", "RULE-ACC-001-06", "FR-ACC-001-03", "AC-ACC-001-06", "AC-ACC-001-07"],
+  "x-open-decisions": ["OD-023"],
+  "description": "OP-revalidateAccommodationOffer sonucu. previous, sunucuda saklı önceki görüntüdür (arama sonucu veya önceki doğrulama). current.offer.state: değişiklik yoksa CURRENT (TRN-ACCOFFER-05), maddi değişiklik varsa CHANGED (TRN-ACCOFFER-01), quote tamamlanamazsa UNVERIFIED (TRN-ACCOFFER-03), oran mevcut değilse/süresi dolmuşsa EXPIRED (TRN-ACCOFFER-02). current.offer.state sunucudaki en son doğrulamadır; current.captured_at seçim isteğindeki expected_verified_at ile karşılaştırılan değerdir. Değişiklik karşılaştırması zaman damgalarını dışarıda bırakır."
+}

@@ -1,0 +1,50 @@
+version: 3.14.0
+inherits: ../../registries/config.yaml
+new_records:
+- id: CFG-ACCOMMODATION-SELECTION-TTL
+  type: duration
+  unit: OPEN
+  default: OPEN
+  range: OPEN
+  scope: accommodation selection (offer.expires_at bildirilmediğinde)
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: OD-023
+  requirement_refs:
+  - RULE-ACC-001-08
+  - FR-ACC-001-04
+  note: Değer tanımlı değilken geçerlilik süresi bildirilmeyen konaklama teklifi seçilemez (OFFER_NOT_SELECTABLE); süre uydurulmaz.
+- id: CFG-ACCOMMODATION-SEARCH-RADIUS
+  type: integer
+  unit: km
+  default: 5
+  range: 1-100
+  scope: accommodation search (duffel_stays location.radius)
+  owner: user (2026-10-05)
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: OD-024
+  requirement_refs:
+  - RULE-ACC-001-04
+  source: 'Duffel Stays "Searching for Stays": yarıçap kilometre cinsinden, 1-100 arası, varsayılan 5 km (https://duffel.com/docs/guides/searching-for-stays).'
+  note: Şehir içi konaklama keşfi için sağlayıcı varsayılanı olan 5 km seçildi; kullanıcı girdisi değildir, planlayıcıda alanı yoktur.
+- id: CFG-ACCOMMODATION-SEARCH-MAX-PROPERTIES
+  type: integer
+  unit: count (oranları getirilen konaklama arama sonucu sayısı; her biri bir fetch_all_rates çağrısı)
+  default: OPEN
+  range: OPEN (en az 1; üst sınır için sağlayıcı kanıtı yok)
+  scope: accommodation search (duffel_stays)
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: ADR-006
+  requirement_refs:
+  - FR-ACC-001-03
+  - RULE-ACC-001-04
+  note: Bir aramanın sağlayıcı çağrı sayısını (1 + N) sınırlar; CFG-SEARCH-BUDGET ve duffel_stays hız sınırıyla birlikte belirlenmelidir. Uygulamadaki DUFFEL_STAYS_MAX_PROPERTIES=10 varsayılanı onaylı değildir; değer OPEN iken uygulama kapalı başarısız olmalı (sonraki kod görevi).
+scoped_records:
+- id: CFG-RETRY-TIMEOUT-CIRCUIT
+  scope: duffel_stays (accommodation_search, accommodation_revalidate)
+  unit: OPEN
+  default: OPEN
+  range: OPEN
+  decision_ref: ADR-006
+  note: Zaman aşımı, yeniden deneme, devre kesici ve hız sınırı değerleri tanımlı değildir; config/provider_resilience.php duffel_stays girdisi yalnız DUFFEL_STAYS_* ortam değerleriyle tamamlanır, aksi halde sağlayıcı çağrılmaz.

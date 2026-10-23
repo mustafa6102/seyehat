@@ -1,0 +1,28 @@
+version: 3.9.0
+inherits: ../v3.3/story_overrides.yaml
+overrides:
+  - id: TRIP-001
+    phase: M1A
+    semantics_changed: true
+    reason: OD-022 JOURNEY + DATE onaylı ürün kararı (user, 2026-09-29).
+    preserved_refs:
+      rules: [RULE-TRIP-001-01, RULE-TRIP-001-02, RULE-TRIP-001-03]
+      functional_requirements: [FR-TRIP-001-01, FR-TRIP-001-02]
+      acceptance_criteria: [AC-TRIP-001-01, AC-TRIP-001-02]
+      test_scenarios: [TS-TRIP-001-01, TS-TRIP-001-02, TS-TRIP-001-03, TS-TRIP-001-04]
+    clarified_refs:
+      RULE-TRIP-001-02: Kesin/esnek ayrımı gidiş ve dönüş tarihine ayrı ayrı uygulanır.
+      RULE-TRIP-001-03: '"Tarih veya tarih penceresi" v3.9 itibarıyla yolculuk tipi + gidiş tarihi (ROUND_TRIP için dönüş tarihi dahil) anlamına gelir.'
+    added_refs:
+      rules:
+        RULE-TRIP-001-04: Yolculuk tipi Tek yön (ONE_WAY) veya Gidiş-dönüş (ROUND_TRIP) olarak açıkça seçilir. Tek yönde gidiş tarihi zorunlu, dönüş tarihi yasaktır; gidiş-dönüşte her ikisi zorunludur. Yolculuk tipi tarihlerden çıkarılmaz.
+        RULE-TRIP-001-05: Esnek aralığın başlangıç ve bitiş günleri dahildir; tarihler saat dilimi anlamı taşımayan takvim tarihleridir. Dönüş tarihinin en geç günü gidiş tarihinin en erken gününden önceyse talep geçersizdir.
+      functional_requirements:
+        FR-TRIP-001-03: TripRequest yöne özel outbound_date ve (gidiş-dönüşte) return_date taşır; her biri kesin tarih veya esnek tarih aralığıdır.
+      acceptance_criteria:
+        AC-TRIP-001-03: Given geçersiz yolculuk tipi/tarih birleşimi When kaydedilmek istenir Then talep kaydedilmez ve hata Türkçe belirtilir.
+      test_scenarios:
+        TS-TRIP-001-05: [Tek yön ve gidiş-dönüş kesin/esnek birleşimleri, [1]]
+        TS-TRIP-001-06: [Geçersiz yolculuk tipi/tarih birleşimi, [3]]
+        TS-TRIP-001-07: [Eski date_window kaydı yeniden yorumlanmaz ve uçuş aramasına giremez, [1]]
+    dependencies: [OD-022]

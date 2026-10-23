@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.3:AncillaryFee",
+  "title": "AncillaryFee",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "component": {"type": "string", "x-requirement-refs": ["RULE-FLT-005-02", "AC-FLT-005-01"]},
+    "mandatory": {"type": "boolean", "x-requirement-refs": ["AC-FLT-005-03"]},
+    "value": {"oneOf": [{"$ref": "../../schemas/Money.schema.json"}, {"type": "null"}], "x-requirement-refs": ["RULE-FLT-005-02"]},
+    "certainty": {"type": "string", "enum": ["EXACT", "ESTIMATED", "UNKNOWN"], "x-requirement-refs": ["FR-FLT-005-01"]},
+    "source_reference": {"type": "string", "x-requirement-refs": ["FR-FLT-005-01", "BUS-004"]},
+    "fetched_at": {"type": "string", "format": "date-time", "x-requirement-refs": ["BUS-004"]},
+    "verified_at": {"type": ["string", "null"], "format": "date-time", "x-requirement-refs": ["BUS-004"]},
+    "expires_at": {"type": ["string", "null"], "format": "date-time", "x-requirement-refs": ["BUS-004"]},
+    "verification_status": {"type": "string", "enum": ["FRESH", "STALE", "EXPIRED", "UNVERIFIED"], "x-requirement-refs": ["BUS-004"]}
+  },
+  "required": ["component", "mandatory", "value", "certainty", "source_reference", "fetched_at", "verified_at", "expires_at", "verification_status"],
+  "allOf": [
+    {"if": {"properties": {"certainty": {"const": "UNKNOWN"}}, "required": ["certainty"]}, "then": {"properties": {"value": {"type": "null"}}}},
+    {"if": {"properties": {"certainty": {"enum": ["EXACT", "ESTIMATED"]}}, "required": ["certainty"]}, "then": {"properties": {"value": {"$ref": "../../schemas/Money.schema.json"}}}}
+  ],
+  "x-contract-id": "SCH-AncillaryFee",
+  "x-version": "3.3",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["FLT-005", "BUS-004"],
+  "x-open-decisions": ["OD-008"]
+}

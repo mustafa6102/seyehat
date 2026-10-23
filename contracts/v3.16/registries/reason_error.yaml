@@ -1,0 +1,25 @@
+version: 3.16.0
+inherits: ../../v3.15/registries/reason_error.yaml
+new_records: []
+reused_records:
+  - id: RC-VALIDATION-SCHEMA
+    applies_to: [OP-addTripPlanPoiItem, OP-removeTripPlanItem]
+    note: Eksik Idempotency-Key, eksik veya çelişkili If-Match / If-None-Match ön koşulu, şema dışı gövde.
+  - id: RC-RESOURCE-NOT-FOUND
+    applies_to: [OP-getTripRequestPlan, OP-addTripPlanPoiItem, OP-removeTripPlanItem]
+  - id: RC-VALIDATION-TRIP-REQUEST-INCOMPLETE
+    applies_to: [OP-addTripPlanPoiItem]
+  - id: RC-CONFLICT-REVISION-STALE
+    applies_to: [OP-addTripPlanPoiItem, OP-removeTripPlanItem, TRN-PLANREVISION-01, TRN-PLANREVISION-02]
+    note: PLT-CONC-001 stale yazım; ilk oluşturmada Trip zaten varsa da kullanılır.
+  - id: RC-CONFLICT-IDEMPOTENCY-KEY
+    applies_to: [OP-addTripPlanPoiItem, OP-removeTripPlanItem]
+  - id: RC-AUTHN-REQUIRED
+    applies_to: [OP-getTripRequestPlan, OP-addTripPlanPoiItem, OP-removeTripPlanItem]
+    note: ADR-010 kapanana kadar uygulanamaz (x-implementation-gate).
+  - id: RC-AUTHZ-DENIED
+    applies_to: [OP-getTripRequestPlan, OP-addTripPlanPoiItem, OP-removeTripPlanItem]
+    note: permissions.yaml Trip read/update ve PlanRevision read/create matrisi.
+  - id: RC-DECISION-TRANSITION-APPLIED
+    applies_to: [TRN-PLANREVISION-01, TRN-PLANREVISION-02, SCH-PlanRevision.change.reason_code]
+contract_gaps: []

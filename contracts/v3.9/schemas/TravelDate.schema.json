@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.9:TravelDate",
+  "title": "TravelDate",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "EXACT"
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      },
+      "required": [
+        "type",
+        "date"
+      ],
+      "description": "Kesin tarih."
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "FLEXIBLE"
+        },
+        "start_date": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        }
+      },
+      "required": [
+        "type",
+        "start_date",
+        "end_date"
+      ],
+      "description": "Esnek tarih aralığı. start_date ve end_date DAHİLDİR (her ikisi de geçerli aday seyahat günüdür); end_date >= start_date. Aralıktan tarih seçilmez."
+    }
+  ],
+  "x-contract-id": "SCH-TravelDate",
+  "x-version": "3.9",
+  "x-status": "ACTIVE",
+  "x-audience": "INTERNAL",
+  "x-requirement-refs": [
+    "TRIP-001",
+    "RULE-TRIP-001-02",
+    "RULE-TRIP-001-05"
+  ],
+  "x-rules": {
+    "inclusive_bounds": "FLEXIBLE start_date ve end_date dahildir.",
+    "range_order": "FLEXIBLE end_date >= start_date (JSON Schema ile ifade edilemez; alan doğrulamasında uygulanır).",
+    "calendar_date_only": "Değerler yalnız takvim tarihidir; saat dilimi anlamı taşımaz. Uçuş segmenti yerel/UTC zamanları ayrı FLT semantiğidir.",
+    "earliest": "EXACT -> date; FLEXIBLE -> start_date",
+    "latest": "EXACT -> date; FLEXIBLE -> end_date"
+  },
+  "x-note": "v3.7 FlightSearchCriteria.date_window EXACT/FLEXIBLE anlamı değiştirilmeden yön başına kullanılır."
+}

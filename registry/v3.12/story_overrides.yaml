@@ -1,0 +1,21 @@
+version: 3.12.0
+inherits: ../v3.9/story_overrides.yaml
+overrides:
+  - id: TRIP-001
+    semantics_changed: true
+    reason: Arama/fiyatlandirma amacli opsiyonel passenger_composition onayi (user, 2026-09-29); Traveler semantigi degismez.
+    added_refs:
+      rules:
+        RULE-TRIP-001-06: passenger_composition mevcutsa traveler_count adults + children + infants toplamina esittir; alan yoksa legacy traveler_count yeniden yorumlanmaz.
+      functional_requirements:
+        FR-TRIP-001-04: TripRequest opsiyonel arama/fiyatlandirma yolcu dagilimini adults, children ve infants sayilariyla tasir; bu veri Traveler profili degildir.
+      acceptance_criteria:
+        AC-TRIP-001-04: Given passenger_composition mevcut When talep dogrulanir Then negatif olmayan tam sayilarin toplami traveler_count ile ayni ve en az birdir.
+        AC-TRIP-001-05: Given yalniz traveler_count iceren legacy talep When okunur Then yolcu dagilimi turetilmez ve kayit degistirilmez.
+        AC-TRIP-001-06: Given child veya infant iceren ve provider icin gerekli yas bilgisi bulunmayan kriter When arama denenir Then provider HTTP cagrisi yapilmaz ve Turkce kanonik hata uretilir.
+      test_scenarios:
+        TS-TRIP-001-08: [Yetiskin cocuk bebek dagilimi toplamla eslesir, [4]]
+        TS-TRIP-001-09: [Dagilim toplam uyusmazligi ve sifir toplam reddedilir, [4]]
+        TS-TRIP-001-10: [Legacy count-only kayit dagilima donusturulmez, [5]]
+        TS-TRIP-001-11: [Yas gerektiren kriter provider oncesi reddedilir, [6]]
+    dependencies: [OD-020, OD-021]

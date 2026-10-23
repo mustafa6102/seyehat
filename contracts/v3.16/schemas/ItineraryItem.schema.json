@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.16:ItineraryItem",
+  "title": "ItineraryItem",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "item_id": {"type": "string", "minLength": 1, "readOnly": true, "description": "Öğenin kararlı kimliği; Trip içinde tekildir ve sonraki revision'larda aynı kalır."},
+    "item_type": {"type": "string", "enum": ["POI"]},
+    "constraint_type": {"type": "string", "enum": ["FLEXIBLE"], "description": "ConstraintType alt kümesi. Bu artımda POI öğesi her zaman FLEXIBLE'dır; FIXED yalnız sabit saat/rezervasyon kanıtıyla atanır (RULE-TRIP-BLD-001-01)."},
+    "poi_snapshot": {
+      "$ref": "../../v3.15/schemas/Poi.schema.json",
+      "description": "Ekleme anında sunucudaki kanonik POI kaydının değişmez görüntüsü (ADR-005, RULE-TRIP-BLD-001-03). poi_id referansı ve tüm Sourced olgular (değer, kesinlik, kaynak, fetched_at, verified_at, verification_status) aynen korunur; ekleme doğrulama yapmaz, UNKNOWN'u bilinir, UNVERIFIED'ı FRESH yapmaz. Ham sağlayıcı verisi içermez."
+    }
+  },
+  "required": ["item_id", "item_type", "constraint_type", "poi_snapshot"],
+  "x-contract-id": "SCH-ItineraryItem",
+  "x-version": "3.16",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["TRIP-BLD-001", "RULE-TRIP-BLD-001-01", "RULE-TRIP-BLD-001-03", "RULE-TRIP-BLD-001-05", "RULE-POI-001-06"],
+  "x-open-decisions": ["OD-013", "OD-025"],
+  "description": "v3.16 artımı: planlanmamış (UNSCHEDULED) FLEXIBLE POI öğesi. Gün, başlangıç/bitiş saati ve süre alanı yoktur; ziyaret süresi yalnız poi_snapshot.visit_duration'da kaynaklı haliyle durur ve varsayılan atanmaz. Öğe uygulanabilir (feasible) olarak işaretlenmez; gün/saat ataması ve uygulanabilirlik DAY-001 Domain Feasibility Gate'e aittir (BLOCKED)."
+}

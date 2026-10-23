@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.3:DerivedMoney",
+  "title": "DerivedMoney",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "value": {"oneOf": [{"$ref": "../../schemas/Money.schema.json"}, {"type": "null"}], "x-requirement-refs": ["BUS-002", "BUS-004"]},
+    "certainty": {"type": "string", "enum": ["EXACT", "ESTIMATED", "UNKNOWN"], "x-requirement-refs": ["BUS-004"]},
+    "completeness": {"type": "string", "enum": ["COMPLETE", "PARTIAL"], "x-requirement-refs": ["BUS-002", "AC-FLT-002-05"]},
+    "known_lower_bound": {"oneOf": [{"$ref": "../../schemas/Money.schema.json"}, {"type": "null"}], "x-requirement-refs": ["BUS-002", "AC-FLT-002-05", "AC-FLT-005-01"]},
+    "unknown_components": {"type": "array", "items": {"type": "string"}, "uniqueItems": true, "x-requirement-refs": ["BUS-002", "AC-FLT-005-01"]},
+    "fx_snapshot_id": {"type": ["string", "null"], "x-requirement-refs": ["RANK-001"]},
+    "input_refs": {"type": "array", "items": {"type": "string"}, "x-requirement-refs": ["NFR-AUD-001"]},
+    "calculation_version": {"type": "string", "x-requirement-refs": ["NFR-AUD-001"]},
+    "calculated_at": {"type": "string", "format": "date-time", "x-requirement-refs": ["NFR-AUD-001"]}
+  },
+  "required": ["value", "certainty", "completeness", "known_lower_bound", "unknown_components", "fx_snapshot_id", "input_refs", "calculation_version", "calculated_at"],
+  "allOf": [
+    {"if": {"properties": {"completeness": {"const": "COMPLETE"}}, "required": ["completeness"]}, "then": {"properties": {"value": {"$ref": "../../schemas/Money.schema.json"}, "known_lower_bound": {"type": "null"}, "unknown_components": {"maxItems": 0}}}},
+    {"if": {"properties": {"completeness": {"const": "PARTIAL"}}, "required": ["completeness"]}, "then": {"properties": {"value": {"type": "null"}, "known_lower_bound": {"$ref": "../../schemas/Money.schema.json"}, "unknown_components": {"minItems": 1}}, "required": ["known_lower_bound", "unknown_components"]}},
+    {"if": {"properties": {"certainty": {"const": "UNKNOWN"}}, "required": ["certainty"]}, "then": {"properties": {"value": {"type": "null"}}}}
+  ],
+  "x-contract-id": "SCH-DerivedMoney",
+  "x-version": "3.3",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["BUS-002", "BUS-004", "FLT-002", "FLT-005", "RANK-001"]
+}

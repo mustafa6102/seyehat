@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.3:OfferChangeSet",
+  "title": "OfferChangeSet",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "price_changed": {"type": "boolean", "x-requirement-refs": ["RULE-FLT-REPRICE-001-03", "AC-FLT-REPRICE-001-03"]},
+    "fare_conditions_changed": {"type": "boolean", "x-requirement-refs": ["RULE-FLT-REPRICE-001-03", "AC-FLT-REPRICE-001-06"]},
+    "baggage_changed": {"type": "boolean", "x-requirement-refs": ["RULE-FLT-REPRICE-001-03", "AC-FLT-REPRICE-001-06"]},
+    "critical_change": {"type": "boolean", "x-requirement-refs": ["RULE-FLT-REPRICE-001-03"]}
+  },
+  "required": ["price_changed", "fare_conditions_changed", "baggage_changed", "critical_change"],
+  "allOf": [
+    {"if": {"anyOf": [{"properties": {"price_changed": {"const": true}}, "required": ["price_changed"]}, {"properties": {"fare_conditions_changed": {"const": true}}, "required": ["fare_conditions_changed"]}, {"properties": {"baggage_changed": {"const": true}}, "required": ["baggage_changed"]}]}, "then": {"properties": {"critical_change": {"const": true}}}}
+  ],
+  "x-contract-id": "SCH-OfferChangeSet",
+  "x-version": "3.3",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["FLT-REPRICE-001"]
+}

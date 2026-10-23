@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.2:FlightOffer",
+  "title": "FlightOffer",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "provider_offer_id": {"type": "string", "x-metadata": {"classification": "CONFIDENTIAL", "source_of_truth": "provider", "verification": "source", "security": "masked logs", "retention_ref": "OD-013", "requirement_refs": ["FLT-002"]}},
+    "state": {"type": "string", "enum": ["CURRENT", "CHANGED", "EXPIRED", "UNVERIFIED"], "x-metadata": {"classification": "INTERNAL", "source_of_truth": "domain", "verification": "lifecycle", "security": "standard", "retention_ref": "OD-013", "requirement_refs": ["FLT-REPRICE-001"]}},
+    "price": {"$ref": "./Money.schema.json", "x-metadata": {"classification": "INTERNAL", "source_of_truth": "provider", "verification": "Sourced/Derived", "security": "standard", "retention_ref": "OD-013", "requirement_refs": ["FLT-002"]}},
+    "expires_at": {"type": ["string", "null"], "format": "date-time", "x-metadata": {"classification": "INTERNAL", "source_of_truth": "provider", "verification": "source", "security": "standard", "retention_ref": "OD-013", "requirement_refs": ["FLT-002"]}},
+    "baggage": {"type": ["object", "null"], "x-metadata": {"classification": "INTERNAL", "source_of_truth": "provider", "verification": "certainty required", "security": "standard", "retention_ref": "OD-013", "requirement_refs": ["FLT-005"]}}
+  },
+  "required": ["provider_offer_id", "state", "price"],
+  "x-contract-id": "SCH-FlightOffer",
+  "x-version": "3.2",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["FLT-002", "FLT-005", "FLT-REPRICE-001"]
+}

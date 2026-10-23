@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.2:CostBreakdown",
+  "title": "CostBreakdown",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "completeness": {
+      "type": "string",
+      "enum": [
+        "COMPLETE",
+        "PARTIAL"
+      ],
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "derived",
+        "verification": "calculated",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-002"
+        ]
+      }
+    },
+    "known_lower_bound": {
+      "$ref": "./Money.schema.json",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "derived",
+        "verification": "calculated",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-002"
+        ]
+      }
+    },
+    "unknown_components": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "derived",
+        "verification": "OPEN",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-002"
+        ]
+      }
+    }
+  },
+  "required": [
+    "completeness",
+    "known_lower_bound",
+    "unknown_components"
+  ],
+  "x-contract-id": "SCH-CostBreakdown",
+  "x-version": "3.2",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": [
+    "BUS-002"
+  ]
+}

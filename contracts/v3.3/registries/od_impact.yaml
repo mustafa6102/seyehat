@@ -1,0 +1,46 @@
+version: 3.3.0
+inherits: ../../registries/od_impact.yaml
+decisions:
+  - id: ADR-009
+    status: ACCEPTED
+    decision: MySQL 8
+    blocks_development: []
+  - id: ADR-007
+    status: OPEN
+    current_scope: Laravel 12 web/API
+    blocks_development: []
+    note: Mobil istemci kapsam dışıdır; mevcut web/API için non-blocking.
+  - id: ADR-010
+    status: OPEN
+    blocks_development: [TRV-001, PLT-AUTH-001]
+  - id: ADR-011
+    status: ACCEPTED
+    decision: Asenkron iş + polling
+    unblocks_development: [OP-startFlightSearch, OP-pollFlightSearch]
+    remaining_contract_gaps: [canonical search request body, polling interval config, job expiry TTL config]
+  - id: OD-001
+    status: OPEN
+  - id: OD-008
+    status: OPEN
+    note: Canonical UNKNOWN/source/certainty semantiği tanımlıdır; provider capability ayrıntı seviyesi açık kalır.
+  - id: OD-012
+    status: OPEN
+    mandatory_target: WCAG 2.2 AA
+  - id: OD-013
+    status: OPEN
+    blocks_development: [TRV-001, PLT-PII-001]
+  - id: OD-015
+    status: OPEN
+    blocks_development: [OP-createPartnerRedirect]
+  - id: OD-005
+    status: OPEN
+    phase: M1B
+    affects: [RANK-001]
+  - id: OD-007
+    status: OPEN
+    phase: M1B
+    affects: [RANK-001]
+  - id: OD-017
+    status: OPEN
+    phase: M1B
+    affects: [RANK-001]

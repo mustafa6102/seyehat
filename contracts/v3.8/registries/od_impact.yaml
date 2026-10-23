@@ -1,0 +1,25 @@
+version: 3.8.0
+inherits: ../../v3.7/registries/od_impact.yaml
+decisions:
+  - id: OD-022
+    title: TripRequest'ten sağlayıcı uçuş arama kriterlerine eşleme
+    status: PARTIALLY_RESOLVED
+    location_findings:
+      resolved:
+        - Havacılık konumu ayrı bir havacılık konum kataloğundan (Duffel Places, yalnız konum keşfi) seçilir; GeoNames -> IATA eşlemesi yapılmaz.
+        - Kanonik havacılık kimliği SCH-AviationIdentity {type IATA_AIRPORT|IATA_CITY, code [A-Z]{3}}; sağlayıcı kaynak kimliği, sağlayıcı adı ve ham veri kimliğe girmez.
+        - SCH-LocationRef v3.8 aviation_identity alanını isteğe bağlı ve sunucu atamalı (readOnly) taşır; katalog kimliği (value) ayrı kalır.
+        - Uçuş kriterinde kind airport + IATA_AIRPORT ve kind city + IATA_CITY kabul edilir; şehirden havalimanına genişletme sistemde yapılmaz.
+        - station, havacılık kimliği olmayan, geçersiz veya tür uyuşmazlığı olan konum adapter çağrılmadan engellenir (GAP-FLT-CRITERIA-001).
+        - Tarayıcıdan gelen IATA kodu kabul edilmez; yalnız sunucunun şifreli ve doğrulanmış seçim belirteci havacılık kimliği üretir.
+      source_boundary:
+        GENERAL: GeoNames (LocationCatalog) - genel seyahat konumu keşfi; havacılık kimliği üretmez.
+        FLIGHT: Duffel Places (AviationLocationCatalog) - uçuşa uygun havalimanı/şehir keşfi; kimlikler birleştirilmez.
+      remaining_open:
+        - duffel_places sağlayıcı dayanıklılık profili sayısal değerleri (ADR-006, CFG-RETRY-TIMEOUT-CIRCUIT); onaylanana kadar havacılık konum araması çalışma zamanında kapalıdır.
+    remaining_open:
+      - DATE - gidiş/dönüş anlamı, yolculuk tipi, sınır kapsayıcılığı, tarih saat dilimi (TRIP-001 ürün kararı).
+      - PASSENGER - yolcu tipi dağılımı (OD-020 bağımlılığı).
+      - Kabin sınıfı; desteklenmeyen kriter için kanonik reason/error kodu (GAP-FLT-CRITERIA-001).
+    blocks_development: [production flight provider execution]
+    impact_status: BLOCKED

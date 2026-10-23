@@ -1,0 +1,319 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.9:TripRequest",
+  "title": "TripRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "SEARCHABLE"
+      ],
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "user/domain",
+        "verification": "domain validation",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    },
+    "origin_place": {
+      "$ref": "../../schemas/LocationRef.schema.json",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "user",
+        "verification": "normalized",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    },
+    "destination_place": {
+      "$ref": "../../schemas/LocationRef.schema.json",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "user",
+        "verification": "normalized",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    },
+    "journey_type": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "ONE_WAY",
+        "ROUND_TRIP",
+        null
+      ],
+      "description": "Yolculuk tipi açıkça seçilir; tarihlerin varlığından çıkarılmaz.",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "user",
+        "verification": "domain validation",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      },
+      "x-requirement-refs": [
+        "RULE-TRIP-001-04"
+      ]
+    },
+    "outbound_date": {
+      "anyOf": [
+        {
+          "$ref": "./TravelDate.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Gidiş yönünün tarihi (EXACT/FLEXIBLE).",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "user",
+        "verification": "domain validation",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      },
+      "x-requirement-refs": [
+        "FR-TRIP-001-03",
+        "RULE-TRIP-001-04"
+      ]
+    },
+    "return_date": {
+      "anyOf": [
+        {
+          "$ref": "./TravelDate.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Dönüş yönünün tarihi; yalnız ROUND_TRIP için. ROUND_TRIP için latest(return_date) < earliest(outbound_date) geçersizdir (RULE-TRIP-001-05). Başka örtüşme/aralık seçimi kuralı yoktur.",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "user",
+        "verification": "domain validation",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      },
+      "x-requirement-refs": [
+        "FR-TRIP-001-03",
+        "RULE-TRIP-001-04",
+        "RULE-TRIP-001-05"
+      ]
+    },
+    "date_window": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "user",
+        "verification": "OPEN",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      },
+      "readOnly": true,
+      "deprecated": true,
+      "description": "LEGACY (v3.2). Yalnız v3.9 öncesi kayıtlarda bulunur ve olduğu gibi döndürülür; yazılamaz. Gidiş tarihi veya seyahat süresi olarak yeniden yorumlanmaz. date_window dolu ve journey_type boş bir kayıt eski/çözümsüz tarih modelidir ve uçuş aramasına giremez."
+    },
+    "traveler_count": {
+      "type": "integer",
+      "minimum": 1,
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "user",
+        "verification": "domain validation",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    },
+    "preferences": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "user",
+        "verification": "OPEN",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    }
+  },
+  "required": [
+    "status",
+    "origin_place",
+    "destination_place",
+    "traveler_count"
+  ],
+  "x-contract-id": "SCH-TripRequest",
+  "x-version": "3.9",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": [
+    "TRIP-001",
+    "RULE-TRIP-001-04",
+    "RULE-TRIP-001-05",
+    "FR-TRIP-001-03"
+  ],
+  "x-replaces": "urn:ai-seyahat:v3.2:TripRequest",
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "return_date"
+        ],
+        "properties": {
+          "return_date": {
+            "not": {
+              "type": "null"
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "journey_type"
+        ],
+        "properties": {
+          "journey_type": {
+            "const": "ROUND_TRIP"
+          }
+        }
+      },
+      "description": "return_date yalnız ROUND_TRIP ile bulunabilir (ONE_WAY için yasak)."
+    },
+    {
+      "if": {
+        "required": [
+          "date_window"
+        ],
+        "properties": {
+          "date_window": {
+            "not": {
+              "type": "null"
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "journey_type": {
+            "type": "null"
+          },
+          "outbound_date": {
+            "type": "null"
+          },
+          "return_date": {
+            "type": "null"
+          }
+        }
+      },
+      "description": "Eski date_window ile yeni yolculuk alanları birlikte bulunmaz."
+    },
+    {
+      "if": {
+        "required": [
+          "status",
+          "journey_type"
+        ],
+        "properties": {
+          "status": {
+            "const": "SEARCHABLE"
+          },
+          "journey_type": {
+            "const": "ONE_WAY"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "outbound_date"
+        ],
+        "properties": {
+          "outbound_date": {
+            "not": {
+              "type": "null"
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "status",
+          "journey_type"
+        ],
+        "properties": {
+          "status": {
+            "const": "SEARCHABLE"
+          },
+          "journey_type": {
+            "const": "ROUND_TRIP"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "outbound_date",
+          "return_date"
+        ],
+        "properties": {
+          "outbound_date": {
+            "not": {
+              "type": "null"
+            }
+          },
+          "return_date": {
+            "not": {
+              "type": "null"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "x-open-decisions": [
+    "OD-022"
+  ],
+  "x-rules": {
+    "RULE-TRIP-001-04": "ONE_WAY: outbound_date zorunlu, return_date yasak. ROUND_TRIP: outbound_date ve return_date zorunlu. journey_type tarihlerden çıkarılmaz.",
+    "RULE-TRIP-001-05": "ROUND_TRIP için latest(return_date) < earliest(outbound_date) geçersizdir (RULE-TRIP-001-05). Başka örtüşme/aralık seçimi kuralı yoktur. FLEXIBLE sınırları dahildir; tarihler yalnız takvim tarihidir.",
+    "legacy": "date_window readOnly/deprecated; yeni kayıtlar yazamaz; eski kayıtlar değiştirilmez ve uçuş kriteri üretmez."
+  },
+  "x-note": "v3.9 PRE-RELEASE BREAKING: yazılabilir tarih modeli date_window yerine journey_type + outbound_date + return_date. Konumlar public temsilde SCH-LocationRef v3.2 olarak kalır (aviation_identity public değildir; LOCATION değişmedi)."
+}

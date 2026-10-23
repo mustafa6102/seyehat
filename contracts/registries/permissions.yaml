@@ -1,0 +1,2181 @@
+version: 3.2.2
+roles:
+- owner
+- collaborator
+- traveler
+- traveler_data_viewer
+- support_agent
+- system_worker
+policies:
+- id: POLICY-TRIP-001
+  condition: Kullanıcı trip kapsamındaki yetkili rolde olmalıdır.
+  purpose: Trip verisine kapsamlı erişim.
+  duration: OPEN
+  audit_required: true
+  decision_ref: null
+  refs:
+  - PLT-AUTH-001
+- id: POLICY-TRAVELER-001
+  condition: Traveler yalnız kendi verisine; owner başka yetişkinin hassas verisine
+    ancak açık yetki/hukuki dayanak ile erişir.
+  purpose: Yolcu profili yönetimi.
+  duration: OPEN
+  audit_required: true
+  decision_ref: OD-013
+  refs:
+  - TRV-001
+  - PLT-AUTH-001
+  - PLT-PII-001
+- id: POLICY-MINOR-001
+  condition: Reşit olmayan yolcu için temsil/erişim kuralının hukuki ayrıntısı OPEN.
+  purpose: Minör yolcu verisi yönetimi.
+  duration: OPEN
+  audit_required: true
+  decision_ref: OD-013
+  refs:
+  - TRV-001
+  - PLT-PII-001
+- id: POLICY-PII-VIEW-001
+  condition: Amaç, kapsam ve yetki doğrulanmalı; başka yetişkin PII erişimi OD-013
+    sonucuna tabidir.
+  purpose: Hassas PII görüntüleme.
+  duration: OPEN
+  audit_required: true
+  decision_ref: OD-013
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+- id: POLICY-SYSTEM-001
+  condition: Yalnız gerekli background iş akışı ve least privilege.
+  purpose: Sistem işi.
+  duration: İşlem süresi
+  audit_required: true
+  decision_ref: null
+  refs:
+  - NFR-AUTH-001
+- id: POLICY-KVKK-001
+  condition: Export/delete kapsamı ve saklama istisnaları OD-013 ile kesinleşir.
+  purpose: Hesap verisi dışa aktarma/silme.
+  duration: OPEN
+  audit_required: true
+  decision_ref: OD-013
+  refs:
+  - PLT-PII-001
+  - NFR-PRV-001
+- id: POLICY-ACCOUNT-SELF-001
+  condition: Kimliği doğrulanmış hesap sahibi yalnız kendi hesap verisi üzerinde işlem
+    yapar. Saklama/silme istisnalarının hukuki ayrıntısı OD-013 ile kesinleşir.
+  purpose: İlgili kişinin kendi hesap verisini dışa aktarma/silme hakkı.
+  duration: İşlem süresi
+  audit_required: true
+  decision_ref: OD-013
+  refs:
+  - PLT-PII-001
+  - NFR-PRV-001
+  - POLICY-KVKK-001
+- id: POLICY-SUBJECT-DELETE-001
+  condition: Traveler kendi verisi için subject=self olmalıdır; minör için temsil
+    kuralı POLICY-MINOR-001 ve OD-013 sonucuna tabidir.
+  purpose: Traveler hassas verisi ve belge silme talebi.
+  duration: İşlem süresi
+  audit_required: true
+  decision_ref: OD-013
+  refs:
+  - POLICY-MINOR-001
+  - PLT-PII-001
+matrix:
+- resource: Trip
+  action: read
+  permissions:
+    owner:
+      decision: ALLOW
+      test_id: AUTH-TS-001
+    collaborator:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-002
+    traveler:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-003
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-004
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-005
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-006
+- resource: Trip
+  action: update
+  permissions:
+    owner:
+      decision: ALLOW
+      test_id: AUTH-TS-007
+    collaborator:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-008
+    traveler:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-009
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-010
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-011
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-012
+- resource: TripRequest
+  action: create
+  permissions:
+    owner:
+      decision: ALLOW
+      test_id: AUTH-TS-013
+    collaborator:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-014
+    traveler:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-015
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-016
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-017
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-018
+- resource: TripRequest
+  action: read
+  permissions:
+    owner:
+      decision: ALLOW
+      test_id: AUTH-TS-019
+    collaborator:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-020
+    traveler:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-021
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-022
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-023
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-024
+- resource: TripRequest
+  action: update
+  permissions:
+    owner:
+      decision: ALLOW
+      test_id: AUTH-TS-025
+    collaborator:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-026
+    traveler:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-027
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-028
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-029
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-030
+- resource: TripRequest
+  action: search
+  permissions:
+    owner:
+      decision: ALLOW
+      test_id: AUTH-TS-031
+    collaborator:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-032
+    traveler:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-033
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-034
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-035
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-036
+- resource: Traveler.basic
+  action: create
+  permissions:
+    owner:
+      decision: POLICY-TRAVELER-001
+      test_id: AUTH-TS-037
+    collaborator:
+      decision: POLICY-TRAVELER-001
+      test_id: AUTH-TS-038
+    traveler:
+      decision: POLICY-TRAVELER-001
+      test_id: AUTH-TS-039
+    traveler_data_viewer:
+      decision: POLICY-TRAVELER-001
+      test_id: AUTH-TS-040
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-041
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-042
+- resource: Traveler.basic
+  action: read
+  permissions:
+    owner:
+      decision: POLICY-TRAVELER-001
+      test_id: AUTH-TS-043
+    collaborator:
+      decision: POLICY-TRAVELER-001
+      test_id: AUTH-TS-044
+    traveler:
+      decision: POLICY-TRAVELER-001
+      test_id: AUTH-TS-045
+    traveler_data_viewer:
+      decision: POLICY-TRAVELER-001
+      test_id: AUTH-TS-046
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-047
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-048
+- resource: Traveler.basic
+  action: update
+  permissions:
+    owner:
+      decision: POLICY-TRAVELER-001
+      test_id: AUTH-TS-049
+    collaborator:
+      decision: POLICY-TRAVELER-001
+      test_id: AUTH-TS-050
+    traveler:
+      decision: POLICY-TRAVELER-001
+      test_id: AUTH-TS-051
+    traveler_data_viewer:
+      decision: POLICY-TRAVELER-001
+      test_id: AUTH-TS-052
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-053
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-054
+- resource: Traveler.sensitive_pii
+  action: read
+  permissions:
+    owner:
+      decision: POLICY-PII-VIEW-001
+      test_id: AUTH-TS-055
+    collaborator:
+      decision: DENY
+      test_id: AUTH-TS-056
+    traveler:
+      decision: POLICY-PII-VIEW-001
+      test_id: AUTH-TS-057
+    traveler_data_viewer:
+      decision: POLICY-PII-VIEW-001
+      test_id: AUTH-TS-058
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-059
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-060
+- resource: Traveler.sensitive_pii
+  action: update
+  permissions:
+    owner:
+      decision: POLICY-PII-VIEW-001
+      test_id: AUTH-TS-061
+    collaborator:
+      decision: DENY
+      test_id: AUTH-TS-062
+    traveler:
+      decision: POLICY-PII-VIEW-001
+      test_id: AUTH-TS-063
+    traveler_data_viewer:
+      decision: POLICY-PII-VIEW-001
+      test_id: AUTH-TS-064
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-065
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-066
+- resource: TravelerDocument
+  action: create
+  permissions:
+    owner:
+      decision: POLICY-PII-VIEW-001
+      test_id: AUTH-TS-067
+    collaborator:
+      decision: DENY
+      test_id: AUTH-TS-068
+    traveler:
+      decision: POLICY-PII-VIEW-001
+      test_id: AUTH-TS-069
+    traveler_data_viewer:
+      decision: POLICY-PII-VIEW-001
+      test_id: AUTH-TS-070
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-071
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-072
+- resource: TravelerDocument
+  action: read
+  permissions:
+    owner:
+      decision: POLICY-PII-VIEW-001
+      test_id: AUTH-TS-073
+    collaborator:
+      decision: DENY
+      test_id: AUTH-TS-074
+    traveler:
+      decision: POLICY-PII-VIEW-001
+      test_id: AUTH-TS-075
+    traveler_data_viewer:
+      decision: POLICY-PII-VIEW-001
+      test_id: AUTH-TS-076
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-077
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-078
+- resource: TravelerDocument
+  action: update
+  permissions:
+    owner:
+      decision: POLICY-PII-VIEW-001
+      test_id: AUTH-TS-079
+    collaborator:
+      decision: DENY
+      test_id: AUTH-TS-080
+    traveler:
+      decision: POLICY-PII-VIEW-001
+      test_id: AUTH-TS-081
+    traveler_data_viewer:
+      decision: POLICY-PII-VIEW-001
+      test_id: AUTH-TS-082
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-083
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-084
+- resource: Offer.Search
+  action: execute
+  permissions:
+    owner:
+      decision: ALLOW
+      test_id: AUTH-TS-085
+    collaborator:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-086
+    traveler:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-087
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-088
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-089
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-090
+- resource: Offer.Search
+  action: read
+  permissions:
+    owner:
+      decision: ALLOW
+      test_id: AUTH-TS-091
+    collaborator:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-092
+    traveler:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-093
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-094
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-095
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-096
+- resource: PlanRevision
+  action: read
+  permissions:
+    owner:
+      decision: ALLOW
+      test_id: AUTH-TS-097
+    collaborator:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-098
+    traveler:
+      decision: DENY
+      test_id: AUTH-TS-099
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-100
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-101
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-102
+- resource: PlanRevision
+  action: create
+  permissions:
+    owner:
+      decision: ALLOW
+      test_id: AUTH-TS-103
+    collaborator:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-104
+    traveler:
+      decision: DENY
+      test_id: AUTH-TS-105
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-106
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-107
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-108
+- resource: Proposal
+  action: read
+  permissions:
+    owner:
+      decision: ALLOW
+      test_id: AUTH-TS-109
+    collaborator:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-110
+    traveler:
+      decision: DENY
+      test_id: AUTH-TS-111
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-112
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-113
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-114
+- resource: Proposal
+  action: accept
+  permissions:
+    owner:
+      decision: ALLOW
+      test_id: AUTH-TS-115
+    collaborator:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-116
+    traveler:
+      decision: DENY
+      test_id: AUTH-TS-117
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-118
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-119
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-120
+- resource: Proposal
+  action: reject
+  permissions:
+    owner:
+      decision: ALLOW
+      test_id: AUTH-TS-121
+    collaborator:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-122
+    traveler:
+      decision: DENY
+      test_id: AUTH-TS-123
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-124
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-125
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-126
+- resource: AuditLog
+  action: read
+  permissions:
+    owner:
+      decision: POLICY-TRIP-001
+      test_id: AUTH-TS-127
+    collaborator:
+      decision: DENY
+      test_id: AUTH-TS-128
+    traveler:
+      decision: DENY
+      test_id: AUTH-TS-129
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-130
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-131
+    system_worker:
+      decision: POLICY-SYSTEM-001
+      test_id: AUTH-TS-132
+- resource: Account
+  action: export
+  permissions:
+    owner:
+      decision: POLICY-ACCOUNT-SELF-001
+      test_id: AUTH-TS-133
+    collaborator:
+      decision: POLICY-ACCOUNT-SELF-001
+      test_id: AUTH-TS-134
+    traveler:
+      decision: POLICY-ACCOUNT-SELF-001
+      test_id: AUTH-TS-135
+    traveler_data_viewer:
+      decision: POLICY-ACCOUNT-SELF-001
+      test_id: AUTH-TS-136
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-137
+    system_worker:
+      decision: DENY
+      test_id: AUTH-TS-138
+  authorization_context: ACCOUNT_SUBJECT_SELF
+- resource: Account
+  action: delete
+  permissions:
+    owner:
+      decision: POLICY-ACCOUNT-SELF-001
+      test_id: AUTH-TS-139
+    collaborator:
+      decision: POLICY-ACCOUNT-SELF-001
+      test_id: AUTH-TS-140
+    traveler:
+      decision: POLICY-ACCOUNT-SELF-001
+      test_id: AUTH-TS-141
+    traveler_data_viewer:
+      decision: POLICY-ACCOUNT-SELF-001
+      test_id: AUTH-TS-142
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-143
+    system_worker:
+      decision: DENY
+      test_id: AUTH-TS-144
+  authorization_context: ACCOUNT_SUBJECT_SELF
+- resource: Traveler.sensitive_pii
+  action: delete
+  authorization_context: TRIP_RESOURCE
+  permissions:
+    owner:
+      decision: POLICY-SUBJECT-DELETE-001
+      test_id: AUTH-TS-145
+    collaborator:
+      decision: DENY
+      test_id: AUTH-TS-146
+    traveler:
+      decision: POLICY-SUBJECT-DELETE-001
+      test_id: AUTH-TS-147
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-148
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-149
+    system_worker:
+      decision: DENY
+      test_id: AUTH-TS-150
+- resource: TravelerDocument
+  action: delete
+  authorization_context: TRIP_RESOURCE
+  permissions:
+    owner:
+      decision: POLICY-SUBJECT-DELETE-001
+      test_id: AUTH-TS-151
+    collaborator:
+      decision: DENY
+      test_id: AUTH-TS-152
+    traveler:
+      decision: POLICY-SUBJECT-DELETE-001
+      test_id: AUTH-TS-153
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-154
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-155
+    system_worker:
+      decision: DENY
+      test_id: AUTH-TS-156
+- resource: Traveler.minor_sensitive_pii
+  action: read
+  authorization_context: TRIP_RESOURCE
+  permissions:
+    owner:
+      decision: POLICY-MINOR-001
+      test_id: AUTH-TS-157
+    collaborator:
+      decision: DENY
+      test_id: AUTH-TS-158
+    traveler:
+      decision: POLICY-MINOR-001
+      test_id: AUTH-TS-159
+    traveler_data_viewer:
+      decision: DENY
+      test_id: AUTH-TS-160
+    support_agent:
+      decision: DENY
+      test_id: AUTH-TS-161
+    system_worker:
+      decision: DENY
+      test_id: AUTH-TS-162
+authorization_tests:
+- id: AUTH-TS-001
+  resource: Trip
+  action: read
+  role: owner
+  expected: ALLOW
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-002
+  resource: Trip
+  action: read
+  role: collaborator
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-003
+  resource: Trip
+  action: read
+  role: traveler
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-004
+  resource: Trip
+  action: read
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-005
+  resource: Trip
+  action: read
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-006
+  resource: Trip
+  action: read
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-007
+  resource: Trip
+  action: update
+  role: owner
+  expected: ALLOW
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-008
+  resource: Trip
+  action: update
+  role: collaborator
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-009
+  resource: Trip
+  action: update
+  role: traveler
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-010
+  resource: Trip
+  action: update
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-011
+  resource: Trip
+  action: update
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-012
+  resource: Trip
+  action: update
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-013
+  resource: TripRequest
+  action: create
+  role: owner
+  expected: ALLOW
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-014
+  resource: TripRequest
+  action: create
+  role: collaborator
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-015
+  resource: TripRequest
+  action: create
+  role: traveler
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-016
+  resource: TripRequest
+  action: create
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-017
+  resource: TripRequest
+  action: create
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-018
+  resource: TripRequest
+  action: create
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-019
+  resource: TripRequest
+  action: read
+  role: owner
+  expected: ALLOW
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-020
+  resource: TripRequest
+  action: read
+  role: collaborator
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-021
+  resource: TripRequest
+  action: read
+  role: traveler
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-022
+  resource: TripRequest
+  action: read
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-023
+  resource: TripRequest
+  action: read
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-024
+  resource: TripRequest
+  action: read
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-025
+  resource: TripRequest
+  action: update
+  role: owner
+  expected: ALLOW
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-026
+  resource: TripRequest
+  action: update
+  role: collaborator
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-027
+  resource: TripRequest
+  action: update
+  role: traveler
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-028
+  resource: TripRequest
+  action: update
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-029
+  resource: TripRequest
+  action: update
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-030
+  resource: TripRequest
+  action: update
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-031
+  resource: TripRequest
+  action: search
+  role: owner
+  expected: ALLOW
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-032
+  resource: TripRequest
+  action: search
+  role: collaborator
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-033
+  resource: TripRequest
+  action: search
+  role: traveler
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-034
+  resource: TripRequest
+  action: search
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-035
+  resource: TripRequest
+  action: search
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-036
+  resource: TripRequest
+  action: search
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-037
+  resource: Traveler.basic
+  action: create
+  role: owner
+  expected: POLICY-TRAVELER-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-038
+  resource: Traveler.basic
+  action: create
+  role: collaborator
+  expected: POLICY-TRAVELER-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-039
+  resource: Traveler.basic
+  action: create
+  role: traveler
+  expected: POLICY-TRAVELER-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-040
+  resource: Traveler.basic
+  action: create
+  role: traveler_data_viewer
+  expected: POLICY-TRAVELER-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-041
+  resource: Traveler.basic
+  action: create
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-042
+  resource: Traveler.basic
+  action: create
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-043
+  resource: Traveler.basic
+  action: read
+  role: owner
+  expected: POLICY-TRAVELER-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-044
+  resource: Traveler.basic
+  action: read
+  role: collaborator
+  expected: POLICY-TRAVELER-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-045
+  resource: Traveler.basic
+  action: read
+  role: traveler
+  expected: POLICY-TRAVELER-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-046
+  resource: Traveler.basic
+  action: read
+  role: traveler_data_viewer
+  expected: POLICY-TRAVELER-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-047
+  resource: Traveler.basic
+  action: read
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-048
+  resource: Traveler.basic
+  action: read
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-049
+  resource: Traveler.basic
+  action: update
+  role: owner
+  expected: POLICY-TRAVELER-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-050
+  resource: Traveler.basic
+  action: update
+  role: collaborator
+  expected: POLICY-TRAVELER-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-051
+  resource: Traveler.basic
+  action: update
+  role: traveler
+  expected: POLICY-TRAVELER-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-052
+  resource: Traveler.basic
+  action: update
+  role: traveler_data_viewer
+  expected: POLICY-TRAVELER-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-053
+  resource: Traveler.basic
+  action: update
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-054
+  resource: Traveler.basic
+  action: update
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-055
+  resource: Traveler.sensitive_pii
+  action: read
+  role: owner
+  expected: POLICY-PII-VIEW-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-056
+  resource: Traveler.sensitive_pii
+  action: read
+  role: collaborator
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-057
+  resource: Traveler.sensitive_pii
+  action: read
+  role: traveler
+  expected: POLICY-PII-VIEW-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-058
+  resource: Traveler.sensitive_pii
+  action: read
+  role: traveler_data_viewer
+  expected: POLICY-PII-VIEW-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-059
+  resource: Traveler.sensitive_pii
+  action: read
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-060
+  resource: Traveler.sensitive_pii
+  action: read
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-061
+  resource: Traveler.sensitive_pii
+  action: update
+  role: owner
+  expected: POLICY-PII-VIEW-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-062
+  resource: Traveler.sensitive_pii
+  action: update
+  role: collaborator
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-063
+  resource: Traveler.sensitive_pii
+  action: update
+  role: traveler
+  expected: POLICY-PII-VIEW-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-064
+  resource: Traveler.sensitive_pii
+  action: update
+  role: traveler_data_viewer
+  expected: POLICY-PII-VIEW-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-065
+  resource: Traveler.sensitive_pii
+  action: update
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-066
+  resource: Traveler.sensitive_pii
+  action: update
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-067
+  resource: TravelerDocument
+  action: create
+  role: owner
+  expected: POLICY-PII-VIEW-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-068
+  resource: TravelerDocument
+  action: create
+  role: collaborator
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-069
+  resource: TravelerDocument
+  action: create
+  role: traveler
+  expected: POLICY-PII-VIEW-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-070
+  resource: TravelerDocument
+  action: create
+  role: traveler_data_viewer
+  expected: POLICY-PII-VIEW-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-071
+  resource: TravelerDocument
+  action: create
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-072
+  resource: TravelerDocument
+  action: create
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-073
+  resource: TravelerDocument
+  action: read
+  role: owner
+  expected: POLICY-PII-VIEW-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-074
+  resource: TravelerDocument
+  action: read
+  role: collaborator
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-075
+  resource: TravelerDocument
+  action: read
+  role: traveler
+  expected: POLICY-PII-VIEW-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-076
+  resource: TravelerDocument
+  action: read
+  role: traveler_data_viewer
+  expected: POLICY-PII-VIEW-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-077
+  resource: TravelerDocument
+  action: read
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-078
+  resource: TravelerDocument
+  action: read
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-079
+  resource: TravelerDocument
+  action: update
+  role: owner
+  expected: POLICY-PII-VIEW-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-080
+  resource: TravelerDocument
+  action: update
+  role: collaborator
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-081
+  resource: TravelerDocument
+  action: update
+  role: traveler
+  expected: POLICY-PII-VIEW-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-082
+  resource: TravelerDocument
+  action: update
+  role: traveler_data_viewer
+  expected: POLICY-PII-VIEW-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-083
+  resource: TravelerDocument
+  action: update
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-084
+  resource: TravelerDocument
+  action: update
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-085
+  resource: Offer.Search
+  action: execute
+  role: owner
+  expected: ALLOW
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-086
+  resource: Offer.Search
+  action: execute
+  role: collaborator
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-087
+  resource: Offer.Search
+  action: execute
+  role: traveler
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-088
+  resource: Offer.Search
+  action: execute
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-089
+  resource: Offer.Search
+  action: execute
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-090
+  resource: Offer.Search
+  action: execute
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-091
+  resource: Offer.Search
+  action: read
+  role: owner
+  expected: ALLOW
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-092
+  resource: Offer.Search
+  action: read
+  role: collaborator
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-093
+  resource: Offer.Search
+  action: read
+  role: traveler
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-094
+  resource: Offer.Search
+  action: read
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-095
+  resource: Offer.Search
+  action: read
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-096
+  resource: Offer.Search
+  action: read
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-097
+  resource: PlanRevision
+  action: read
+  role: owner
+  expected: ALLOW
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-098
+  resource: PlanRevision
+  action: read
+  role: collaborator
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-099
+  resource: PlanRevision
+  action: read
+  role: traveler
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-100
+  resource: PlanRevision
+  action: read
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-101
+  resource: PlanRevision
+  action: read
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-102
+  resource: PlanRevision
+  action: read
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-103
+  resource: PlanRevision
+  action: create
+  role: owner
+  expected: ALLOW
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-104
+  resource: PlanRevision
+  action: create
+  role: collaborator
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-105
+  resource: PlanRevision
+  action: create
+  role: traveler
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-106
+  resource: PlanRevision
+  action: create
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-107
+  resource: PlanRevision
+  action: create
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-108
+  resource: PlanRevision
+  action: create
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-109
+  resource: Proposal
+  action: read
+  role: owner
+  expected: ALLOW
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-110
+  resource: Proposal
+  action: read
+  role: collaborator
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-111
+  resource: Proposal
+  action: read
+  role: traveler
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-112
+  resource: Proposal
+  action: read
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-113
+  resource: Proposal
+  action: read
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-114
+  resource: Proposal
+  action: read
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-115
+  resource: Proposal
+  action: accept
+  role: owner
+  expected: ALLOW
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-116
+  resource: Proposal
+  action: accept
+  role: collaborator
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-117
+  resource: Proposal
+  action: accept
+  role: traveler
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-118
+  resource: Proposal
+  action: accept
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-119
+  resource: Proposal
+  action: accept
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-120
+  resource: Proposal
+  action: accept
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-121
+  resource: Proposal
+  action: reject
+  role: owner
+  expected: ALLOW
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-122
+  resource: Proposal
+  action: reject
+  role: collaborator
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-123
+  resource: Proposal
+  action: reject
+  role: traveler
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-124
+  resource: Proposal
+  action: reject
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-125
+  resource: Proposal
+  action: reject
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-126
+  resource: Proposal
+  action: reject
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-127
+  resource: AuditLog
+  action: read
+  role: owner
+  expected: POLICY-TRIP-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-128
+  resource: AuditLog
+  action: read
+  role: collaborator
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-129
+  resource: AuditLog
+  action: read
+  role: traveler
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-130
+  resource: AuditLog
+  action: read
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-131
+  resource: AuditLog
+  action: read
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-132
+  resource: AuditLog
+  action: read
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-133
+  resource: Account
+  action: export
+  role: owner
+  expected: POLICY-KVKK-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-134
+  resource: Account
+  action: export
+  role: collaborator
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-135
+  resource: Account
+  action: export
+  role: traveler
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-136
+  resource: Account
+  action: export
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-137
+  resource: Account
+  action: export
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-138
+  resource: Account
+  action: export
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-139
+  resource: Account
+  action: delete
+  role: owner
+  expected: POLICY-KVKK-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-140
+  resource: Account
+  action: delete
+  role: collaborator
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-141
+  resource: Account
+  action: delete
+  role: traveler
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-142
+  resource: Account
+  action: delete
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-143
+  resource: Account
+  action: delete
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-144
+  resource: Account
+  action: delete
+  role: system_worker
+  expected: POLICY-SYSTEM-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-145
+  resource: Traveler.sensitive_pii
+  action: delete
+  role: owner
+  expected: POLICY-SUBJECT-DELETE-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-146
+  resource: Traveler.sensitive_pii
+  action: delete
+  role: collaborator
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-147
+  resource: Traveler.sensitive_pii
+  action: delete
+  role: traveler
+  expected: POLICY-SUBJECT-DELETE-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-148
+  resource: Traveler.sensitive_pii
+  action: delete
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-149
+  resource: Traveler.sensitive_pii
+  action: delete
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-150
+  resource: Traveler.sensitive_pii
+  action: delete
+  role: system_worker
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-151
+  resource: TravelerDocument
+  action: delete
+  role: owner
+  expected: POLICY-SUBJECT-DELETE-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-152
+  resource: TravelerDocument
+  action: delete
+  role: collaborator
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-153
+  resource: TravelerDocument
+  action: delete
+  role: traveler
+  expected: POLICY-SUBJECT-DELETE-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-154
+  resource: TravelerDocument
+  action: delete
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-155
+  resource: TravelerDocument
+  action: delete
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-156
+  resource: TravelerDocument
+  action: delete
+  role: system_worker
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-157
+  resource: Traveler.minor_sensitive_pii
+  action: read
+  role: owner
+  expected: POLICY-MINOR-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-158
+  resource: Traveler.minor_sensitive_pii
+  action: read
+  role: collaborator
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-159
+  resource: Traveler.minor_sensitive_pii
+  action: read
+  role: traveler
+  expected: POLICY-MINOR-001
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-160
+  resource: Traveler.minor_sensitive_pii
+  action: read
+  role: traveler_data_viewer
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-161
+  resource: Traveler.minor_sensitive_pii
+  action: read
+  role: support_agent
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+- id: AUTH-TS-162
+  resource: Traveler.minor_sensitive_pii
+  action: read
+  role: system_worker
+  expected: DENY
+  refs:
+  - PLT-AUTH-001
+  - PLT-PII-001
+  execution_status: PENDING
+  pending_reason: Authorization harness/identity fixtures henüz bağlı değil.
+notes:
+- Owner başka yetişkinin hassas PII erişiminde POLICY-PII-VIEW-001 uygulanır; hukuki
+  dayanak OD-013 OPEN.
+- Minör yolcu özel kuralı POLICY-MINOR-001 ve OD-013 ile OPEN.

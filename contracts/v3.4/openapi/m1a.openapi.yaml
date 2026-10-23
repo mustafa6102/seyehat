@@ -1,0 +1,160 @@
+openapi: 3.1.0
+info:
+  title: AI Seyahat Planlayıcısı M1A API v3.4 delta
+  version: 3.4.0
+  description: v3.3.0 M1A delta'sını devralan versioned contract delta. Yalnız aşağıdaki operasyonlar değişir; diğerleri v3.3/v3.2 tanımıyla aynıdır.
+servers: []
+x-inherits: ../../v3.3/openapi/m1a.openapi.yaml
+paths:
+  /flight-search-jobs:
+    post:
+      operationId: startFlightSearch
+      x-contract-id: OP-startFlightSearch
+      x-status: ACTIVE
+      x-adr-ref: ADR-011
+      x-requirement-refs: [TRIP-001, FLT-002, PLT-REL-001]
+      x-open-decisions: [OD-022]
+      description: Mevcut ve SEARCHABLE bir TripRequest için tek mantıksal arama işi oluşturur. Arama girdisi sunucuda kayıtlı TripRequest'ten okunur. Aynı Idempotency-Key aynı trip_request_id ile aynı search_id değerini döndürür; farklı trip_request_id ile kullanılırsa çakışma hatası döner. Sağlayıcı arama kriteri eşlemesi OD-022 kapsamında OPEN'dır.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: {type: string, minLength: 1, maxLength: 255}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: ../schemas/FlightSearchStartRequest.schema.json}
+      responses:
+        '202':
+          description: Arama işi kuyruğa alındı; aynı idempotency anahtarı ve aynı trip_request_id aynı search_id değerini döndürür.
+          content:
+            application/json:
+              schema: {$ref: ../../v3.3/schemas/FlightSearchStartResponse.schema.json}
+        '400':
+          description: İstek gövdesi sözleşmeye uymuyor.
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+        '404':
+          description: TripRequest bulunamadı.
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+        '409':
+          description: Idempotency-Key farklı bir trip_request_id için kullanılmış.
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+        '422':
+          description: TripRequest SEARCHABLE değil (DRAFT); zorunlu alanlar eksik.
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+      x-error-codes: [RC-VALIDATION-SCHEMA, RC-RESOURCE-NOT-FOUND, RC-CONFLICT-IDEMPOTENCY-KEY, RC-VALIDATION-TRIP-REQUEST-INCOMPLETE]
+  /flight-search-jobs/{searchId}:
+    get:
+      operationId: pollFlightSearch
+      x-contract-id: OP-pollFlightSearch
+      x-status: ACTIVE
+      x-adr-ref: ADR-011
+      x-requirement-refs: [FLT-002, PLT-REL-001]
+      description: Güvenli ve idempotent polling GET; PARTIAL her okumada o ana kadarki tam FlightSearchResult snapshot'ını döndürür. v3.4 job yanıtı trip_request_id ilişkisini taşır.
+      parameters:
+        - name: searchId
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: Güncel job durumu; COMPLETED/FAILED/EXPIRED terminaldir.
+          headers:
+            Retry-After:
+              description: Terminal olmayan durumda istemci için saniye cinsinden polling rehberi; kesin değer deployment config'e bağlıdır.
+              schema: {type: integer, minimum: 1}
+          content:
+            application/json:
+              schema: {$ref: ../schemas/FlightSearchJob.schema.json}
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+  /offers/{offerId}:
+    get:
+      operationId: getOffer
+      x-contract-id: OP-getOffer
+      x-status: ACTIVE
+      x-requirement-refs: [FLT-002, FLT-005, AC-FLT-002-01, AC-FLT-002-02, AC-FLT-002-03, AC-FLT-002-04, AC-FLT-002-06, AC-FLT-005-01, AC-FLT-005-02, AC-FLT-005-03]
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: Canonical offer (segment, kaynak/kanal ve bookable bilgisiyle).
+          content:
+            application/json:
+              schema: {$ref: ../schemas/FlightOffer.schema.json}
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+  /offers/{offerId}/reprice:
+    post:
+      operationId: repriceOffer
+      x-contract-id: OP-repriceOffer
+      x-status: ACTIVE
+      x-requirement-refs: [FLT-REPRICE-001, AC-FLT-REPRICE-001-03, AC-FLT-REPRICE-001-04, AC-FLT-REPRICE-001-05, AC-FLT-REPRICE-001-06, AC-FLT-REPRICE-001-07]
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: Canonical reprice result.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/RepriceResult.schema.json}
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+      x-warning-codes: [RC-EVIDENCE-OFFER-CHANGED, RC-EVIDENCE-OFFER-EXPIRED, RC-EVIDENCE-REPRICE-UNVERIFIED, RC-PROVIDER-TIMEOUT]
+  /offers/{offerId}/partner-redirect:
+    post:
+      operationId: createPartnerRedirect
+      x-contract-id: OP-createPartnerRedirect
+      x-status: PROVISIONAL
+      x-decision-ref: OD-015
+      x-requirement-refs: [FLT-REPRICE-001, AC-FLT-REPRICE-001-01, AC-FLT-REPRICE-001-02]
+      description: Yalnız OfferSnapshot referansı v3.4'e güncellendi; durum PROVISIONAL, URL/token lifecycle OD-015 nedeniyle tanımsızdır.
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: Yönlendirme öncesi offer snapshot; URL/token lifecycle OD-015 nedeniyle tanımlı değildir.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/OfferSnapshot.schema.json}
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+x-client-scope:
+  current: Laravel 12 web/API
+  mobile: OPEN
+  decision_ref: ADR-007

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.3:FlightSearchJob",
+  "title": "FlightSearchJob",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "search_id": {"type": "string", "minLength": 1},
+    "status": {"type": "string", "enum": ["QUEUED", "RUNNING", "PARTIAL", "COMPLETED", "FAILED", "EXPIRED"]},
+    "result": {"oneOf": [{"$ref": "./FlightSearchResult.schema.json"}, {"type": "null"}]},
+    "error": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "code": {"type": ["string", "null"]},
+            "message_tr": {"type": "string"}
+          },
+          "required": ["code", "message_tr"]
+        },
+        {"type": "null"}
+      ]
+    },
+    "expires_at": {"type": ["string", "null"], "format": "date-time"}
+  },
+  "required": ["search_id", "status", "result", "error", "expires_at"],
+  "allOf": [
+    {"if": {"properties": {"status": {"enum": ["PARTIAL", "COMPLETED"]}}, "required": ["status"]}, "then": {"properties": {"result": {"$ref": "./FlightSearchResult.schema.json"}}}},
+    {"if": {"properties": {"status": {"const": "FAILED"}}, "required": ["status"]}, "then": {"properties": {"error": {"type": "object"}}}},
+    {"if": {"properties": {"status": {"enum": ["QUEUED", "RUNNING", "EXPIRED"]}}, "required": ["status"]}, "then": {"properties": {"result": {"type": "null"}}}}
+  ],
+  "x-contract-id": "SCH-FlightSearchJob",
+  "x-version": "3.3",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["FLT-002", "PLT-REL-001"]
+}

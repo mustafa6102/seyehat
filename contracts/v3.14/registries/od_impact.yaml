@@ -1,0 +1,118 @@
+version: 3.14.0
+inherits: ../../v3.13/registries/od_impact.yaml
+new_decisions:
+  - id: OD-023
+    title: İlk production konaklama sağlayıcısı ve sözleşme koşulları
+    accountable_role: Product + Tech + Legal
+    affects:
+    - ACC-001
+    - FR-ACC-001-01
+    - FR-ACC-001-03
+    blocks_development:
+    - M3 (yalnız sağlayıcıya özgü entegrasyon)
+    blocks_release:
+    - FINAL
+    decision_owner: user (2026-10-05)
+    decision_due: RESOLVED
+    impact_status: PARTIALLY_UNBLOCKED
+    status: RESOLVED
+    note: Duffel Stays seçildi (karşılaştırmalı araştırma, 2026-10-05). Üretimde kullanım için Duffel hesabında Stays erişiminin açılması ve provider_capabilities üretim kanıtı (FRESH/STALE) gerekir; bunlar yokken arama sağlayıcı çağrılmadan FAILED olur ve sahte teklif üretilmez.
+    resolution:
+      provider: Duffel Stays
+      provider_id: duffel_stays
+      evaluated:
+        - {candidate: Duffel Stays, verdict: SELECTED, reason: 'Search -> fetch all rates -> quote akışı; rate.expires_at zorunlu; total/tax/fee/base ve due_at_accommodation ayrı; cancellation_timeline; check_in_information; test modu; mevcut Duffel uçuş entegrasyonu ve aynı veri işleyen (OD-014 kapsamını büyütmez). Erişim talep formuyla açılır.'}
+        - {candidate: Expedia Rapid, verdict: REJECTED, reason: 'Yalnız onaylı partner; başvuru, onay ve sertifikasyon (4-12 hafta); self-serve test erişimi yok.'}
+        - {candidate: Booking.com Demand API, verdict: REJECTED, reason: 'Managed Affiliate Partner sözleşmesi ve Account Manager gerekir; rezervasyon ayrı onay; partner şartları yapay zekâ sistemi kullanımını önceden yazılı onaya bağlar.'}
+        - {candidate: Hotelbeds APItude, verdict: NOT_SELECTED, reason: 'Test anahtarı self-serve, CheckRate yeniden doğrulaması var; canlı kullanım B2B ticari sözleşme gerektirir ve yeni bir veri işleyen ekler.'}
+        - {candidate: LiteAPI (Nuitee), verdict: NOT_SELECTED, reason: 'Self-serve sandbox ve prebook doğrulaması var; iptal politikası tutarlılığı ve vergi/ücret ayrıntısı resmi kaynaklarda yeterince doğrulanamadı.'}
+        - {candidate: Amadeus Self-Service Hotel, verdict: EXCLUDED, reason: 'Self-Service programı 2026-07-17 itibarıyla kapatıldı.'}
+      provider_operations:
+        accommodation_search: 'POST /stays/search (konaklama + en ucuz oran) ve POST /stays/search_results/{id}/actions/fetch_all_rates (tüm oda/oranlar)'
+        accommodation_revalidate: 'POST /stays/quotes (rate_id ile; güncel fiyat ve uygunluğu teyit eder) -> OP-revalidateAccommodationOffer'
+        out_of_scope: 'POST /stays/bookings ve iptal (booking/ödeme kapsam dışı)'
+      capability_records: 'provider_capabilities: (duffel_stays, accommodation_search, production) ve (duffel_stays, accommodation_revalidate, production); supported=1 ve FRESH/STALE kanıt olmadan çağrı yapılmaz.'
+      offer_identity: 'provider_offer_id = Duffel rate id; property_id = Duffel accommodation id. Quote id kalıcı kimlik değildir.'
+      mapping_limitations:
+        - 'total_price: total_amount yalnız rezervasyon anında ödenen vergi/ücretleri içerir. due_at_accommodation_amount null ise tesiste ödenecek zorunlu ücret bilinmiyor sayılır (PARTIAL, unknown_components); farklı para birimindeyse toplanmaz (örtük kur yok) ve PARTIAL kalır. Yalnız due_at_accommodation_amount açıkça 0 veya total ile aynı para biriminde biliniyorsa COMPLETE olabilir.'
+        - 'check_in: check_in_after_time / check_in_before_time tesis içerik bilgisidir; teklif için teyit edilmiş sayılmaz, verification_status=UNVERIFIED (RULE-ACC-001-02).'
+        - 'cancellation: cancellation_timeline girdileri refund_amount ve before ile eşlenir (tam iade REFUNDABLE, kısmi PARTIALLY_REFUNDABLE). Boş zaman çizelgesinin iade edilemez anlamına geldiği resmi belgede açıkça doğrulanana kadar policy=UNKNOWN.'
+        - 'room_description: oda adı sağlanmıyorsa null; yapay metin üretilmez.'
+        - 'location: address (line_one, city_name, postal_code, region, country_code) tek satır adrese, geographic_coordinates enlem/boylama eşlenir.'
+        - 'Quote nesnesinde expires_at yoktur; seçim expires_at değeri en son doğrulanan rate.expires_at olur. Quote hata kodları resmi belgede ayrıntılı değil: oranın artık mevcut olmadığı açıkça bildirilirse EXPIRED, diğer hatalar UNVERIFIED.'
+        - 'Arama kriteri sınırı: check-in en fazla 330 gün ileride olabilir; daha ilerisi sağlayıcı çağrılmadan kriter dışı sayılır. Tarih/oda/misafir eşlemesi OD-024 altında açık kalır.'
+      ttl_requirement: 'Duffel Stays her oran için expires_at verdiğinden CFG-ACCOMMODATION-SELECTION-TTL bu sağlayıcı için gerekmez; kayıt sağlayıcıdan bağımsız yedek olarak OPEN kalır.'
+      access_requirements: 'Duffel hesabı + Duffel Stays erişim talebi (varsayılan kapalı) + test erişim anahtarı; canlı kullanım Duffel ticari koşullarına bağlıdır. Erişim anahtarı depoda saklanmaz.'
+      sources:
+        - https://duffel.com/docs/guides/getting-started-with-stays
+        - https://duffel.com/docs/api/v2/search-result
+        - https://duffel.com/docs/api/quotes
+        - https://duffel.com/docs/guides/displaying-the-cancellation-timeline
+        - https://developer.hotelbeds.com/documentation/hotels/booking-api/workflow/
+        - https://developers.booking.com/demand/docs/getting-started/prerequisites
+        - https://docs.liteapi.travel/docs/canceling-a-booking
+    affect_evidence:
+    - target: ACC-001
+      source: v3.14 contract delta
+      status: DECLARED
+  - id: OD-024
+    title: TripRequest'ten konaklama giriş/çıkış tarihleri, oda ve misafir dağılımı eşlemesi
+    accountable_role: Product
+    affects:
+    - ACC-001
+    - RULE-ACC-001-04
+    - SCH-AccommodationSearchCriteria
+    blocks_development: []
+    blocks_release:
+    - FINAL
+    decision_owner: user (2026-10-05)
+    decision_due: RESOLVED
+    impact_status: UNBLOCKED
+    status: RESOLVED
+    note: Desteklenen alt küme için kriter belirleyici olarak türetilebilir. ONE_WAY, FLEXIBLE ve çocuk/bebek bilinçli olarak desteklenmez (OD-020 açık).
+    resolution:
+      supported_subset: 'ROUND_TRIP + outbound/return EXACT + check_out > check_in + passenger_composition (adults>=1, children=0, infants=0) + room_count>=1 + kind=city varış noktası kalıcı coordinates taşır + duffel_stays sınırları.'
+      dates: 'check_in_date = outbound_date.date; check_out_date = return_date.date; check_out_date > check_in_date. Varış günü, gece varışı veya geç giriş yorumlanmaz.'
+      guests: 'Yalnız passenger_composition: adults -> yetişkin misafir. children>0 / infants>0 desteklenmez (sağlayıcı çocuk yaşı ister, bebek tipi yoktur; OD-020). Legacy count-only TripRequest desteklenmez.'
+      rooms: 'TripRequest.room_count (FR-ACC-001-06): planlayıcıda kullanıcının açıkça girdiği oda sayısı (form başlangıç değeri 1, en az 1). duffel_stays rooms tamsayı + arama düzeyinde misafir listesi ister; oda başına dağılım gerekmez ve modellenmez. room_count olmayan kayıt desteklenmez.'
+      radius: 'CFG-ACCOMMODATION-SEARCH-RADIUS = 5 km (sağlayıcı aralığı 1-100 km, varsayılan 5 km).'
+      destination: 'Varış noktası seçildiğinde sunucuda doğrulanan katalog kaydının (Duffel Places seçim belirteci veya yeniden çözülen GeoNames kaydı) koordinatları SCH-LocationRef v3.14 coordinates olarak saklanır; kullanıcı konumu ikinci kez seçmez ve uçuş kimliği (value, aviation_identity) değişmez. Konaklama yalnız kind=city ve coordinates varsa aranır; airport/station/supported_location veya coordinates olmayan (legacy) kayıtlar desteklenmez.'
+      unsupported: [ONE_WAY (çıkış tarihi yok), FLEXIBLE (tarih seçilmez/genişletilmez), aynı gün giriş-çıkış, çocuk/bebek (OD-020), legacy count-only, room_count yok, şehir dışı tür veya coordinates yok, sağlayıcı sınırı aşımı]
+      provider_constraints: 'duffel_stays: check-in en fazla 330 gün ileride; en fazla 99 gece; geçmiş giriş tarihi yok. Sınır aşımı yalnız kriteri desteklenmez yapar; TripRequest anlamını değiştirmez.'
+      failure: 'Kriter türetilemezse sağlayıcı çağrılmaz; AccommodationSearchJob error.code=null ve Türkçe gerekçeyle FAILED (GAP-ACC-CRITERIA-001).'
+      sources:
+        - https://duffel.com/docs/api/v2/search
+        - https://duffel.com/docs/guides/searching-for-stays
+    affect_evidence:
+    - target: SCH-AccommodationSearchCriteria
+      source: v3.14 contract delta
+      status: DECLARED
+decisions:
+  - id: OD-013
+    status: OPEN
+    impact_status: PARTIALLY_UNBLOCKED
+    note: Konaklama seçimi kanonik teklif görüntüsünü saklar; saklama süresi açık.
+  - id: OD-014
+    status: OPEN
+    impact_status: BLOCKED
+    note: Konaklama sağlayıcısına veri aktarımı/DPA mekanizması OD-023 ile birlikte gerekir.
+  - id: OD-020
+    status: OPEN
+    impact_status: PARTIALLY_UNBLOCKED
+    note: Çocuk/bebek yaşları olmadan konaklama kriteri türetilmez.
+  - id: OD-021
+    status: OPEN
+    impact_status: PARTIALLY_UNBLOCKED
+    note: Konaklama seçimi TripRequest'e bağlıdır; Trip/ItineraryItem ilişkisi ve taşınması açık.
+  - id: OD-022
+    status: PARTIALLY_RESOLVED
+    impact_status: PARTIALLY_UNBLOCKED
+    note: Konaklama tarih eşlemesi v3.9 journey modelini kullanır; FLEXIBLE ve ONE_WAY konaklama kriterine dönüşmez (OD-024).
+  - id: ADR-010
+    status: OPEN
+    impact_status: BLOCKED
+    note: Konaklama seçimini kimin okuyup değiştirebileceği tanımlanmadı.
+  - id: ADR-006
+    status: OPEN
+    impact_status: BLOCKED
+    note: duffel_stays için CFG-RETRY-TIMEOUT-CIRCUIT değerleri ve CFG-ACCOMMODATION-SEARCH-MAX-PROPERTIES tanımlı değil; değerler girilene kadar konaklama araması sağlayıcıyı çağırmaz.

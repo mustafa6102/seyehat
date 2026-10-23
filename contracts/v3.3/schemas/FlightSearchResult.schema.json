@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.3:FlightSearchResult",
+  "title": "FlightSearchResult",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "offers": {"type": "array", "items": {"$ref": "./FlightOffer.schema.json"}, "x-requirement-refs": ["FLT-002"]},
+    "ranking": {"$ref": "../../schemas/RankingResult.schema.json", "x-requirement-refs": ["RANK-001"]}
+  },
+  "required": ["offers"],
+  "x-contract-id": "SCH-FlightSearchResult",
+  "x-version": "3.3",
+  "x-status": "ACTIVE",
+  "x-replaces": "urn:ai-seyahat:contracts:FlightSearchResult:3.2.1",
+  "x-requirement-refs": ["FLT-002", "RANK-001"],
+  "x-note": "ranking remains optional until RANK-001 is implemented in M1B"
+}

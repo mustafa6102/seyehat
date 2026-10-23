@@ -1,0 +1,97 @@
+version: 3.15.0
+inherits: ../../v3.14/registries/config.yaml
+new_records:
+- id: CFG-POI-SEARCH-RADIUS
+  type: integer
+  unit: m (osm_overpass around filtresi)
+  default: 3000
+  range: 500-20000
+  value_status: RESOLVED (ürün kararı, 2026-10-06)
+  rationale: Varış şehri merkezinin yürüme/kısa ulaşım mesafesindeki gezilecek yerler için muhafazakâr ürün değeri; Overpass teknik sınırı değildir.
+  scope: POI discovery
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: OD-025
+  requirement_refs:
+  - RULE-POI-001-04
+  - FR-POI-001-01
+  note: osm_overpass için birim metredir (Overpass around filtresi). Çalışma zamanı değeri tanımsız veya aralık dışıysa POI kriteri türetilmez, kodda gizli varsayılan kullanılmaz (keşif kapalı başarısız olur).
+- id: CFG-POI-MAX-RESULTS
+  type: integer
+  unit: count (bir keşif işinin döndürdüğü ve sakladığı en fazla kanonik POI)
+  default: 50
+  range: 1-200
+  value_status: RESOLVED (ürün kararı, 2026-10-06)
+  rationale: Sorgu, yanıt boyutu ve saklama maliyetini sınırlayan muhafazakâr ürün değeri; Overpass'a ait bir sınır değildir.
+  scope: POI discovery
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: ADR-006
+  requirement_refs:
+  - RULE-POI-001-04
+  - FR-POI-001-03
+  note: Sağlayıcı çağrı/ücret bütçesiyle (CFG-SEARCH-BUDGET) ve Overpass kullanım politikasıyla (genel örnekte günde 100 sorgu / 10 MB) birlikte belirlenir; sağlayıcı sınırı ürün varsayılanı değildir. Tanımsız veya aralık dışıyken keşif yapılmaz.
+- id: CFG-POI-EVIDENCE-FRESHNESS
+  type: duration
+  unit: OPEN
+  default: OPEN
+  range: OPEN
+  scope: POI olgu kanıtı (FRESH -> STALE penceresi ve expires_at)
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: OD-025
+  requirement_refs:
+  - RULE-POI-001-05
+  - FR-POI-001-04
+  applicability: 'osm_overpass: NOT_REQUIRED - olgular UNVERIFIED kalır, geri çağırma zamanı FRESH yapmaz, STALE/EXPIRED yaşlandırması uygulanmaz. Doğrulanmış kanıt tabanı olan sağlayıcılar için OPEN.'
+  note: Değer tanımlı değilken POI olgusu FRESH kabul edilmez (UNVERIFIED); tazelik süresi uydurulmaz.
+- id: CFG-POI-OVERPASS-ENDPOINT
+  type: url
+  unit: n/a
+  default: none
+  range: 'Geliştirme/test (APP_ENV != production): açıkça ayarlanmış herhangi bir Overpass interpreter URL''si; genel https://overpass-api.de/api/interpreter yalnız burada izinli. Üretim: yalnız onaylı kendi barındırılan veya ücretli Overpass sunucusu; genel overpass-api.de ana makinesi reddedilir.'
+  scope: osm_overpass (poi_discovery, poi_verify)
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu. Uygulama kodu URL gömmez ve varsayılan uç noktaya düşmez.
+  decision_ref: OD-025
+  requirement_refs:
+  - FR-POI-001-03
+  - FR-POI-001-04
+  note: Tanımsız, geçersiz veya üretimde genel uç nokta ise sağlayıcı çağrılmaz (kapalı başarısız). Üretim uç noktası onaylanana kadar POI üretim dağıtımı BLOCKED.
+- id: CFG-POI-DISCOVERY-TAG-FILTER
+  type: map
+  unit: 'OSM anahtarı -> izinli değer listesi; her öğe ayrıca name etiketi taşımalıdır'
+  default:
+    tourism: [attraction, museum, gallery, viewpoint, artwork, zoo, aquarium, theme_park]
+    historic: [monument, memorial, castle, ruins, archaeological_site, fort, palace, city_gate, tower, monastery]
+  range: 'Yalnız yukarıdaki anahtar/değer kümesi (v3.15). Ekleme, çıkarma veya düzenli ifade ile genişletme versiyonlu sözleşme + config değişikliği gerektirir.'
+  value_status: RESOLVED (ürün kararı, user 2026-10-06; osm_overpass v3.15)
+  semantics: >-
+    Öğe, name etiketi taşıyor VE onaylı anahtar/değer çiftlerinden en az birine tam eşleşiyorsa (VEYA) adaydır; komşu etiket veya
+    kategori çıkarımı eklenmez. Yarıçap CFG-POI-SEARCH-RADIUS, kanonik sonuç sınırı CFG-POI-MAX-RESULTS.
+  scope: osm_overpass poi_discovery sorgu kapsamı (OD-025 "ad etiketi olan turistik/kültürel öğeler")
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: OD-025
+  requirement_refs:
+  - FR-POI-001-03
+  note: >-
+    Onaylı sağlayıcı keşif filtresidir; kanonik POI kategorisi, kullanıcı ilgi alanı/tercihi, sıralama veya OD-026 taksonomisi DEĞİLDİR
+    (OD-026 OPEN, SCH-Poi.categories boş kalır, etiketler dışarı verilmez). Değer uygulama config'inde açıkça bulunur; adaptörde gizli
+    yedek liste yoktur. Config eksik veya geçersizse sağlayıcı çağrılmaz ve keşif işi error.code=null ile FAILED olur (GAP-POI-CRITERIA-001).
+scoped_records:
+- id: CFG-RETRY-TIMEOUT-CIRCUIT
+  scope: osm_overpass geliştirme profili (poi_discovery, poi_verify)
+  version: osm-overpass-dev-2026-10-06
+  values:
+    timeout_ms: 10000
+    retry: {max_attempts: 1, base_delay_ms: 1000, max_delay_ms: 1000}
+    circuit_breaker: {failure_threshold: 3, open_seconds: 300}
+    rate_limit: {max_requests: 100, per_seconds: 86400}
+  decision_ref: ADR-006
+  value_status: RESOLVED yalnız geliştirme için (2026-10-06); üretim profili OPEN
+  rationale: >-
+    Mevcut ProviderAcl profil biçimi (config/provider_resilience.php) aynen kullanılır; yeni kavram yok. Etkileşimli keşif için 10 sn
+    zaman aşımı; genel örneğe yük bindirmemek için yeniden deneme yok (tek deneme); 3 hatada 5 dk devre açık. Hız sınırı, Overpass
+    kullanım politikasındaki "düzenli uygulamalar için günde 100 sorgu" sınırıyla aynıdır; paralel çalıştırma yasağı kuyruk işçisinin
+    tek iş/sıra çalıştırmasıyla karşılanır (eşzamanlılık kavramı eklenmedi). ADR-006 genel değerleri ve üretim profili OPEN kalır.

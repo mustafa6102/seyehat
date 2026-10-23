@@ -1,0 +1,8 @@
+version: 3.4.0
+inherits: ../../v3.3/registries/lifecycle.yaml
+changes:
+  - machine: FlightSearchJob
+    semantics_changed: false
+    contract_surface: schema:FlightSearchJob.schema.json
+    note: Durumlar, geçişler, terminal durumlar, idempotency, partial snapshot, hata ve expiry semantiği v3.3 ile aynıdır. İş yalnız başlatıldığı TripRequest ile ilişkilendirilir (trip_request_id). Aynı Idempotency-Key farklı trip_request_id ile yeni mantıksal arama oluşturmaz; RC-CONFLICT-IDEMPOTENCY-KEY döner.
+    refs: [ADR-011, TRIP-001, FLT-002, PLT-REL-001]

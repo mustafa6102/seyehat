@@ -1,0 +1,15 @@
+version: 3.16.0
+inherits: ../v3.15/contract_index.yaml
+contracts:
+  - {id: SCH-Trip, path: contracts/v3.16/schemas/Trip.schema.json, status: ACTIVE, audience: PUBLIC}
+  - {id: SCH-PlanRevision, path: contracts/v3.16/schemas/PlanRevision.schema.json, status: ACTIVE, audience: PUBLIC}
+  - {id: SCH-ItineraryItem, path: contracts/v3.16/schemas/ItineraryItem.schema.json, status: ACTIVE, audience: PUBLIC}
+  - {id: SCH-TripPlan, path: contracts/v3.16/schemas/TripPlan.schema.json, status: ACTIVE, audience: PUBLIC}
+  - {id: SCH-PrincipalRef, path: contracts/v3.16/schemas/PrincipalRef.schema.json, status: ACTIVE, audience: INTERNAL}
+  - {id: OP-getTripRequestPlan, path: contracts/v3.16/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-addTripPlanPoiItem, path: contracts/v3.16/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-removeTripPlanItem, path: contracts/v3.16/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: CFG-AUTH-OIDC-ISSUER, path: contracts/v3.16/registries/config.yaml, status: ACTIVE}
+  - {id: CFG-AUTH-OIDC-AUDIENCE, path: contracts/v3.16/registries/config.yaml, status: ACTIVE}
+  - {id: TRN-PLANREVISION-02, path: contracts/v3.16/registries/lifecycle.yaml, status: ACTIVE}
+note: Plan operasyonları ACTIVE (ADR-010 kimlik doğrulama kısmı RESOLVED); sevk ön koşulu OP-createTripRequest owner bağlama (od_impact ADR-010).

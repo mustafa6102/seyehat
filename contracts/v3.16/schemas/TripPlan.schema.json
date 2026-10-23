@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.16:TripPlan",
+  "title": "TripPlan",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trip_request_id": {"type": "string", "minLength": 1},
+    "trip": {"oneOf": [{"$ref": "./Trip.schema.json"}, {"type": "null"}], "description": "Henüz plan değişikliği yapılmadıysa null (Trip tembel oluşturulur)."},
+    "revision": {"oneOf": [{"$ref": "./PlanRevision.schema.json"}, {"type": "null"}], "description": "CURRENT revision; trip null ise null."}
+  },
+  "required": ["trip_request_id", "trip", "revision"],
+  "x-contract-id": "SCH-TripPlan",
+  "x-version": "3.16",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["TRIP-BLD-001", "FR-TRIP-BLD-001-03"],
+  "x-open-decisions": ["ADR-010"],
+  "description": "TripRequest'in kalıcı plan görünümü. Uçuş/konaklama seçimleri burada taşınmaz; kendi TripRequest operasyonlarından okunur (v3.13/v3.14) ve Seyahat Planım ekranında yan yana gösterilir. Farklı para birimleri toplanmaz."
+}

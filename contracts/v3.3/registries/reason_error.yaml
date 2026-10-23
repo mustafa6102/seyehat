@@ -1,0 +1,13 @@
+version: 3.3.0
+inherits: ../../registries/reason_error.yaml
+new_records: []
+reused_records:
+  - id: RC-EVIDENCE-OFFER-CHANGED
+    refs: [FLT-REPRICE-001, RULE-FLT-REPRICE-001-03, AC-FLT-REPRICE-001-03, AC-FLT-REPRICE-001-06]
+  - id: RC-EVIDENCE-OFFER-EXPIRED
+    refs: [FLT-REPRICE-001, AC-FLT-REPRICE-001-04]
+  - id: RC-PROVIDER-TIMEOUT
+    refs: [FLT-REPRICE-001, AC-FLT-REPRICE-001-07]
+  - id: RC-EVIDENCE-REPRICE-UNVERIFIED
+    refs: [FLT-REPRICE-001, AC-FLT-REPRICE-001-07]
+note: Yeni reason/error semantiği eklenmedi.

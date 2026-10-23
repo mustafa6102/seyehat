@@ -1,0 +1,4 @@
+version: 3.10.0
+inherits: ../v3.9/contract_index.yaml
+contracts: []
+note: Registry-only delta; no contract artifact is added or replaced.

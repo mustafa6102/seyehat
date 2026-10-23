@@ -1,0 +1,65 @@
+version: 3.13.0
+inherits: ../../v3.6/registries/lifecycle.yaml
+new_machines:
+  - name: TripRequestFlightSelectionStatus
+    enum_ref: SCH-TripRequestFlightSelection.status
+    phase: M1A
+    states: [CURRENT, RECONFIRMATION_REQUIRED, EXPIRED]
+    initial: 'NONE (kayıt yok)'
+    allowed_reason_categories: [EVIDENCE, DECISION]
+    note: Yalnız CURRENT güncel doğrulanmış seçimdir. RECONFIRMATION_REQUIRED ve EXPIRED güncel veya satın alınabilir fiyat olarak gösterilmez. Booking/ödeme durumu değildir.
+new_transitions:
+  - id: TRN-FSEL-01
+    machine: TripRequestFlightSelectionStatus
+    from: [NONE, CURRENT, RECONFIRMATION_REQUIRED, EXPIRED]
+    to: CURRENT
+    trigger: 'command: selectTripRequestFlight'
+    guard: Teklif bu TripRequest'in bir uçuş arama sonucunda yer alır; sunucudaki en son doğrulama sonucu CURRENT (veya CHANGED ve açık kabul) ve süresi dolmamış; expected_verified_at bu sonucun captured_at değerine eşit.
+    side_effects: Kanonik teklif görüntüsü, provider_id, provider_offer_id, verified_price, verified_at, expires_at saklanır. Mevcut seçim varsa yerine geçer (TripRequest başına tek kayıt).
+    idempotency_key_source: Idempotency-Key başlığı + tripRequestId
+    conflict_behavior: Koşul sağlanmazsa 409 (OFFER_NOT_SELECTABLE / OFFER_CHANGED / OFFER_EXPIRED); mevcut seçim değişmez.
+    reason_error: RC-DECISION-OFFER-NOT-SELECTABLE
+    refs: [RULE-FLT-REPRICE-001-04, RULE-FLT-REPRICE-001-05, RULE-FLT-REPRICE-001-06, AC-FLT-REPRICE-001-08, AC-FLT-REPRICE-001-09, AC-FLT-REPRICE-001-12, AC-FLT-REPRICE-001-13, TS-FLT-REPRICE-001-08, TS-FLT-REPRICE-001-09, TS-FLT-REPRICE-001-12, TS-FLT-REPRICE-001-13]
+    outcome: SUCCESS
+  - id: TRN-FSEL-02
+    machine: TripRequestFlightSelectionStatus
+    from: CURRENT
+    to: RECONFIRMATION_REQUIRED
+    trigger: 'event: repriceResult (TRN-OFFER-01, CURRENT -> CHANGED)'
+    guard: Yeniden doğrulanan teklifin provider_id + provider_offer_id değeri seçiminkiyle aynı ve sonuç CHANGED.
+    side_effects: Saklı teklif görüntüsü ve verified_price değiştirilmez; güncel gösterilmez. Yeni doğrulanmış teklif yalnız açık kabulle (TRN-FSEL-04) seçime geçer.
+    idempotency_key_source: provider_offer_id + reprice attempt (TRN-OFFER-01 ile aynı; kaynak ayrıntısı OPEN)
+    conflict_behavior: Seçim zaten RECONFIRMATION_REQUIRED veya EXPIRED ise değişiklik yok.
+    reason_error: RC-EVIDENCE-OFFER-CHANGED
+    refs: [RULE-FLT-REPRICE-001-03, RULE-FLT-REPRICE-001-05, AC-FLT-REPRICE-001-10, TS-FLT-REPRICE-001-10]
+    outcome: DEGRADED
+  - id: TRN-FSEL-03
+    machine: TripRequestFlightSelectionStatus
+    from: [CURRENT, RECONFIRMATION_REQUIRED]
+    to: EXPIRED
+    trigger: 'event: expiryCheck (seçimin her okunuşunda ve yazılışında değerlendirilir)'
+    guard: expires_at <= şimdi.
+    side_effects: Seçim güncel veya satın alınabilir gösterilmez; saklı görüntü yalnız geçmiş bilgi olarak okunabilir.
+    idempotency_key_source: tripRequestId
+    conflict_behavior: Yeniden onay yapılamaz; yalnız yeni arama ve yeni seçim (TRN-FSEL-01) ile CURRENT olunur.
+    reason_error: RC-EVIDENCE-OFFER-EXPIRED
+    refs: [AC-FLT-REPRICE-001-04, AC-FLT-REPRICE-001-11, TS-FLT-REPRICE-001-11]
+    outcome: DEGRADED
+  - id: TRN-FSEL-04
+    machine: TripRequestFlightSelectionStatus
+    from: RECONFIRMATION_REQUIRED
+    to: CURRENT
+    trigger: 'command: reconfirmTripRequestFlight'
+    guard: Aynı provider_offer_id için sunucuda saklı en son doğrulanmış teklif mevcut ve süresi dolmamış; expected_verified_at bu doğrulamanın captured_at değerine eşit.
+    side_effects: Teklif görüntüsü, verified_price, verified_at ve expires_at kabul edilen doğrulanmış teklifle değiştirilir.
+    idempotency_key_source: Idempotency-Key başlığı + tripRequestId
+    conflict_behavior: Koşul sağlanmazsa 409 (OFFER_NOT_SELECTABLE / OFFER_CHANGED / OFFER_EXPIRED); süre dolmuşsa seçim EXPIRED olur.
+    reason_error: RC-DECISION-OFFER-NOT-SELECTABLE
+    refs: [RULE-FLT-REPRICE-001-05, AC-FLT-REPRICE-001-10, TS-FLT-REPRICE-001-10]
+    outcome: SUCCESS
+changes:
+  - machine: OfferState
+    semantics_changed: false
+    contract_surface: openapi:OP-repriceOffer
+    note: OfferState durumları ve geçişleri değişmedi. TRN-OFFER-01 seçili teklif için TRN-FSEL-02'yi tetikler. UNVERIFIED (TRN-OFFER-03) veya zaman aşımı sonucu seçim durumunu değiştirmez; seçim verified_at ile son başarılı doğrulama zamanını göstermeye devam eder.
+    refs: [FLT-REPRICE-001, RULE-FLT-REPRICE-001-05]

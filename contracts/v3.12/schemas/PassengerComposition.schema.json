@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.12:PassengerComposition",
+  "title": "PassengerComposition",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "adults": {"type": "integer", "minimum": 0},
+    "children": {"type": "integer", "minimum": 0},
+    "infants": {"type": "integer", "minimum": 0}
+  },
+  "required": ["adults", "children", "infants"],
+  "x-contract-id": "SCH-PassengerComposition",
+  "x-version": "3.12",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["TRIP-001", "RULE-TRIP-001-06", "FR-TRIP-001-04"],
+  "x-open-decisions": ["OD-020", "OD-021"],
+  "x-rules": {"RULE-TRIP-001-06": "Alan mevcutsa adults + children + infants toplamı traveler_count ile aynıdır ve en az birdir."},
+  "description": "Yalnız uçuş arama/fiyatlandırma yolcu dağılımıdır; Traveler profili, kimliği veya age_category değildir."
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.2:OfferSnapshot",
+  "title": "OfferSnapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "offer": {
+      "$ref": "./FlightOffer.schema.json",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "domain",
+        "verification": "snapshot",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "FLT-REPRICE-001"
+        ]
+      }
+    },
+    "captured_at": {
+      "type": "string",
+      "format": "date-time",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "system",
+        "verification": "timestamp",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "FLT-REPRICE-001"
+        ]
+      }
+    }
+  },
+  "required": [
+    "offer",
+    "captured_at"
+  ],
+  "x-contract-id": "SCH-OfferSnapshot",
+  "x-version": "3.2",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": [
+    "FLT-REPRICE-001"
+  ]
+}

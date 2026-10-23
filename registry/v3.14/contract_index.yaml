@@ -1,0 +1,20 @@
+version: 3.14.0
+inherits: ../v3.13/contract_index.yaml
+contracts:
+  - {id: SCH-AccommodationOffer, path: contracts/v3.14/schemas/AccommodationOffer.schema.json, status: ACTIVE, audience: PUBLIC}
+  - {id: SCH-AccommodationSearchCriteria, path: contracts/v3.14/schemas/AccommodationSearchCriteria.schema.json, status: ACTIVE, audience: INTERNAL}
+  - {id: SCH-TripRequest, path: contracts/v3.14/schemas/TripRequest.schema.json, status: ACTIVE, replaces: 'urn:ai-seyahat:v3.12:TripRequest'}
+  - {id: SCH-LocationRef, path: contracts/v3.14/schemas/LocationRef.schema.json, status: ACTIVE, audience: INTERNAL, replaces: 'urn:ai-seyahat:v3.8:LocationRef'}
+  - {id: SCH-AccommodationSearchJob, path: contracts/v3.14/schemas/AccommodationSearchJob.schema.json, status: ACTIVE, audience: PUBLIC}
+  - {id: SCH-AccommodationRevalidationResult, path: contracts/v3.14/schemas/AccommodationRevalidationResult.schema.json, status: ACTIVE, audience: PUBLIC}
+  - {id: SCH-TripRequestAccommodationSelection, path: contracts/v3.14/schemas/TripRequestAccommodationSelection.schema.json, status: ACTIVE, audience: PUBLIC}
+  - {id: OP-startAccommodationSearch, path: contracts/v3.14/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-pollAccommodationSearch, path: contracts/v3.14/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-getAccommodationOffer, path: contracts/v3.14/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-revalidateAccommodationOffer, path: contracts/v3.14/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-getTripRequestAccommodationSelection, path: contracts/v3.14/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-selectTripRequestAccommodation, path: contracts/v3.14/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-reconfirmTripRequestAccommodation, path: contracts/v3.14/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: CFG-ACCOMMODATION-SELECTION-TTL, path: contracts/v3.14/registries/config.yaml, status: OPEN}
+  - {id: CFG-ACCOMMODATION-SEARCH-RADIUS, path: contracts/v3.14/registries/config.yaml, status: ACTIVE}
+  - {id: CFG-ACCOMMODATION-SEARCH-MAX-PROPERTIES, path: contracts/v3.14/registries/config.yaml, status: OPEN}

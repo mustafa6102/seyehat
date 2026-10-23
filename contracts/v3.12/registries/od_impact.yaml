@@ -1,0 +1,11 @@
+version: 3.12.0
+inherits: ../../v3.11/registries/od_impact.yaml
+decisions:
+  - id: OD-020
+    status: OPEN
+    impact_status: PARTIALLY_UNBLOCKED
+    note: Arama/fiyatlandırma passenger_composition tanımlıdır; Traveler yaş kategorisi ve sınırları açık kalır. Child/infant kesin yaş olmadan Duffel'a gönderilmez.
+  - id: OD-021
+    status: OPEN
+    impact_status: PARTIALLY_UNBLOCKED
+    note: Arama dağılımı Traveler kaydı değildir. Traveler sahipliği ve Trip ilişkisi açık kalır; legacy count-only kayıtlar değişmez.

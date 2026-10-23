@@ -1,0 +1,7 @@
+version: 3.17.0
+inherits: ../../v3.16/registries/traceability.yaml
+requirement_to_contract:
+  - requirement: PLT-AUTH-001
+    artifacts: [registry:od_impact.OD-028]
+    resolved_decisions: [OD-028]
+    note: TripRequest'e ait operasyonların tarayıcı kanalı = /web-api/v1 oturum + CSRF web adaptörleri (OD-028 A, 2026-10-17); SessionWebPrincipalResolver + TripRequestOwnership + mevcut servisler. /api/v1 bearerAuth ve RULE-PLT-AUTH-001-04..08 değişmez.

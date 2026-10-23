@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.15:Poi",
+  "title": "Poi",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "poi_id": {"type": "string", "minLength": 1, "description": "Sunucunun verdiği opak kimlik; yalnız tanımlayıcıdır."},
+    "provider_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider_id": {"type": "string", "minLength": 1},
+        "provider_place_id": {"type": "string", "minLength": 1, "description": "Sağlayıcının yer kimliği; yalnız yeniden doğrulama referansıdır. Sağlayıcıya özgü başka alan taşınmaz."}
+      },
+      "required": ["provider_id", "provider_place_id"]
+    },
+    "name": {"type": "string", "minLength": 1},
+    "categories": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Kanonik POI kategori kodları. Taksonomi OD-026 altında OPEN; karar verilene kadar boş listedir. Sağlayıcı kategori etiketleri dışarı verilmez."
+    },
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "latitude": {"type": "number", "minimum": -90, "maximum": 90},
+        "longitude": {"type": "number", "minimum": -180, "maximum": 180},
+        "address": {"type": ["string", "null"]},
+        "iana_timezone": {"type": ["string", "null"], "description": "Çalışma saatlerinin yorumlandığı saat dilimi; bilinmiyorsa null ve çalışma saati bir tarih/saate uygulanamaz."}
+      },
+      "required": ["latitude", "longitude", "address", "iana_timezone"]
+    },
+    "business_status": {
+      "allOf": [
+        {"$ref": "../../schemas/Sourced.schema.json"},
+        {"properties": {"value": {"enum": ["OPERATIONAL", "CLOSED_TEMPORARILY", "CLOSED_PERMANENTLY", "UNKNOWN"]}}}
+      ],
+      "description": "Yerin açık/kapalı durumu. Kanıtsızsa value=UNKNOWN, certainty=UNKNOWN. CLOSED_* yalnız sağlayıcı kanıtıyla."
+    },
+    "opening_hours": {
+      "allOf": [
+        {"$ref": "../../schemas/Sourced.schema.json"},
+        {
+          "properties": {
+            "value": {
+              "oneOf": [
+                {"type": "null"},
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "weekly": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "iso_weekday": {"type": "integer", "minimum": 1, "maximum": 7},
+                          "open": {"type": "string", "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"},
+                          "close": {"type": "string", "pattern": "^([01][0-9]|2[0-4]):[0-5][0-9]$"}
+                        },
+                        "required": ["iso_weekday", "open", "close"]
+                      }
+                    }
+                  },
+                  "required": ["weekly"]
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "description": "Haftalık düzenli çalışma saatleri (yerel saat). Kaynaklanamıyorsa value=null, certainty=UNKNOWN (RULE-POI-001-01). Özel gün/tatil istisnaları bu sürümde modellenmez; bu nedenle belirli bir tarih için uygunluk yalnız DAY-001 aşamasında ve kanıt yeterliyse değerlendirilir."
+    },
+    "visit_duration": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "minutes": {"type": ["integer", "null"], "minimum": 1},
+        "certainty": {"type": "string", "enum": ["ESTIMATED", "UNKNOWN"]},
+        "source_reference": {"type": ["string", "null"]}
+      },
+      "required": ["minutes", "certainty", "source_reference"],
+      "description": "Tahmini ziyaret süresi her zaman ESTIMATED'dır, asla kesin değildir (RULE-POI-001-03). Onaylı bir tahmin kaynağı yoksa minutes=null, certainty=UNKNOWN; varsayılan süre uydurulmaz."
+    },
+    "admission": {
+      "allOf": [
+        {"$ref": "../../schemas/Sourced.schema.json"},
+        {
+          "properties": {
+            "value": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "fee_required": {"type": ["boolean", "null"]},
+                "amount": {"oneOf": [{"$ref": "../../schemas/Money.schema.json"}, {"type": "null"}]}
+              },
+              "required": ["fee_required", "amount"]
+            }
+          }
+        }
+      ],
+      "description": "Giriş ücreti. Bilinmiyorsa fee_required=null, amount=null, certainty=UNKNOWN; bilinmeyen ücret 0 kabul edilmez. fee_required=false yalnız kaynaklı 'ücretsiz' kanıtıyla; amount yalnız kaynaklı tutarla."
+    },
+    "booking": {
+      "allOf": [
+        {"$ref": "../../schemas/Sourced.schema.json"},
+        {"properties": {"value": {"enum": ["REQUIRED", "RECOMMENDED", "NOT_REQUIRED", "UNKNOWN"]}}}
+      ],
+      "description": "Rezervasyon gereksinimi. Kanıtsızsa value=UNKNOWN (RULE-POI-001-01). source_reference, SCH-Sourced'taki gibi her zaman olgunun kanıt referansıdır (zorunlu string). FR-POI-001-02 rezervasyon bağlantısı yalnız şu durumda vardır: verification_status=FRESH ve kaynak onaylı resmi/uygun rezervasyon kaynağıdır; o zaman source_reference bu URL'dir. Aksi halde (UNVERIFIED/STALE/EXPIRED veya value=UNKNOWN) rezervasyon bağlantısı YOKTUR ve source_reference yalnız sağlayıcı kaydı/kanıt referansı olarak tutulur, rezervasyon bağlantısı olarak sunulmaz. Web sitesi rezervasyon URL'si sayılmaz. osm_overpass (OD-025): value=UNKNOWN, certainty=UNKNOWN, source_reference=OSM öğe URL'si (yalnız kanıt), rezervasyon bağlantısı yok."
+    }
+  },
+  "required": ["poi_id", "provider_ref", "name", "categories", "location", "business_status", "opening_hours", "visit_duration", "admission", "booking"],
+  "x-contract-id": "SCH-Poi",
+  "x-version": "3.15",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["POI-001", "RULE-POI-001-01", "RULE-POI-001-03", "RULE-POI-001-05", "RULE-POI-001-07", "FR-POI-001-02", "AC-POI-001-02", "AC-POI-001-03"],
+  "x-open-decisions": ["OD-025", "OD-026", "OD-013"],
+  "description": "Sağlayıcıdan bağımsız kanonik gezilecek yer. Ham sağlayıcı yanıtı ve sağlayıcıya özgü alanlar taşınmaz. Olguların kanıt durumu SCH-Sourced verification_status ile (VerificationStatus, TRN-VERIFICATION-01..03) yönetilir; STALE, EXPIRED veya UNVERIFIED olgu doğrulanmış gibi sunulmaz. Saklama süresi OD-025 sağlayıcı koşullarına ve OD-013'e bağlıdır."
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.16:PrincipalRef",
+  "title": "PrincipalRef",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "issuer": {"type": "string", "minLength": 1, "maxLength": 255, "description": "Doğrulanmış erişim token'ının iss değeri; yapılandırılmış CFG-AUTH-OIDC-ISSUER ile birebir aynı dize (normalleştirme yapılmaz)."},
+    "subject": {"type": "string", "minLength": 1, "maxLength": 255, "description": "Doğrulanmış erişim token'ının sub değeri; issuer içinde kararlı ve opaktır. E-posta, ad veya Traveler kimliği değildir."}
+  },
+  "required": ["issuer", "subject"],
+  "x-contract-id": "SCH-PrincipalRef",
+  "x-version": "3.16",
+  "x-status": "ACTIVE",
+  "x-audience": "INTERNAL",
+  "x-requirement-refs": ["PLT-AUTH-001", "RULE-PLT-AUTH-001-07", "RULE-PLT-AUTH-001-04"],
+  "x-adr-ref": "ADR-010",
+  "description": "Kanonik kimliği doğrulanmış principal (ADR-010): (issuer, subject) çifti. Yalnız sunucuda doğrulanmış token'dan türetilir; istemciden kabul edilmez. Karşılaştırma iki alanın birebir (büyük/küçük harf duyarlı) eşitliğidir. Saklama biçimi iki ayrı alan/sütundur (issuer, subject); birleştirilmiş tek dize kullanılmaz. Değişmezdir. Kamu yanıt şemalarında, POI görüntülerinde, PlanRevision'da ve outbox yüklerinde yer almaz; profil alanı (ad, e-posta) taşımaz."
+}

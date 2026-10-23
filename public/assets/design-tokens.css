@@ -1,0 +1,133 @@
+/* Seyahat Planlayıcısı — tasarım belirteçleri (tek kaynak).
+   Görsel yön "Lagün": derin lagün mavisi-yeşili ana renk, serin sis nötrleri, tutumlu mercan vurgu.
+   Bileşenler ve sayfalar yalnız buradaki anlamsal belirteçleri kullanır; ham renk/ölçü değeri yazılmaz.
+
+   Kırılım noktaları (CSS değişkenleri @media içinde kullanılamadığı için burada belgelenir):
+     sm 40rem (640px) · md 48rem (768px) · lg 64rem (1024px) · xl 90rem (1440px)
+   Düzen mobil öncelikli yazılır; @media (min-width: …) ile genişler. */
+:root {
+    color-scheme: light;
+
+    /* ── Renk: marka ───────────────────────────────────────────── */
+    --color-primary: #0b6477;          /* marka kimliği ve birincil eylemler */
+    --color-primary-hover: #084f5e;
+    --color-primary-active: #063d49;
+    --color-primary-subtle: #e2f0f2;   /* seçili/hover yüzeyleri */
+    --color-primary-border: #9cc7cf;
+    --color-on-primary: #ffffff;
+    --color-secondary: #173b45;        /* koyu mürekkep yüzeyi: ters bloklar, ipucu balonu */
+    --color-on-secondary: #ffffff;
+    --color-accent: #f0764f;           /* mercan: yalnız seyahatle ilgili önemli vurgu, dolgu olarak */
+    --color-accent-subtle: #fdeee8;
+    --color-accent-text: #a83c1b;      /* açık yüzeyde vurgu metni */
+    --color-on-accent: #3a1508;
+
+    /* ── Renk: nötrler ─────────────────────────────────────────── */
+    --color-background: #f3f6f6;
+    --color-surface: #ffffff;
+    --color-surface-sunken: #e9efef;   /* girintili alanlar, iskelet, görsel yer tutucu */
+    --color-surface-elevated: #ffffff; /* açılır katmanlar; gölgeyle birlikte kullanılır */
+    --color-border: #d3ddde;           /* ayırıcılar ve sakin çerçeveler */
+    --color-border-strong: #71878b;    /* form denetimleri (3:1 kontrast) */
+    --color-text-primary: #12282e;
+    --color-text-secondary: #3d555b;
+    --color-text-muted: #586e73;
+    --color-text-disabled: #8a9c9f;
+    --color-surface-disabled: #eef2f2;
+    --color-overlay: rgba(18, 40, 46, .48);
+
+    /* ── Renk: anlamsal (yalnız anlamı için) ───────────────────── */
+    --color-success: #1b7a4b;
+    --color-success-text: #146239;
+    --color-success-subtle: #e7f5ec;
+    --color-success-border: #a7d7bc;
+    --color-warning: #b7791f;
+    --color-warning-text: #734d00;
+    --color-warning-subtle: #fff5dc;
+    --color-warning-border: #e6c987;
+    --color-error: #b42335;
+    --color-error-text: #8f1b2a;
+    --color-error-subtle: #fdecee;
+    --color-error-border: #ebb4bb;
+    --color-info: #1f5fa8;
+    --color-info-text: #17508f;
+    --color-info-subtle: #eaf2fb;
+    --color-info-border: #b5cdeb;
+    --color-focus: #0b6477;
+
+    /* ── Tipografi ─────────────────────────────────────────────── */
+    --font-sans: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Noto Sans", system-ui, sans-serif;
+    --font-display: "Segoe UI Variable Display", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Noto Sans", system-ui, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+    --text-xs: .75rem;
+    --text-sm: .875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+    --text-4xl: 2.375rem;
+    --weight-regular: 400;
+    --weight-medium: 600;
+    --weight-bold: 700;
+    --leading-tight: 1.2;
+    --leading-snug: 1.35;
+    --leading-normal: 1.55;
+    --tracking-tight: -.02em;
+
+    /* ── Boşluk (4px tabanı) ───────────────────────────────────── */
+    --space-1: .25rem;
+    --space-2: .5rem;
+    --space-3: .75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+    --space-12: 3rem;
+    --space-16: 4rem;
+
+    /* ── Düzen ─────────────────────────────────────────────────── */
+    --container-narrow: 46rem;
+    --container-default: 72rem;
+    --container-wide: 86rem;
+    --gutter: clamp(1rem, 4vw, 2rem);
+    --header-height: 4rem;
+    --control-height: 2.75rem;      /* 44px: en küçük pratik dokunma hedefi */
+    --control-height-sm: 2.25rem;
+    --control-height-lg: 3.25rem;
+
+    /* ── Köşe, çerçeve, gölge ──────────────────────────────────── */
+    --radius-sm: .375rem;
+    --radius-md: .625rem;
+    --radius-lg: 1rem;
+    --radius-pill: 999px;
+    --border-width: 1px;
+    --border-width-strong: 2px;
+    --shadow-sm: 0 1px 2px rgba(18, 40, 46, .06);
+    --shadow-md: 0 .5rem 1.5rem rgba(18, 40, 46, .10);
+    --shadow-lg: 0 1.25rem 3rem rgba(18, 40, 46, .18);
+
+    /* ── Simge ─────────────────────────────────────────────────── */
+    --icon-sm: 1rem;
+    --icon-md: 1.25rem;
+    --icon-lg: 1.5rem;
+    --icon-stroke: 1.75;
+
+    /* ── Hareket ───────────────────────────────────────────────── */
+    --duration-fast: 120ms;
+    --duration-base: 200ms;
+    --ease-standard: cubic-bezier(.2, 0, 0, 1);
+
+    /* ── Odak ve devre dışı ────────────────────────────────────── */
+    --focus-ring-width: 3px;
+    --focus-ring-offset: 2px;
+    --focus: 0 0 0 var(--focus-ring-offset) var(--color-surface), 0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--color-focus);
+    --disabled-opacity: .55;
+
+    /* ── Katman sırası ─────────────────────────────────────────── */
+    --z-dropdown: 10;
+    --z-sticky: 20;
+    --z-overlay: 40;
+    --z-tooltip: 50;
+}

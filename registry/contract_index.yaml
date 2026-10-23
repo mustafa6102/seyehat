@@ -1,0 +1,70 @@
+version: 3.2.2
+status: CONDITIONAL
+schema_refs:
+- id: SCH-CostBreakdown
+  path: contracts/schemas/CostBreakdown.schema.json
+  status: ACTIVE
+- id: SCH-Derived
+  path: contracts/schemas/Derived.schema.json
+  status: ACTIVE
+- id: SCH-ErrorEnvelope
+  path: contracts/schemas/ErrorEnvelope.schema.json
+  status: ACTIVE
+- id: SCH-Evidence
+  path: contracts/schemas/Evidence.schema.json
+  status: ACTIVE
+- id: SCH-FlightOffer
+  path: contracts/schemas/FlightOffer.schema.json
+  status: ACTIVE
+- id: SCH-FxSnapshot
+  path: contracts/schemas/FxSnapshot.schema.json
+  status: ACTIVE
+- id: SCH-LocationRef
+  path: contracts/schemas/LocationRef.schema.json
+  status: ACTIVE
+- id: SCH-Money
+  path: contracts/schemas/Money.schema.json
+  status: ACTIVE
+- id: SCH-OfferSnapshot
+  path: contracts/schemas/OfferSnapshot.schema.json
+  status: ACTIVE
+- id: SCH-OutboxEvent
+  path: contracts/schemas/OutboxEvent.schema.json
+  status: PROVISIONAL
+- id: SCH-ProviderCapability
+  path: contracts/schemas/ProviderCapability.schema.json
+  status: ACTIVE
+- id: SCH-RankingResult
+  path: contracts/schemas/RankingResult.schema.json
+  status: ACTIVE
+- id: SCH-RouteOption
+  path: contracts/schemas/RouteOption.schema.json
+  status: ACTIVE
+- id: SCH-Sourced
+  path: contracts/schemas/Sourced.schema.json
+  status: ACTIVE
+- id: SCH-Traveler
+  path: contracts/schemas/Traveler.schema.json
+  status: ACTIVE
+- id: SCH-TravelerDocument
+  path: contracts/schemas/TravelerDocument.schema.json
+  status: ACTIVE
+- id: SCH-TripRequest
+  path: contracts/schemas/TripRequest.schema.json
+  status: ACTIVE
+- id: SCH-FlightSearchResult
+  path: contracts/schemas/FlightSearchResult.schema.json
+  status: ACTIVE
+openapi:
+- contracts/openapi/m1a.openapi.yaml
+- contracts/openapi/internal.openapi.yaml
+asyncapi: contracts/asyncapi/events.asyncapi.yaml
+registries:
+- contracts/registries/reason_error.yaml
+- contracts/registries/permissions.yaml
+- contracts/registries/config.yaml
+- contracts/registries/lifecycle.yaml
+- contracts/registries/od_impact.yaml
+- contracts/registries/test_data.yaml
+- contracts/registries/traceability.yaml
+m1b_plus_status: PLANNED

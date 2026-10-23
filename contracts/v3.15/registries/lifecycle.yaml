@@ -1,0 +1,24 @@
+version: 3.15.0
+inherits: ../../v3.14/registries/lifecycle.yaml
+new_machines:
+  - name: PoiDiscoveryJobStatus
+    enum_ref: SCH-PoiDiscoveryJob.status
+    phase: M3
+    states: [QUEUED, RUNNING, PARTIAL, COMPLETED, FAILED, EXPIRED]
+    transitions_ref: FlightSearchJob
+    allowed_reason_categories: [VALIDATION, EVIDENCE, PROVIDER]
+    note: FlightSearchJob (ADR-011) ile aynı durumlar ve geçişler. Kriter türetilemiyorsa, config OPEN ise veya onaylı sağlayıcı/yetenek kanıtı yoksa RUNNING öncesi FAILED; sağlayıcı çağrılmaz.
+    refs: [POI-001, FR-POI-001-03, ADR-011, OD-025]
+new_transitions: []
+changes:
+  - machine: VerificationStatus
+    semantics_changed: false
+    contract_surface: 'schema:Poi.schema.json (business_status, opening_hours, admission, booking)'
+    note: >-
+      POI olguları SCH-Sourced verification_status ile mevcut VerificationStatus makinesine tabidir; yeni durum veya geçiş eklenmedi.
+      Keşif veya başarılı OP-verifyPoi okuması dönen olguyu FRESH yapar (TRN-VERIFICATION-01; verified_at = okuma zamanı,
+      expires_at = okuma + CFG-POI-EVIDENCE-FRESHNESS). Tazelik penceresi geçince STALE (TRN-VERIFICATION-02), expires_at geçince EXPIRED
+      (TRN-VERIFICATION-03); okuma anında değerlendirilir. Sağlayıcının döndürmediği olgu UNVERIFIED ve certainty=UNKNOWN'dır.
+      Başarısız doğrulama olguları değiştirmez; mevcut kanıt zamanla eskir. CFG-POI-EVIDENCE-FRESHNESS OPEN iken kanıt FRESH kabul edilmez
+      (UNVERIFIED). Plan öğesi yaşam döngüsü tanımlanmadı (TRIP-BLD-001/DAY-001).
+    refs: [POI-001, RULE-POI-001-01, RULE-POI-001-05, AC-POI-001-06, AC-POI-001-07]

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.2:Evidence",
+  "title": "Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "system/provider",
+        "verification": "immutable evidence",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-001",
+          "BUS-004"
+        ]
+      }
+    },
+    "source_reference": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "CONFIDENTIAL",
+        "source_of_truth": "provider/source",
+        "verification": "source",
+        "security": "masked as needed",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-004"
+        ]
+      }
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "FRESH",
+        "STALE",
+        "EXPIRED",
+        "UNVERIFIED"
+      ],
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "derived",
+        "verification": "VerificationStatus",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "BUS-004"
+        ]
+      }
+    },
+    "version": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "system",
+        "verification": "version",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "NFR-AUD-001"
+        ]
+      }
+    }
+  },
+  "required": [
+    "id",
+    "source_reference",
+    "verification_status",
+    "version"
+  ],
+  "x-contract-id": "SCH-Evidence",
+  "x-version": "3.2",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": [
+    "BUS-001",
+    "BUS-004",
+    "NFR-AUD-001"
+  ]
+}

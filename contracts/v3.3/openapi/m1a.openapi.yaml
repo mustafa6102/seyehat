@@ -1,0 +1,171 @@
+openapi: 3.1.0
+info:
+  title: AI Seyahat Planlayıcısı M1A API v3.3 delta
+  version: 3.3.0
+  description: v3.2.2 baseline'ını devralan versioned M1A contract delta.
+servers: []
+x-inherits: ../../openapi/m1a.openapi.yaml
+paths:
+  /travelers:
+    post:
+      operationId: createTraveler
+      x-contract-id: OP-createTraveler
+      x-status: ACTIVE
+      x-requirement-refs: [TRV-001, AC-TRV-001-01, AC-TRV-001-02, AC-TRV-001-03]
+      responses:
+        '200':
+          description: Traveler oluşturuldu.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/Traveler.schema.json}
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+  /travelers/{travelerId}:
+    get:
+      operationId: getTraveler
+      x-contract-id: OP-getTraveler
+      x-status: ACTIVE
+      x-requirement-refs: [TRV-001, AC-TRV-001-01, PLT-AUTH-001, PLT-PII-001]
+      parameters:
+        - name: travelerId
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: Traveler döndürüldü.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/Traveler.schema.json}
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+  /flight-search-jobs:
+    post:
+      operationId: startFlightSearch
+      x-contract-id: OP-startFlightSearch
+      x-status: ACTIVE
+      x-adr-ref: ADR-011
+      x-requirement-refs: [FLT-002, PLT-REL-001]
+      description: Idempotency-Key ile tek mantıksal arama işi oluşturur. Request body v3.2 gereksinimlerinde tanımlı değildir ve bu deltada icat edilmez.
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: {type: string, minLength: 1, maxLength: 255}
+      responses:
+        '202':
+          description: Arama işi kuyruğa alındı; aynı idempotency anahtarı aynı search_id değerini döndürür.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/FlightSearchStartResponse.schema.json}
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+  /flight-search-jobs/{searchId}:
+    get:
+      operationId: pollFlightSearch
+      x-contract-id: OP-pollFlightSearch
+      x-status: ACTIVE
+      x-adr-ref: ADR-011
+      x-requirement-refs: [FLT-002, PLT-REL-001]
+      description: Güvenli ve idempotent polling GET; PARTIAL her okumada o ana kadarki tam FlightSearchResult snapshot'ını döndürür.
+      parameters:
+        - name: searchId
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: Güncel job durumu; COMPLETED/FAILED/EXPIRED terminaldir.
+          headers:
+            Retry-After:
+              description: Terminal olmayan durumda istemci için saniye cinsinden polling rehberi; kesin değer deployment config'e bağlıdır.
+              schema: {type: integer, minimum: 1}
+          content:
+            application/json:
+              schema: {$ref: ../schemas/FlightSearchJob.schema.json}
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+  /offers/{offerId}:
+    get:
+      operationId: getOffer
+      x-contract-id: OP-getOffer
+      x-status: ACTIVE
+      x-requirement-refs: [FLT-005, AC-FLT-005-01, AC-FLT-005-02, AC-FLT-005-03]
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: Canonical offer.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/FlightOffer.schema.json}
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+  /offers/{offerId}/reprice:
+    post:
+      operationId: repriceOffer
+      x-contract-id: OP-repriceOffer
+      x-status: ACTIVE
+      x-requirement-refs: [FLT-REPRICE-001, AC-FLT-REPRICE-001-03, AC-FLT-REPRICE-001-04, AC-FLT-REPRICE-001-05, AC-FLT-REPRICE-001-06, AC-FLT-REPRICE-001-07]
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: Canonical reprice result.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/RepriceResult.schema.json}
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+      x-warning-codes: [RC-EVIDENCE-OFFER-CHANGED, RC-EVIDENCE-OFFER-EXPIRED, RC-EVIDENCE-REPRICE-UNVERIFIED, RC-PROVIDER-TIMEOUT]
+  /offers/{offerId}/partner-redirect:
+    post:
+      operationId: createPartnerRedirect
+      x-contract-id: OP-createPartnerRedirect
+      x-status: PROVISIONAL
+      x-decision-ref: OD-015
+      x-requirement-refs: [FLT-REPRICE-001, AC-FLT-REPRICE-001-01, AC-FLT-REPRICE-001-02]
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: Yönlendirme öncesi offer snapshot; URL/token lifecycle OD-015 nedeniyle tanımlı değildir.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/OfferSnapshot.schema.json}
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+x-client-scope:
+  current: Laravel 12 web/API
+  mobile: OPEN
+  decision_ref: ADR-007

@@ -1,0 +1,88 @@
+version: 3.14.0
+inherits: ../../v3.13/registries/traceability.yaml
+requirement_to_contract:
+  - requirement: RULE-ACC-001-01
+    artifacts: [schema:AccommodationOffer.schema.json, schema:TripRequestAccommodationSelection.schema.json]
+    tests: [TS-ACC-001-01, TS-ACC-001-10]
+  - requirement: RULE-ACC-001-02
+    artifacts: [schema:AccommodationOffer.schema.json]
+    tests: [TS-ACC-001-10]
+  - requirement: RULE-ACC-001-04
+    artifacts: [schema:AccommodationSearchCriteria.schema.json, schema:TripRequest.schema.json, schema:LocationRef.schema.json, openapi:OP-startAccommodationSearch, lifecycle:AccommodationSearchJobStatus, config:CFG-ACCOMMODATION-SEARCH-RADIUS, reason_error:GAP-ACC-CRITERIA-001]
+    tests: [TS-ACC-001-04]
+    open_decisions: [OD-020, OD-021, OD-022]
+    note: OD-024 RESOLVED (desteklenen alt küme); çocuk/bebek OD-020'ye bağlı.
+  - requirement: RULE-ACC-001-09
+    artifacts: [schema:AccommodationOffer.schema.json, schema:AccommodationRevalidationResult.schema.json, lifecycle:TRN-ACCOFFER-04, lifecycle:TRN-ACCOFFER-05, lifecycle:TRN-ACCOFFER-01, lifecycle:TRN-ACCOFFER-03]
+    tests: [TS-ACC-001-12]
+  - requirement: AC-ACC-001-12
+    artifacts: [openapi:OP-pollAccommodationSearch, openapi:OP-revalidateAccommodationOffer, lifecycle:TRN-ACCOFFER-04, lifecycle:TRN-ACCOFFER-05]
+    tests: [TS-ACC-001-12]
+  - requirement: FR-ACC-001-03
+    artifacts: [config:CFG-ACCOMMODATION-SEARCH-MAX-PROPERTIES, config:CFG-RETRY-TIMEOUT-CIRCUIT]
+    open_decisions: [ADR-006]
+    note: Arama sonucu sınırı ve duffel_stays dayanıklılık değerleri OPEN.
+  - requirement: FR-ACC-001-06
+    artifacts: [schema:TripRequest.schema.json, schema:LocationRef.schema.json]
+    tests: [TS-ACC-001-11]
+  - requirement: AC-ACC-001-11
+    artifacts: [schema:TripRequest.schema.json, schema:LocationRef.schema.json]
+    tests: [TS-ACC-001-11]
+  - requirement: RULE-ACC-001-05
+    artifacts: [openapi:OP-selectTripRequestAccommodation, lifecycle:TRN-ACCSEL-01, reason_error:RC-DECISION-OFFER-NOT-SELECTABLE]
+    tests: [TS-ACC-001-05, TS-ACC-001-06]
+  - requirement: RULE-ACC-001-06
+    artifacts: [openapi:OP-revalidateAccommodationOffer, openapi:OP-reconfirmTripRequestAccommodation, lifecycle:TRN-ACCOFFER-01, lifecycle:TRN-ACCSEL-02, lifecycle:TRN-ACCSEL-04]
+    tests: [TS-ACC-001-07]
+  - requirement: RULE-ACC-001-07
+    artifacts: [schema:TripRequestAccommodationSelection.schema.json, lifecycle:TRN-ACCSEL-01]
+    tests: [TS-ACC-001-09]
+  - requirement: RULE-ACC-001-08
+    artifacts: [schema:AccommodationOffer.schema.json, schema:TripRequestAccommodationSelection.schema.json, config:CFG-ACCOMMODATION-SELECTION-TTL]
+    tests: [TS-ACC-001-10]
+  - requirement: FR-ACC-001-01
+    artifacts: [schema:AccommodationOffer.schema.json, openapi:OP-getAccommodationOffer]
+    open_decisions: [OD-023]
+  - requirement: FR-ACC-001-02
+    artifacts: []
+    note: RouteOption erişim maliyeti bu sürümde tanımlanmadı (RANK-001/M1B bağımlılığı).
+  - requirement: FR-ACC-001-03
+    artifacts: [openapi:OP-startAccommodationSearch, openapi:OP-pollAccommodationSearch, openapi:OP-getAccommodationOffer, openapi:OP-revalidateAccommodationOffer, schema:AccommodationSearchJob.schema.json, schema:AccommodationRevalidationResult.schema.json]
+    open_decisions: [OD-023, OD-024]
+  - requirement: FR-ACC-001-04
+    artifacts: [schema:TripRequestAccommodationSelection.schema.json, openapi:OP-selectTripRequestAccommodation]
+    open_decisions: [OD-013, OD-021]
+  - requirement: FR-ACC-001-05
+    artifacts: [openapi:OP-getTripRequestAccommodationSelection]
+    note: Seyahat Planım (TRIP-BLD-001 ekranı) yalnız okuyucudur; TRIP-BLD-001 Trip/ItineraryItem/PlanRevision tanımları değişmedi.
+  - requirement: AC-ACC-001-01
+    artifacts: [schema:AccommodationOffer.schema.json]
+    tests: [TS-ACC-001-01]
+  - requirement: AC-ACC-001-03
+    artifacts: [schema:AccommodationOffer.schema.json]
+    tests: [TS-ACC-001-02]
+  - requirement: AC-ACC-001-04
+    artifacts: [openapi:OP-startAccommodationSearch, openapi:OP-pollAccommodationSearch]
+    tests: [TS-ACC-001-04]
+  - requirement: AC-ACC-001-05
+    artifacts: [openapi:OP-selectTripRequestAccommodation, lifecycle:TRN-ACCSEL-01]
+    tests: [TS-ACC-001-05]
+  - requirement: AC-ACC-001-06
+    artifacts: [openapi:OP-selectTripRequestAccommodation, lifecycle:TRN-ACCOFFER-02, lifecycle:TRN-ACCOFFER-03]
+    tests: [TS-ACC-001-06]
+  - requirement: AC-ACC-001-07
+    artifacts: [openapi:OP-revalidateAccommodationOffer, openapi:OP-reconfirmTripRequestAccommodation, lifecycle:TRN-ACCSEL-02, lifecycle:TRN-ACCSEL-04]
+    tests: [TS-ACC-001-07]
+  - requirement: AC-ACC-001-08
+    artifacts: [openapi:OP-getTripRequestAccommodationSelection, lifecycle:TRN-ACCSEL-03]
+    tests: [TS-ACC-001-08]
+  - requirement: AC-ACC-001-09
+    artifacts: [openapi:OP-selectTripRequestAccommodation, lifecycle:TRN-ACCSEL-01]
+    tests: [TS-ACC-001-09]
+  - requirement: AC-ACC-001-10
+    artifacts: [openapi:OP-getTripRequestAccommodationSelection, schema:TripRequestAccommodationSelection.schema.json]
+    tests: [TS-ACC-001-10]
+  - requirement: ACC-001
+    artifacts: [schema:TripRequestAccommodationSelection.schema.json]
+    open_decisions: [OD-023, OD-014, ADR-010]
+    note: Erişim/sahiplik ADR-010 / PLT-AUTH-001 kararına kadar TripRequest ile aynı sınırdadır.

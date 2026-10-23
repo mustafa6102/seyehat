@@ -1,0 +1,70 @@
+version: 3.17.0
+inherits: ../../v3.16/registries/od_impact.yaml
+decisions:
+  - id: OD-028
+    title: Tarayıcı oturumunun TripRequest'e ait operasyonlara erişimi (web istemci entegrasyonu)
+    status: RESOLVED
+    impact_status: UNBLOCKED
+    decision_owner: user (2026-10-17)
+    decision: APPROVED - Seçenek A (oturumla doğrulanan, CSRF korumalı web adaptörleri).
+    findings: >-
+      v3.16 PLT-AUTH-001 retrofit'i ile od_impact ADR-010 blocked_pending_auth_task operasyonları bearerAuth + TripRequest owner ister.
+      Tarayıcı sayfaları bu operasyonları /api/v1 üzerinden Bearer token olmadan çağırır ve 401 RC-AUTHN-REQUIRED alır. Tarayıcı
+      girişi OIDC Authorization Code + PKCE ile yapılır ve principal (SCH-PrincipalRef) sunucu oturumunda tutulur; erişim token'ı
+      tarayıcıya verilmez. Sözleşme istemci entegrasyonunu ayrı görev olarak bırakır (v3.16 x-token-validation.clients) ve tarayıcı
+      oturumunun bu operasyonlara hangi kanaldan erişeceğini tanımlamaz. Mevcut kodda plan POI ekleme/çıkarma için oturumla doğrulanan
+      web uçları emsal olarak bulunur; bu kanal sözleşmede kayıtlı değildir.
+    affected_operations: [OP-startFlightSearch, OP-pollFlightSearch, OP-getTripRequestFlightSelection, OP-selectTripRequestFlight, OP-reconfirmTripRequestFlight, OP-startAccommodationSearch, OP-pollAccommodationSearch, OP-getTripRequestAccommodationSelection, OP-selectTripRequestAccommodation, OP-reconfirmTripRequestAccommodation, OP-startPoiDiscovery, OP-pollPoiDiscovery]
+    not_browser_called: [OP-getTripRequest]
+    affected_browser_flows:
+      - /planlar/{id}/ucuslar - uçuş araması başlatma ve poll (flight.js)
+      - /teklifler/{offerId}?talep={id} - uçuş seçimi okuma, seçme, yeniden onaylama (flight.js)
+      - /taleplerim - uçuş araması durum poll'u (flight.js)
+      - /planlar/{id}/plan - konaklama araması başlatma/poll, konaklama seçimi okuma/seçme/yeniden onaylama (accommodation.js)
+      - /planlar/{id}/plan - gezilecek yer keşfi başlatma/poll (poi.js)
+    unaffected: Teklif ve bağımsız POI operasyonları (OP-getOffer, OP-repriceOffer, OP-getAccommodationOffer, OP-revalidateAccommodationOffer, OP-getPoi, OP-verifyPoi) TripRequest'e ait değildir ve tarayıcıdan çalışmaya devam eder.
+    options:
+      - id: A
+        recommended: true
+        summary: >-
+          Oturumla doğrulanan web adaptörleri. Aynı origin'de, Laravel web oturumu + CSRF korumalı web rotaları; principal yalnız
+          SessionWebPrincipalResolver'dan, sahiplik mevcut TripRequestOwnership guard'ından (404 -> 403 sırası, owner'sız eski kayıt 403),
+          iş mantığı mevcut uygulama servislerinden (arama, poll, seçim, yeniden onay, idempotency) alınır; yanıt gövdeleri /api/v1 ile aynı
+          şemadır. Oturum yoksa 401 (giriş bağlantısı), yetki yoksa 403. /api/v1 Bearer-only kalır; token, PrincipalRef veya owner alanı
+          tarayıcıya verilmez; Bearer token üretilmez.
+        consequences: Yeni bir web (kamu API'si olmayan) yüzeyi oluşur; kimliksiz kullanıcılar arama/seçim yapamaz (girişe yönlendirilir).
+      - id: B
+        recommended: false
+        summary: Tarayıcı OIDC erişim token'ını alıp /api/v1'i Bearer ile çağırır.
+        consequences: Token tarayıcı JS'inde bulunur (XSS ile sızma, NFR-SEC-001/RULE-PLT-AUTH-001-08 riski); yenileme token'ı API'si yoktur; token ömrü dolunca akış kesilir.
+      - id: C
+        recommended: false
+        summary: Karar verilene kadar tarayıcı akışları kapalı kalır (yalnız API istemcileri).
+        consequences: Uçuş/konaklama/gezilecek yer web akışları kullanılamaz.
+    resolution:
+      channel: >-
+        Web kanalı kamu API'si değildir. Her etkilenen operasyon için aynı yol, metot, istek/yanıt şeması ve iş semantiği /web-api/v1
+        önekiyle Laravel web oturumu üzerinden sunulur (ör. POST /web-api/v1/flight-search-jobs, PUT
+        /web-api/v1/trip-requests/{tripRequestId}/flight-selection). /api/v1 yalnız bearerAuth kabul eder ve değişmez.
+      authentication: Principal yalnız SessionWebPrincipalResolver ile tamamlanmış tarayıcı OIDC girişinden (sunucu oturumu) alınır; istek verisinden, çerezden veya token'dan alınmaz. Oturum principal'i yoksa 401 AUTHENTICATION_REQUIRED (RC-AUTHN-REQUIRED).
+      csrf: Durum değiştiren istekler (POST/PUT) Laravel CSRF doğrulamasından geçer (X-CSRF-TOKEN); geçersiz/eksik token 419, kod null (GAP-ERR-UNREGISTERED-001), Türkçe mesaj; operasyon çalışmaz.
+      authorization: TripRequestOwnership ve /api/v1 ile aynı kontrol sırası (404 -> 403; iş için sahiplik yalnız kayıtlı trip_request_id; owner'sız eski kayıt 403, sahiplenilmez); yetki kontrolü gövde doğrulaması, idempotency kaydı, iş/kuyruk oluşturma, seçim değişikliği ve sağlayıcı çağrısından önce yapılır.
+      reuse: Aynı uygulama servisleri ve HTTP işleyicileri kullanılır; iş kuralları, yaşam döngüsü, idempotency ve hata semantiği çoğaltılmaz veya değiştirilmez.
+      secrecy: API Bearer token'ı üretilmez, saklanmaz ve tarayıcıya verilmez; PrincipalRef/owner alanı yanıtlarda yer almaz (RULE-PLT-AUTH-001-08).
+      persistence: Yeni tablo veya owner sütunu yok.
+    web_operations:
+      - {operation: OP-startFlightSearch, web: 'POST /web-api/v1/flight-search-jobs'}
+      - {operation: OP-pollFlightSearch, web: 'GET /web-api/v1/flight-search-jobs/{searchId}'}
+      - {operation: OP-getTripRequestFlightSelection, web: 'GET /web-api/v1/trip-requests/{tripRequestId}/flight-selection'}
+      - {operation: OP-selectTripRequestFlight, web: 'PUT /web-api/v1/trip-requests/{tripRequestId}/flight-selection'}
+      - {operation: OP-reconfirmTripRequestFlight, web: 'POST /web-api/v1/trip-requests/{tripRequestId}/flight-selection/reconfirm'}
+      - {operation: OP-startAccommodationSearch, web: 'POST /web-api/v1/accommodation-search-jobs'}
+      - {operation: OP-pollAccommodationSearch, web: 'GET /web-api/v1/accommodation-search-jobs/{searchId}'}
+      - {operation: OP-getTripRequestAccommodationSelection, web: 'GET /web-api/v1/trip-requests/{tripRequestId}/accommodation-selection'}
+      - {operation: OP-selectTripRequestAccommodation, web: 'PUT /web-api/v1/trip-requests/{tripRequestId}/accommodation-selection'}
+      - {operation: OP-reconfirmTripRequestAccommodation, web: 'POST /web-api/v1/trip-requests/{tripRequestId}/accommodation-selection/reconfirm'}
+      - {operation: OP-startPoiDiscovery, web: 'POST /web-api/v1/poi-discovery-jobs'}
+      - {operation: OP-pollPoiDiscovery, web: 'GET /web-api/v1/poi-discovery-jobs/{searchId}'}
+    unchanged: OP-getTripRequest web kanalına eklenmez (tarayıcı çağırmaz). Teklif ve bağımsız POI operasyonları /api/v1'de değişmeden kalır.
+    signed_out: Girişsiz kullanıcı bu operasyonları kullanamaz (RULE-PLT-AUTH-001-04); kimliksiz arama kapsam dışıdır.
+    implementation_gate: READY

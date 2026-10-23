@@ -1,0 +1,6 @@
+version: 3.12.0
+inherits: ../v3.11/contract_index.yaml
+contracts:
+  - {id: SCH-PassengerComposition, path: contracts/v3.12/schemas/PassengerComposition.schema.json, status: ACTIVE, audience: PUBLIC}
+  - {id: SCH-TripRequest, path: contracts/v3.12/schemas/TripRequest.schema.json, status: ACTIVE, replaces: 'urn:ai-seyahat:v3.9:TripRequest'}
+  - {id: SCH-FlightSearchCriteria, path: contracts/v3.12/schemas/FlightSearchCriteria.schema.json, status: ACTIVE, audience: INTERNAL, replaces: 'urn:ai-seyahat:v3.9:FlightSearchCriteria'}

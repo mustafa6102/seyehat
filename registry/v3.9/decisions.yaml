@@ -1,0 +1,9 @@
+version: 3.9.0
+inherits: ../v3.8/decisions.yaml
+decisions:
+  - id: OD-022
+    status: PARTIALLY_RESOLVED
+    decision: Uçuş yolculuğu ONE_WAY | ROUND_TRIP olarak açıkça seçilir; tarihler yöne özeldir (outbound_date, ROUND_TRIP için return_date) ve her biri v3.7 EXACT/FLEXIBLE anlamını korur. FLEXIBLE sınırları dahildir, tarihler saat dilimsiz takvim tarihidir, latest(return_date) < earliest(outbound_date) geçersizdir. Eski date_window readOnly/legacy olarak korunur, yeniden yorumlanmaz ve uçuş aramasına giremez.
+    approved_by: user (2026-09-29)
+    remaining_open: [LOCATION duffel_places resilience values (ADR-006), PASSENGER types (OD-020), cabin, criteria reason/error code (GAP-FLT-CRITERIA-001)]
+open_decisions: [OD-001, OD-008, OD-012, OD-013, OD-015, OD-020, OD-021, OD-022, ADR-007, ADR-010]

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.2:TravelerDocument",
+  "title": "TravelerDocument",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "document_type": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "SENSITIVE_PII",
+        "source_of_truth": "user",
+        "verification": "OPEN",
+        "security": "field encrypted/masked",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRV-001"
+        ]
+      }
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "FRESH",
+        "STALE",
+        "EXPIRED",
+        "UNVERIFIED"
+      ],
+      "x-metadata": {
+        "classification": "SENSITIVE_PII",
+        "source_of_truth": "derived",
+        "verification": "VerificationStatus",
+        "security": "field encrypted/masked",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRV-001"
+        ]
+      }
+    }
+  },
+  "required": [
+    "document_type",
+    "verification_status"
+  ],
+  "x-contract-id": "SCH-TravelerDocument",
+  "x-version": "3.2",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": [
+    "TRV-001"
+  ]
+}

@@ -1,0 +1,181 @@
+openapi: 3.1.0
+info:
+  title: AI Seyahat Planlayıcısı M1A API v3.14 delta
+  version: 3.14.0
+  description: v3.13.0 delta'sını devralan versioned contract delta. Yalnız aşağıdaki konaklama operasyonları eklenir; diğerleri önceki tanımla aynıdır.
+servers: []
+x-inherits: ../../v3.13/openapi/m1a.openapi.yaml
+paths:
+  /accommodation-search-jobs:
+    post:
+      operationId: startAccommodationSearch
+      x-contract-id: OP-startAccommodationSearch
+      x-status: ACTIVE
+      x-requirement-refs: [ACC-001, RULE-ACC-001-04, FR-ACC-001-03, AC-ACC-001-04]
+      x-open-decisions: [OD-023, OD-024]
+      description: >-
+        Bir SEARCHABLE TripRequest için konaklama araması başlatır (ADR-011). Kriter yalnız sunucuda TripRequest'ten türetilir
+        (SCH-AccommodationSearchCriteria); türetilemiyorsa iş sağlayıcı çağrılmadan FAILED olur. Onaylı sağlayıcı yoksa (OD-023)
+        iş sağlayıcı çağrılmadan Türkçe mesajla FAILED olur ve sahte teklif üretilmez.
+      parameters:
+        - {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1, maxLength: 255}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                trip_request_id: {type: string, minLength: 1, maxLength: 255}
+              required: [trip_request_id]
+      responses:
+        '202':
+          description: İş kuyruğa alındı veya aynı anahtarla mevcut iş döndü.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  search_id: {type: string}
+                  status: {type: string, enum: [QUEUED, RUNNING, PARTIAL, COMPLETED, FAILED, EXPIRED]}
+                required: [search_id, status]
+        '400': {description: 'Eksik Idempotency-Key veya şema ihlali. RC-VALIDATION-SCHEMA.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '404': {description: 'TripRequest bulunamadı. RC-RESOURCE-NOT-FOUND.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '409': {description: 'Anahtar farklı bir TripRequest için kullanılmış. RC-CONFLICT-IDEMPOTENCY-KEY.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '422': {description: 'TripRequest SEARCHABLE değil. RC-VALIDATION-TRIP-REQUEST-INCOMPLETE.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+  /accommodation-search-jobs/{searchId}:
+    get:
+      operationId: pollAccommodationSearch
+      x-contract-id: OP-pollAccommodationSearch
+      x-status: ACTIVE
+      x-requirement-refs: [ACC-001, FR-ACC-001-03, AC-ACC-001-04]
+      description: İşin gerçek durumunu ve kanonik konaklama tekliflerini döndürür. Sonuçlar yeniden doğrulanana kadar seçim için güncel sayılmaz.
+      parameters:
+        - {name: searchId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: Başarılı
+          content:
+            application/json:
+              schema: {$ref: ../schemas/AccommodationSearchJob.schema.json}
+        '404': {description: 'İş bulunamadı. RC-RESOURCE-NOT-FOUND.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+  /accommodation-offers/{offerId}:
+    get:
+      operationId: getAccommodationOffer
+      x-contract-id: OP-getAccommodationOffer
+      x-status: ACTIVE
+      x-requirement-refs: [ACC-001, FR-ACC-001-01, AC-ACC-001-01, AC-ACC-001-03]
+      description: Sunucuda saklı kanonik konaklama teklifini döndürür. offerId yalnız tanımlayıcıdır.
+      parameters:
+        - {name: offerId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: Başarılı
+          content:
+            application/json:
+              schema: {$ref: ../schemas/AccommodationOffer.schema.json}
+        '404': {description: 'Teklif bulunamadı veya süresi doldu. RC-RESOURCE-NOT-FOUND.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+  /accommodation-offers/{offerId}/revalidate:
+    post:
+      operationId: revalidateAccommodationOffer
+      x-contract-id: OP-revalidateAccommodationOffer
+      x-status: ACTIVE
+      x-requirement-refs: [ACC-001, RULE-ACC-001-06, FR-ACC-001-03, AC-ACC-001-06, AC-ACC-001-07]
+      x-open-decisions: [OD-023]
+      description: >-
+        Teklifi sağlayıcı teklif referansıyla yeniden doğrular ve sonucu sunucudaki en son doğrulama olarak saklar (TRN-ACCOFFER-01..03).
+        Sonuç CHANGED ise ve teklif bir TripRequest'in CURRENT seçimiyse seçim RECONFIRMATION_REQUIRED olur (TRN-ACCSEL-02).
+        UNVERIFIED veya zaman aşımı seçim durumunu değiştirmez. Sağlayıcı yeniden doğrulamayı desteklemiyorsa sonuç UNVERIFIED'dir.
+      parameters:
+        - {name: offerId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: Kanonik yeniden doğrulama sonucu.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/AccommodationRevalidationResult.schema.json}
+        '404': {description: 'Teklif bulunamadı. RC-RESOURCE-NOT-FOUND.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+      x-warning-codes: [RC-EVIDENCE-OFFER-CHANGED, RC-EVIDENCE-OFFER-EXPIRED, RC-EVIDENCE-REPRICE-UNVERIFIED, RC-PROVIDER-TIMEOUT]
+  /trip-requests/{tripRequestId}/accommodation-selection:
+    get:
+      operationId: getTripRequestAccommodationSelection
+      x-contract-id: OP-getTripRequestAccommodationSelection
+      x-status: ACTIVE
+      x-requirement-refs: [ACC-001, FR-ACC-001-05, AC-ACC-001-08, AC-ACC-001-10]
+      x-open-decisions: [ADR-010]
+      description: TripRequest'in konaklama seçimini döndürür; durum okuma anında değerlendirilir (TRN-ACCSEL-03). Seyahat Planım bu kaydı okur.
+      parameters:
+        - {name: tripRequestId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: Seçim mevcut.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/TripRequestAccommodationSelection.schema.json}
+        '404': {description: 'TripRequest yok veya konaklama seçilmedi. RC-RESOURCE-NOT-FOUND.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+    put:
+      operationId: selectTripRequestAccommodation
+      x-contract-id: OP-selectTripRequestAccommodation
+      x-status: ACTIVE
+      x-requirement-refs: [ACC-001, RULE-ACC-001-05, RULE-ACC-001-07, FR-ACC-001-04, AC-ACC-001-05, AC-ACC-001-06, AC-ACC-001-09]
+      x-open-decisions: [OD-021, ADR-010]
+      description: >-
+        Sunucuda saklı kanonik teklifi seçer (TRN-ACCSEL-01). İstek fiyat, vergi, tesis veya uygunluk verisi taşıyamaz. Koşullar: teklif bu
+        TripRequest'in konaklama arama sonucunda yer alır; en son doğrulama CURRENT (veya CHANGED ve accept_changed_offer=true); süresi
+        dolmamış ve geçerlilik süresi belirlenebilir; expected_verified_at bu doğrulamanın captured_at değerine eşit. Başarılı seçim öncekinin yerine geçer.
+      parameters:
+        - {name: tripRequestId, in: path, required: true, schema: {type: string}}
+        - {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1, maxLength: 255}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                offer_id: {type: string, minLength: 1, maxLength: 255}
+                expected_verified_at: {type: string, format: date-time}
+                accept_changed_offer: {type: boolean, default: false}
+              required: [offer_id, expected_verified_at]
+      responses:
+        '200':
+          description: Seçim CURRENT olarak saklandı.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/TripRequestAccommodationSelection.schema.json}
+        '400': {description: 'Eksik Idempotency-Key veya tanımsız alan. RC-VALIDATION-SCHEMA.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '404': {description: 'TripRequest veya saklı teklif bulunamadı. RC-RESOURCE-NOT-FOUND.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '409': {description: 'OFFER_NOT_SELECTABLE / OFFER_CHANGED / OFFER_EXPIRED / IDEMPOTENCY_KEY_CONFLICT; mevcut seçim değişmez.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+  /trip-requests/{tripRequestId}/accommodation-selection/reconfirm:
+    post:
+      operationId: reconfirmTripRequestAccommodation
+      x-contract-id: OP-reconfirmTripRequestAccommodation
+      x-status: ACTIVE
+      x-requirement-refs: [ACC-001, RULE-ACC-001-06, AC-ACC-001-07]
+      x-open-decisions: [ADR-010]
+      description: RECONFIRMATION_REQUIRED seçimi, aynı provider_offer_id için sunucudaki en son doğrulanmış teklifin açık kabulüyle CURRENT yapar (TRN-ACCSEL-04).
+      parameters:
+        - {name: tripRequestId, in: path, required: true, schema: {type: string}}
+        - {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1, maxLength: 255}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                expected_verified_at: {type: string, format: date-time}
+              required: [expected_verified_at]
+      responses:
+        '200':
+          description: Seçim yeniden onaylandı ve CURRENT oldu.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/TripRequestAccommodationSelection.schema.json}
+        '400': {description: 'RC-VALIDATION-SCHEMA.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '404': {description: 'TripRequest veya seçim bulunamadı. RC-RESOURCE-NOT-FOUND.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '409': {description: 'OFFER_NOT_SELECTABLE / OFFER_CHANGED / OFFER_EXPIRED / IDEMPOTENCY_KEY_CONFLICT.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}

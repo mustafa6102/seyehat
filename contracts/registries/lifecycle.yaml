@@ -1,0 +1,273 @@
+version: 3.2.2
+machines:
+- name: TripRequestStatus
+  enum_ref: TripRequestStatus
+  phase: M1A
+  allowed_reason_categories:
+  - VALIDATION
+  - DECISION
+- name: OfferState
+  enum_ref: OfferState
+  phase: M1A
+  allowed_reason_categories:
+  - EVIDENCE
+  - DECISION
+- name: VerificationStatus
+  enum_ref: VerificationStatus
+  phase: M1A
+  allowed_reason_categories:
+  - EVIDENCE
+  - DECISION
+- name: TravelerDocumentEvidenceFreshness
+  enum_ref: VerificationStatus
+  phase: M1A
+  note: Belgenin hukuki/geçerlilik doğrulaması değildir; TRV-001 kapsam dışı. Yalnız
+    belgeye ilişkin evidence tazeliğini gösterir.
+  allowed_reason_categories:
+  - EVIDENCE
+  - DECISION
+- name: PlanRevisionStatus
+  enum_ref: PlanRevisionStatus
+  phase: M1A contract foundation / PLT-CONC-001 M3
+  allowed_reason_categories:
+  - DECISION
+  - CONFLICT
+- name: ProposalStatus
+  enum_ref: ProposalStatus
+  phase: M1A contract foundation / PLT-CONC-001 M3
+  allowed_reason_categories:
+  - DECISION
+  - CONFLICT
+transitions:
+- id: TRN-TRIPREQUEST-01
+  machine: TripRequestStatus
+  from: DRAFT
+  to: SEARCHABLE
+  trigger: 'command: normalizeTripRequest'
+  guard: Zorunlu alanlar mevcut.
+  side_effects: Normalize TripRequest.
+  idempotency_key_source: OPEN
+  conflict_behavior: Aynı talep için tekrar uygulama idempotent olmalıdır; anahtar
+    kaynağı OPEN.
+  reason_error: RC-DECISION-TRIP-REQUEST-VALID
+  refs:
+  - RULE-TRIP-001-03
+  - AC-TRIP-001-01
+  - TS-TRIP-001-01
+  outcome: SUCCESS
+- id: TRN-OFFER-01
+  machine: OfferState
+  from: CURRENT
+  to: CHANGED
+  trigger: 'event: repriceResult'
+  guard: Fiyat veya kritik fare/bagaj koşulu değişti.
+  side_effects: Eski kullanıcı onayı geçersiz.
+  idempotency_key_source: provider_offer_id + reprice attempt (kaynak ayrıntısı OPEN)
+  conflict_behavior: Yeni fiyat onayı olmadan ilerlenmez.
+  reason_error: RC-EVIDENCE-OFFER-CHANGED
+  refs:
+  - RULE-FLT-REPRICE-001-03
+  - AC-FLT-REPRICE-001-06
+  - TS-FLT-REPRICE-001-07
+  outcome: DEGRADED
+- id: TRN-OFFER-02
+  machine: OfferState
+  from: CURRENT
+  to: EXPIRED
+  trigger: 'event: expiryCheck'
+  guard: expires_at geçmiş.
+  side_effects: Teklif satın alınabilir gösterilmez.
+  idempotency_key_source: provider_offer_id
+  conflict_behavior: Reprice gerekir.
+  reason_error: RC-EVIDENCE-OFFER-EXPIRED
+  refs:
+  - AC-FLT-REPRICE-001-04
+  - TS-FLT-REPRICE-001-04
+  outcome: DEGRADED
+- id: TRN-OFFER-03
+  machine: OfferState
+  from: CURRENT
+  to: UNVERIFIED
+  trigger: 'event: repriceFailure'
+  guard: Reprice timeout/başarısız.
+  side_effects: Freshness ve capability kullanıcıya gösterilir.
+  idempotency_key_source: provider_offer_id + attempt (OPEN)
+  conflict_behavior: Doğrulanmış gibi yayınlanmaz.
+  reason_error: RC-EVIDENCE-REPRICE-UNVERIFIED
+  refs:
+  - AC-FLT-REPRICE-001-07
+  - TS-FLT-REPRICE-001-05
+  outcome: DEGRADED
+- id: TRN-VERIFICATION-01
+  machine: VerificationStatus
+  from: UNVERIFIED
+  to: FRESH
+  trigger: 'event: verificationRecorded'
+  guard: verified_at ve expires_at geçerli.
+  side_effects: Durum okuma anında türetilir.
+  idempotency_key_source: evidence identity
+  conflict_behavior: Türetilmiş değer; mutation yok.
+  reason_error: RC-EVIDENCE-VERIFIED
+  refs:
+  - BUS-004
+  outcome: SUCCESS
+- id: TRN-VERIFICATION-02
+  machine: VerificationStatus
+  from: FRESH
+  to: STALE
+  trigger: 'event: readTimeEvaluation'
+  guard: Freshness penceresi geçmiş, expires_at henüz geçmemiş.
+  side_effects: STALE gösterilir.
+  idempotency_key_source: evidence identity
+  conflict_behavior: Türetilmiş değer.
+  reason_error: RC-EVIDENCE-STALE
+  refs:
+  - BUS-004
+  outcome: DEGRADED
+- id: TRN-VERIFICATION-03
+  machine: VerificationStatus
+  from: STALE
+  to: EXPIRED
+  trigger: 'event: readTimeEvaluation'
+  guard: expires_at geçmiş.
+  side_effects: EXPIRED gösterilir.
+  idempotency_key_source: evidence identity
+  conflict_behavior: Türetilmiş değer.
+  reason_error: RC-EVIDENCE-EXPIRED
+  refs:
+  - BUS-004
+  outcome: DEGRADED
+- id: TRN-TRAVELERDOCUMENT-01
+  machine: TravelerDocumentEvidenceFreshness
+  from: UNVERIFIED
+  to: FRESH
+  trigger: 'event: documentEvidenceRecorded'
+  guard: Belgeye ilişkin evidence kaydı mevcut; bu geçiş belge geçerliliği doğrulaması
+    değildir.
+  side_effects: TravelerDocument verification_status türetilir.
+  idempotency_key_source: document identity
+  conflict_behavior: Hassas veri erişimi policy ile korunur.
+  reason_error: RC-EVIDENCE-VERIFIED
+  refs:
+  - TRV-001
+  - PLT-PII-001
+  outcome: SUCCESS
+- id: TRN-PLANREVISION-01
+  machine: PlanRevisionStatus
+  from: CURRENT
+  to: SUPERSEDED
+  trigger: 'command: commitNewRevision'
+  guard: base_revision güncel ve atomik commit başarılı.
+  side_effects: Yeni revision CURRENT olur; eski SUPERSEDED.
+  idempotency_key_source: 'revision mutation key: OPEN'
+  conflict_behavior: Stale base 409/CONFLICT.
+  reason_error: RC-DECISION-TRANSITION-APPLIED
+  refs:
+  - PLT-CONC-001
+  - AC-PLT-CONC-001-01
+  - TS-PLT-CONC-001-01
+  outcome: SUCCESS
+- id: TRN-PROPOSAL-01
+  machine: ProposalStatus
+  from: PENDING_APPROVAL
+  to: APPLIED
+  trigger: 'command: applyProposal'
+  guard: base_revision güncel ve kullanıcı onayı var.
+  side_effects: Yeni PlanRevision oluşturulur.
+  idempotency_key_source: proposal id
+  conflict_behavior: Stale ise uygulanmaz.
+  reason_error: RC-DECISION-TRANSITION-APPLIED
+  refs:
+  - PLT-CONC-001
+  - AC-PLT-CONC-001-02
+  - TS-PLT-CONC-001-02
+  outcome: SUCCESS
+- id: TRN-PROPOSAL-02
+  machine: ProposalStatus
+  from: PENDING_APPROVAL
+  to: REJECTED
+  trigger: 'command: rejectProposal'
+  guard: Yetkili kullanıcı reddi.
+  side_effects: Plan değişmez.
+  idempotency_key_source: proposal id
+  conflict_behavior: Tekrarlı ret planı değiştirmez.
+  reason_error: RC-PROPOSAL-REJECTED
+  refs:
+  - PLT-CONC-001
+  outcome: REJECTED
+- id: TRN-PROPOSAL-03
+  machine: ProposalStatus
+  from: PENDING_APPROVAL
+  to: STALE
+  trigger: 'event: baseRevisionSuperseded'
+  guard: base_revision artık CURRENT değil.
+  side_effects: Öneri uygulanamaz.
+  idempotency_key_source: proposal id
+  conflict_behavior: 409/CONFLICT.
+  reason_error: RC-CONFLICT-REVISION-STALE
+  refs:
+  - PLT-CONC-001
+  - AC-PLT-CONC-001-02
+  outcome: DEGRADED
+- id: TRN-OFFER-04
+  machine: OfferState
+  from: CHANGED
+  to: CURRENT
+  trigger: 'command: acceptRepricedOffer'
+  guard: Yeni fiyat/kritik koşullar kullanıcı tarafından onaylandı.
+  side_effects: Teklif CURRENT olur; yeni onay audit edilir.
+  idempotency_key_source: provider_offer_id + reprice attempt (kaynak ayrıntısı OPEN)
+  conflict_behavior: Aynı provider_offer_id için son doğrulanmış reprice sonucu esas
+    alınır; ayrıntı provider contract ile kesinleşir.
+  reason_error: RC-EVIDENCE-VERIFIED
+  refs:
+  - RULE-FLT-REPRICE-001-03
+  - AC-FLT-REPRICE-001-03
+  - TS-FLT-REPRICE-001-03
+  outcome: SUCCESS
+- id: TRN-OFFER-05
+  machine: OfferState
+  from: UNVERIFIED
+  to: CURRENT
+  trigger: 'event: repriceResult'
+  guard: Retry/reprice başarıyla doğrulandı ve teklif geçerli.
+  side_effects: Freshness güncellenir; teklif CURRENT olur.
+  idempotency_key_source: provider_offer_id + reprice attempt (kaynak ayrıntısı OPEN)
+  conflict_behavior: Aynı provider_offer_id için son doğrulanmış reprice sonucu esas
+    alınır; ayrıntı provider contract ile kesinleşir.
+  reason_error: RC-EVIDENCE-VERIFIED
+  refs:
+  - AC-FLT-REPRICE-001-05
+  - TS-FLT-REPRICE-001-06
+  outcome: SUCCESS
+- id: TRN-OFFER-06
+  machine: OfferState
+  from: CHANGED
+  to: EXPIRED
+  trigger: 'event: expiryCheck'
+  guard: expires_at geçmiş.
+  side_effects: Teklif satın alınabilir gösterilmez.
+  idempotency_key_source: provider_offer_id + reprice attempt (kaynak ayrıntısı OPEN)
+  conflict_behavior: Aynı provider_offer_id için son doğrulanmış reprice sonucu esas
+    alınır; ayrıntı provider contract ile kesinleşir.
+  reason_error: RC-EVIDENCE-OFFER-EXPIRED
+  refs:
+  - AC-FLT-REPRICE-001-04
+  - TS-FLT-REPRICE-001-04
+  outcome: DEGRADED
+- id: TRN-OFFER-07
+  machine: OfferState
+  from: UNVERIFIED
+  to: EXPIRED
+  trigger: 'event: expiryCheck'
+  guard: expires_at geçmiş.
+  side_effects: Teklif satın alınabilir gösterilmez.
+  idempotency_key_source: provider_offer_id + reprice attempt (kaynak ayrıntısı OPEN)
+  conflict_behavior: Aynı provider_offer_id için son doğrulanmış reprice sonucu esas
+    alınır; ayrıntı provider contract ile kesinleşir.
+  reason_error: RC-EVIDENCE-OFFER-EXPIRED
+  refs:
+  - AC-FLT-REPRICE-001-04
+  - TS-FLT-REPRICE-001-04
+  outcome: DEGRADED
+invalid_transition_reason: RC-VALIDATION-INVALID-STATE-TRANSITION

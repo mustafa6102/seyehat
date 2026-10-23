@@ -1,0 +1,13 @@
+version: 3.16.0
+inherits: ../v3.15/decisions.yaml
+decisions:
+  - id: OD-021
+    status: RESOLVED
+    note: Bir TripRequest en fazla bir Trip; Trip ilk plan değişikliğinde tembel oluşur ve TripRequest'e kalıcı başvurur; uçuş/konaklama seçimleri TripRequest'te kalır. Traveler.trip_id hedefi Trip.
+  - id: OD-027
+    status: RESOLVED
+    note: 'İlk değişiklik If-None-Match: * ile Trip + revision 1; sonrakiler If-Match "<version>"; stale 409 RC-CONFLICT-REVISION-STALE; Idempotency-Key revision''a kalıcı bağlı; outbox aynı transaction.'
+  - id: ADR-010
+    status: PARTIALLY_RESOLVED
+    note: 'Kimlik doğrulama RESOLVED (2026-10-07): genel OIDC, tek yapılandırılmış issuer, Bearer JWT, principal = (iss, sub), token ömrü ve hesap kurtarma issuer''da. OPEN: ASVS seviyesi, secret yönetimi, SBOM, ayrıcalıklı erişim logu, internal adminOAuth.'
+open_decisions: [OD-001, OD-008, OD-011, OD-012, OD-013, OD-014, OD-015, OD-016, OD-020, OD-022, OD-026, ADR-006, ADR-007, ADR-010]

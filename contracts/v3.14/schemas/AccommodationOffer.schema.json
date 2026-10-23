@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.14:AccommodationOffer",
+  "title": "AccommodationOffer",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "offer_id": {"type": "string", "minLength": 1, "description": "Sunucunun verdiği opak teklif kimliği; yalnız tanımlayıcıdır."},
+    "property_id": {"type": "string", "minLength": 1, "description": "Tesisin sağlayıcı kapsamındaki kimliği."},
+    "property_name": {"type": "string", "minLength": 1},
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "address": {"type": ["string", "null"]},
+        "latitude": {"type": ["number", "null"], "minimum": -90, "maximum": 90},
+        "longitude": {"type": ["number", "null"], "minimum": -180, "maximum": 180}
+      },
+      "required": ["address", "latitude", "longitude"],
+      "description": "Bilinmeyen alanlar null'dur; tahmin edilmez. Konum değerlendirmesi (RULE-ACC-001-03) bu sürümün kapsamı değildir."
+    },
+    "check_in_date": {"type": "string", "format": "date"},
+    "check_out_date": {"type": "string", "format": "date"},
+    "room_description": {"type": ["string", "null"], "description": "Sağlayıcının oda/konaklama açıklaması; bilinmiyorsa null. Yapay zekâ metni değildir."},
+    "total_price": {
+      "$ref": "../../v3.3/schemas/DerivedMoney.schema.json",
+      "description": "Konaklamanın toplam fiyatı. Vergi veya zorunlu ücret bilinmiyorsa completeness=PARTIAL, value=null, known_lower_bound ve unknown_components doldurulur; bilinmeyen kalem 0 kabul edilmez (RULE-ACC-001-01, RULE-ACC-001-08)."
+    },
+    "cancellation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "policy": {"type": "string", "enum": ["REFUNDABLE", "PARTIALLY_REFUNDABLE", "NON_REFUNDABLE", "UNKNOWN"]},
+        "free_cancellation_until": {"type": ["string", "null"], "format": "date-time"},
+        "verification_status": {"type": "string", "enum": ["VERIFIED", "UNVERIFIED"]}
+      },
+      "required": ["policy", "free_cancellation_until", "verification_status"],
+      "description": "İptal koşulu bilinmiyorsa policy=UNKNOWN; iade edilemez teklif açıkça NON_REFUNDABLE gösterilir (AC-ACC-001-03)."
+    },
+    "check_in": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "from_time": {"type": ["string", "null"], "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"},
+        "until_time": {"type": ["string", "null"], "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"},
+        "verification_status": {"type": "string", "enum": ["VERIFIED", "UNVERIFIED"]}
+      },
+      "required": ["from_time", "until_time", "verification_status"],
+      "description": "Yerel tesis saati. UNVERIFIED bilgi kesin gerçek gibi sunulmaz (RULE-ACC-001-02)."
+    },
+    "state": {
+      "type": "string",
+      "enum": ["CURRENT", "CHANGED", "EXPIRED", "UNVERIFIED"],
+      "x-lifecycle": "AccommodationOfferState",
+      "description": "AccommodationOfferState. Arama ile keşfedilen teklif UNVERIFIED'dir (TRN-ACCOFFER-04); yalnız başarılı yeniden doğrulama (quote) CURRENT veya CHANGED yapar (TRN-ACCOFFER-05/01). UNVERIFIED = sunucuda başarılı teyit yok (hiç denenmedi veya tamamlanamadı); seçilemez ve güncel gösterilmez."
+    },
+    "expires_at": {"type": ["string", "null"], "format": "date-time", "description": "Sağlayıcının bildirdiği geçerlilik; bildirilmezse null."},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider_id": {"type": "string", "minLength": 1},
+        "provider_offer_id": {"type": "string", "minLength": 1, "description": "Yeniden doğrulama referansı; sağlayıcıya özgü başka alan taşınmaz."},
+        "fetched_at": {"type": "string", "format": "date-time"},
+        "verified_at": {"type": ["string", "null"], "format": "date-time", "description": "Son başarılı yeniden doğrulamanın (quote) zamanı; arama sonucunda null."}
+      },
+      "required": ["provider_id", "provider_offer_id", "fetched_at", "verified_at"]
+    }
+  },
+  "required": ["offer_id", "property_id", "property_name", "location", "check_in_date", "check_out_date", "room_description", "total_price", "cancellation", "check_in", "state", "expires_at", "source"],
+  "x-contract-id": "SCH-AccommodationOffer",
+  "x-version": "3.14",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["ACC-001", "FR-ACC-001-01", "RULE-ACC-001-01", "RULE-ACC-001-02", "RULE-ACC-001-08", "RULE-ACC-001-09", "AC-ACC-001-01", "AC-ACC-001-03", "AC-ACC-001-12"],
+  "x-open-decisions": ["OD-023"],
+  "description": "Sağlayıcıdan bağımsız kanonik konaklama teklifi. Ham sağlayıcı yanıtı, erişim anahtarı ve sağlayıcıya özgü alanlar taşınmaz."
+}

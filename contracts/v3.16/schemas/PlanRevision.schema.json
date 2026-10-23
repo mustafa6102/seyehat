@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.16:PlanRevision",
+  "title": "PlanRevision",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trip_id": {"type": "string", "minLength": 1, "readOnly": true},
+    "version": {"type": "integer", "minimum": 1, "readOnly": true, "description": "Trip başına monoton artan sürüm; ilk revision 1. ETag bu değerden türetilir (OD-027)."},
+    "status": {"type": "string", "enum": ["CURRENT", "SUPERSEDED"], "x-lifecycle": "PlanRevisionStatus", "readOnly": true},
+    "items": {"type": "array", "items": {"$ref": "./ItineraryItem.schema.json"}, "description": "Bu revision'daki plan öğelerinin tam listesi; birden çok POI içerebilir. Sıra ekleme sırasıdır ve gün içi sıralama anlamı taşımaz."},
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "FR-TRIP-BLD-001-02 before/after diff ve reason_code. before = base_version revision'ı, after = bu revision.",
+      "properties": {
+        "base_version": {"type": ["integer", "null"], "minimum": 1, "description": "Değişikliğin uygulandığı revision; ilk revision için null."},
+        "added_item_ids": {"type": "array", "items": {"type": "string"}},
+        "removed_item_ids": {"type": "array", "items": {"type": "string"}},
+        "reason_code": {"type": "string", "description": "contracts/registries/reason_error.yaml kodu; kullanıcı ekleme/çıkarma için RC-DECISION-TRANSITION-APPLIED."}
+      },
+      "required": ["base_version", "added_item_ids", "removed_item_ids", "reason_code"]
+    },
+    "created_at": {"type": "string", "format": "date-time", "readOnly": true}
+  },
+  "required": ["trip_id", "version", "status", "items", "change", "created_at"],
+  "x-contract-id": "SCH-PlanRevision",
+  "x-version": "3.16",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["TRIP-BLD-001", "FR-TRIP-BLD-001-01", "FR-TRIP-BLD-001-02", "AC-TRIP-BLD-001-02", "PLT-CONC-001", "RULE-PLT-CONC-001-01", "NFR-CONC-001"],
+  "x-open-decisions": ["ADR-010", "OD-013", "ADR-008"],
+  "description": "Immutable plan sürümü (OD-027 RESOLVED). Her başarılı plan değişikliği yeni revision oluşturur; önceki revision SUPERSEDED olur (TRN-PLANREVISION-01) ve değiştirilmez. Commit ile EVT-PlanRevisionCreated outbox kaydı aynı transaction'da yazılır (ADR-003)."
+}

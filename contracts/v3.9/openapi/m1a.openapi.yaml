@@ -1,0 +1,60 @@
+openapi: 3.1.0
+info:
+  title: AI Seyahat Planlayıcısı M1A API v3.9 delta
+  version: 3.9.0
+  description: v3.4.0 M1A delta'sını devralan versioned contract delta. Yalnız aşağıdaki operasyonlar değişir; diğerleri v3.4/v3.3/v3.2 tanımıyla aynıdır.
+servers: []
+x-inherits: ../../v3.4/openapi/m1a.openapi.yaml
+paths:
+  /trip-requests:
+    post:
+      operationId: createTripRequest
+      x-contract-id: OP-createTripRequest
+      x-status: ACTIVE
+      x-requirement-refs: [TRIP-001, AC-TRIP-001-01, AC-TRIP-001-02, AC-TRIP-001-03]
+      x-open-decisions: [OD-022]
+      description: Seyahat talebi oluşturur. v3.9 yazılabilir tarih modeli journey_type + outbound_date + return_date'dir; readOnly date_window ve tanımsız alanlar reddedilir. Zorunlu alan eksikse talep DRAFT kaydedilir ve 422 döner.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: ../schemas/TripRequest.schema.json}
+      responses:
+        '200':
+          description: Başarılı
+          content:
+            application/json:
+              schema: {$ref: ../schemas/TripRequest.schema.json}
+        '400':
+          description: İstek sözleşmeye uymuyor (tanımsız/readOnly alan, geçersiz journey_type, geçersiz tarih, ONE_WAY ile return_date, ters aralık, dönüşün gidişten tamamen önce olması). RC-VALIDATION-SCHEMA; details.fields alanları listeler.
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+        '422':
+          description: Zorunlu alan eksik (ROUND_TRIP için return_date dahil); talep DRAFT kalır. RC-VALIDATION-TRIP-REQUEST-INCOMPLETE; details.missing_fields.
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}
+  /trip-requests/{tripRequestId}:
+    get:
+      operationId: getTripRequest
+      x-contract-id: OP-getTripRequest
+      x-status: ACTIVE
+      x-requirement-refs: [TRIP-001, AC-TRIP-001-01]
+      description: Kayıtlı seyahat talebini döndürür. v3.9 öncesi kayıtlar date_window'u olduğu gibi ve journey alanları null olarak döner.
+      parameters:
+        - name: tripRequestId
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: Başarılı
+          content:
+            application/json:
+              schema: {$ref: ../schemas/TripRequest.schema.json}
+        '404':
+          description: Kaynak bulunamadı
+          content:
+            application/json:
+              schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}

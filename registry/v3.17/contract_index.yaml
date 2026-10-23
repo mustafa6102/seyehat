@@ -1,0 +1,4 @@
+version: 3.17.0
+inherits: ../v3.16/contract_index.yaml
+contracts: []
+note: Registry-only delta; no contract artifact is added or replaced. OD-028 RESOLVED (Seçenek A, web kanalı /web-api/v1; contracts/v3.17/registries/od_impact.yaml).

@@ -1,0 +1,21 @@
+version: 3.11.0
+inherits: ../v3.10/decisions.yaml
+decisions:
+  - id: OD-001
+    status: OPEN
+    note: Duffel Flights, urun sahibinin talimatiyla (2026-09-29) ilk somut arama adaptoru olarak uygulandi; adaptor yalniz aciktan yapilandirildiginda calisir. Sozlesme kosullari ve genel provider secimi OD-001 altinda OPEN kalir, cozulmus sayilmaz.
+  - id: OD-020
+    status: OPEN
+    note: Yolcu tipi degerleri tanimsiz. Duffel adaptoru yolcu tipi varsaymaz; yalniz DUFFEL_FLIGHTS_PASSENGER_POLICY=ALL_ADULT ile acikca etkinlestirilen gecici dagitim karariyla traveler_count kadar yetiskin gonderir. Bos ise arama kapali kalir.
+  - id: OD-022
+    status: PARTIALLY_RESOLVED
+    decision: Duffel adaptoru yalniz ONE_WAY + EXACT gidis tarihi ve katalogdan gelen IATA kimligi ile arama yapar. ROUND_TRIP (FlightOffer'da slice/yon yapisi yok), FLEXIBLE tarih ve kabin sinifi saglayiciya gonderilmez; saglayici cagrisindan once guvenli sekilde reddedilir.
+    remaining_open: [PASSENGER types (OD-020), cabin, criteria reason/error code (GAP-FLT-CRITERIA-001), FlightOffer direction/slice structure for ROUND_TRIP]
+  - id: ADR-006
+    status: OPEN
+    scoped_profiles: [geonames (geonames-ops-2026-09-28), duffel_places (duffel-places-ops-2026-09-29), duffel_flights (duffel-flights-ops-2026-09-29)]
+    note: Kapsamli dagitim profilleri ADR-006'yi genel olarak cozmez.
+  - id: OD-008
+    status: OPEN
+    note: Yalniz SEARCH yetenegi duffel_flights icin uygulanmistir; REPRICE ve BOOK dogrulanmis kanit olmadan isaretlenmez.
+open_decisions: [OD-001, OD-008, OD-012, OD-013, OD-015, OD-020, OD-021, OD-022, ADR-006, ADR-007, ADR-010]

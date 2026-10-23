@@ -1,0 +1,107 @@
+openapi: 3.1.0
+info:
+  title: AI Seyahat Planlayıcısı M1A API v3.15 delta
+  version: 3.15.0
+  description: v3.14.0 delta'sını devralan versioned contract delta. Yalnız aşağıdaki POI keşif/ayrıntı/doğrulama operasyonları eklenir; plan öğesine ekleme tanımlanmadı.
+servers: []
+x-inherits: ../../v3.14/openapi/m1a.openapi.yaml
+paths:
+  /poi-discovery-jobs:
+    post:
+      operationId: startPoiDiscovery
+      x-contract-id: OP-startPoiDiscovery
+      x-status: ACTIVE
+      x-requirement-refs: [POI-001, RULE-POI-001-04, FR-POI-001-01, FR-POI-001-03, AC-POI-001-04]
+      x-open-decisions: [OD-025, OD-026]
+      description: >-
+        Bir SEARCHABLE TripRequest için POI keşfi başlatır (ADR-011). Kriter yalnız sunucuda TripRequest'ten türetilir
+        (SCH-PoiDiscoveryCriteria); türetilemiyorsa, CFG değerleri OPEN ise veya onaylı sağlayıcı/yetenek kanıtı yoksa iş sağlayıcı
+        çağrılmadan Türkçe mesajla FAILED olur ve aday uydurulmaz.
+      parameters:
+        - {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1, maxLength: 255}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                trip_request_id: {type: string, minLength: 1, maxLength: 255}
+              required: [trip_request_id]
+      responses:
+        '202':
+          description: İş kuyruğa alındı veya aynı anahtarla mevcut iş döndü.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                properties:
+                  search_id: {type: string}
+                  status: {type: string, enum: [QUEUED, RUNNING, PARTIAL, COMPLETED, FAILED, EXPIRED]}
+                required: [search_id, status]
+        '400': {description: 'Eksik Idempotency-Key veya şema ihlali (kriter alanı gönderilemez). RC-VALIDATION-SCHEMA.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '404': {description: 'TripRequest bulunamadı. RC-RESOURCE-NOT-FOUND.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '409': {description: 'Anahtar farklı bir TripRequest için kullanılmış. RC-CONFLICT-IDEMPOTENCY-KEY.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '422': {description: 'TripRequest SEARCHABLE değil. RC-VALIDATION-TRIP-REQUEST-INCOMPLETE.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+  /poi-discovery-jobs/{searchId}:
+    get:
+      operationId: pollPoiDiscovery
+      x-contract-id: OP-pollPoiDiscovery
+      x-status: ACTIVE
+      x-requirement-refs: [POI-001, FR-POI-001-03, AC-POI-001-04]
+      description: İşin gerçek durumunu ve kanonik POI adaylarını döndürür. Adaylar uygulanabilir plan öğesi değildir.
+      parameters:
+        - {name: searchId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: Başarılı
+          content:
+            application/json:
+              schema: {$ref: ../schemas/PoiDiscoveryJob.schema.json}
+        '404': {description: 'İş bulunamadı. RC-RESOURCE-NOT-FOUND.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+  /pois/{poiId}:
+    get:
+      operationId: getPoi
+      x-contract-id: OP-getPoi
+      x-status: ACTIVE
+      x-requirement-refs: [POI-001, RULE-POI-001-01, RULE-POI-001-05, FR-POI-001-02, FR-POI-001-04, AC-POI-001-02, AC-POI-001-03]
+      x-open-decisions: [OD-025, OD-013]
+      description: >-
+        Sunucuda saklı kanonik POI'yi döndürür; poiId yalnız tanımlayıcıdır. Olguların verification_status değeri okuma anında
+        değerlendirilir (TRN-VERIFICATION-02/03). Saklama süresi sağlayıcı koşullarına bağlıdır; saklanması izinli olmayan veya süresi
+        geçmiş kayıt 404 döner.
+      parameters:
+        - {name: poiId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: Başarılı
+          content:
+            application/json:
+              schema: {$ref: ../schemas/Poi.schema.json}
+        '404': {description: 'POI bulunamadı veya artık saklanmıyor. RC-RESOURCE-NOT-FOUND.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+  /pois/{poiId}/verify:
+    post:
+      operationId: verifyPoi
+      x-contract-id: OP-verifyPoi
+      x-status: ACTIVE
+      x-requirement-refs: [POI-001, RULE-POI-001-05, RULE-POI-001-07, FR-POI-001-04, AC-POI-001-06, AC-POI-001-07, AC-POI-001-08]
+      x-open-decisions: [OD-025]
+      description: >-
+        POI olgularını provider_ref ile sağlayıcıdan yeniden okur. verified=true yalnız yeniden okumanın başarılı olduğunu bildirir;
+        olgular yeni yanıttan yeniden üretilir, fetched_at ilerleyebilir, döndürülmeyen olgular UNKNOWN kalır. Dönen olgular yalnız
+        doğrulanmış kanıt tabanı olan sağlayıcıda FRESH olur (TRN-VERIFICATION-01); osm_overpass (OD-025) olguları UNVERIFIED ve
+        verified_at null kalır. CLOSED_* yalnız sağlayıcının açık kapanma kanıtıyla (osm_overpass eşlemez); öğenin silinmesi/bulunamaması
+        kapanma kanıtı değildir. Başarısızsa veya öğe yoksa olgular değişmez, verified=false ve RC-EVIDENCE-UNVERIFIED (zaman aşımında
+        ayrıca RC-PROVIDER-TIMEOUT). Yetenek kanıtı veya config yoksa sağlayıcı çağrılmaz (verified=false).
+      parameters:
+        - {name: poiId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: Doğrulama sonucu.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/PoiVerificationResult.schema.json}
+        '404': {description: 'POI bulunamadı. RC-RESOURCE-NOT-FOUND.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+      x-warning-codes: [RC-EVIDENCE-UNVERIFIED, RC-PROVIDER-TIMEOUT]

@@ -1,0 +1,8 @@
+version: 3.5.0
+inherits: ../v3.4/decisions.yaml
+decisions:
+  - id: OD-022
+    status: PARTIALLY_RESOLVED
+    decision: Uçuş arama kriteri, SEARCHABLE TripRequest'in origin_place, destination_place, date_window ve traveler_count alanlarının dönüştürülmemiş kopyasıdır (SCH-FlightSearchCriteria); preferences kriter değildir.
+    remaining_open: [aviation identifier / location mapping, location-kind eligibility, date direction and flexibility, passenger types (OD-020), cabin, trip type, criteria reason/error code]
+open_decisions: [OD-001, OD-008, OD-012, OD-013, OD-015, OD-020, OD-021, OD-022, ADR-007, ADR-010]

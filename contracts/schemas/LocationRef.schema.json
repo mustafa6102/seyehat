@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.2:LocationRef",
+  "title": "LocationRef",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "PUBLIC",
+        "source_of_truth": "user/domain",
+        "verification": "normalized",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    },
+    "value": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "PUBLIC",
+        "source_of_truth": "user/domain",
+        "verification": "normalized",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    },
+    "iana_timezone": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "PUBLIC",
+        "source_of_truth": "domain",
+        "verification": "normalized",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    }
+  },
+  "required": [
+    "kind",
+    "value",
+    "iana_timezone"
+  ],
+  "x-contract-id": "SCH-LocationRef",
+  "x-version": "3.2",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": [
+    "TRIP-001"
+  ]
+}

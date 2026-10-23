@@ -1,0 +1,407 @@
+version: 3.2.2
+records:
+- id: RC-VALIDATION-INVALID-STATE-TRANSITION
+  kind: ERROR
+  category: VALIDATION
+  machine_code: INVALID_STATE_TRANSITION
+  http_status: 409
+  audit_reason_code: INVALID_STATE_TRANSITION
+  message_key_tr: reason.invalid_state_transition
+  default_message_tr: İstenen durum geçişi geçerli değil.
+  retryable: false
+  user_actionable: true
+  severity: WARN
+  fallback: Durum değiştirilmez.
+  pii_safe_logging: true
+  refs:
+  - PLT-CONC-001
+- id: RC-VALIDATION-TRIP-REQUEST-INCOMPLETE
+  kind: ERROR
+  category: VALIDATION
+  machine_code: TRIP_REQUEST_INCOMPLETE
+  http_status: 422
+  audit_reason_code: TRIP_REQUEST_INCOMPLETE
+  message_key_tr: reason.trip_request_incomplete
+  default_message_tr: Seyahat talebinin zorunlu alanları eksik.
+  retryable: false
+  user_actionable: true
+  severity: WARN
+  fallback: Talep aranabilir duruma geçmez.
+  pii_safe_logging: true
+  refs:
+  - TRIP-001
+  - AC-TRIP-001-02
+- id: RC-CONFLICT-REVISION-STALE
+  kind: ERROR
+  category: CONFLICT
+  machine_code: REVISION_STALE
+  http_status: 409
+  audit_reason_code: REVISION_STALE
+  message_key_tr: reason.revision_stale
+  default_message_tr: Plan sürümü güncel değil.
+  retryable: false
+  user_actionable: true
+  severity: WARN
+  fallback: Güncel revision yeniden yüklenir.
+  pii_safe_logging: true
+  refs:
+  - PLT-CONC-001
+  - NFR-CONC-001
+- id: RC-PROVIDER-TIMEOUT
+  kind: ERROR
+  category: PROVIDER
+  machine_code: PROVIDER_TIMEOUT
+  http_status: 503
+  audit_reason_code: PROVIDER_TIMEOUT
+  message_key_tr: reason.provider_timeout
+  default_message_tr: Sağlayıcı yanıtı zamanında alınamadı.
+  retryable: true
+  user_actionable: false
+  severity: WARN
+  fallback: Doğrulanmamış veri üretilmez; kısmi sonuç uygulanır.
+  pii_safe_logging: true
+  refs:
+  - PLT-REL-001
+  - FLT-REPRICE-001
+- id: RC-EVIDENCE-OFFER-EXPIRED
+  kind: WARNING
+  category: EVIDENCE
+  machine_code: OFFER_EXPIRED
+  http_status: null
+  audit_reason_code: OFFER_EXPIRED
+  message_key_tr: reason.offer_expired
+  default_message_tr: Teklifin geçerlilik süresi doldu.
+  retryable: true
+  user_actionable: true
+  severity: WARN
+  fallback: Reprice gerekir; satın alınabilir olarak gösterilmez.
+  pii_safe_logging: true
+  refs:
+  - FLT-REPRICE-001
+- id: RC-EVIDENCE-OFFER-CHANGED
+  kind: WARNING
+  category: EVIDENCE
+  machine_code: OFFER_CHANGED
+  http_status: null
+  audit_reason_code: OFFER_CHANGED
+  message_key_tr: reason.offer_changed
+  default_message_tr: Teklifin fiyatı veya kritik koşulları değişti.
+  retryable: false
+  user_actionable: true
+  severity: WARN
+  fallback: Yeni kullanıcı onayı gerekir.
+  pii_safe_logging: true
+  refs:
+  - FLT-REPRICE-001
+- id: RC-EVIDENCE-UNVERIFIED
+  kind: WARNING
+  category: EVIDENCE
+  machine_code: UNVERIFIED_EVIDENCE
+  http_status: null
+  audit_reason_code: UNVERIFIED_EVIDENCE
+  message_key_tr: reason.unverified_evidence
+  default_message_tr: Kritik bilgi doğrulanamadı.
+  retryable: true
+  user_actionable: true
+  severity: WARN
+  fallback: UNKNOWN/UNVERIFIED olarak gösterilir.
+  pii_safe_logging: true
+  refs:
+  - BUS-004
+  - NFR-AVL-001
+- id: RC-RANKING-PARTIAL-COST
+  kind: DECISION_REASON
+  category: RANKING
+  machine_code: PARTIAL_COST_NOT_CHEAPEST
+  http_status: null
+  audit_reason_code: PARTIAL_COST_NOT_CHEAPEST
+  message_key_tr: reason.partial_cost_not_cheapest
+  default_message_tr: Eksik maliyetli rota en ucuz olarak öne çıkarılmadı.
+  retryable: false
+  user_actionable: false
+  severity: INFO
+  fallback: PARTIAL maliyet ayrı değerlendirilir.
+  pii_safe_logging: true
+  refs:
+  - RANK-001
+  - AC-RANK-001-02
+- id: RC-RANKING-ROUTE-DECISION
+  kind: DECISION_REASON
+  category: RANKING
+  machine_code: ROUTE_DECISION_PRIORITY
+  http_status: null
+  audit_reason_code: ROUTE_DECISION_PRIORITY
+  message_key_tr: reason.route_decision_priority
+  default_message_tr: Rota karar sınıfı sıralamada önceliklendirildi.
+  retryable: false
+  user_actionable: false
+  severity: INFO
+  fallback: RECOMMENDED, uyarılı sonuçlardan önce gelir.
+  pii_safe_logging: true
+  refs:
+  - RANK-001
+  - AC-RANK-001-03
+- id: RC-RISK-UNPROTECTED-NOT-RECOMMENDED
+  kind: DECISION_REASON
+  category: RISK
+  machine_code: UNPROTECTED_NOT_RECOMMENDED
+  http_status: null
+  audit_reason_code: UNPROTECTED_NOT_RECOMMENDED
+  message_key_tr: reason.unprotected_not_recommended
+  default_message_tr: Korumasız self-transfer önerilen olarak işaretlenemez.
+  retryable: false
+  user_actionable: true
+  severity: WARN
+  fallback: En fazla uyarıyla gösterilir.
+  pii_safe_logging: true
+  refs:
+  - BUS-003
+- id: RC-COMPLIANCE-NEEDS-VERIFICATION
+  kind: DECISION_REASON
+  category: COMPLIANCE
+  machine_code: COMPLIANCE_NEEDS_VERIFICATION
+  http_status: null
+  audit_reason_code: COMPLIANCE_NEEDS_VERIFICATION
+  message_key_tr: reason.compliance_needs_verification
+  default_message_tr: Uyum değerlendirmesi için ek doğrulama gerekiyor.
+  retryable: false
+  user_actionable: true
+  severity: WARN
+  fallback: ComplianceResult=NEEDS_VERIFICATION; hata değildir.
+  pii_safe_logging: true
+  refs:
+  - TRV-001
+  - AC-TRV-001-02
+- id: RC-AUTHZ-DENIED
+  kind: ERROR
+  category: AUTHORIZATION
+  machine_code: AUTHORIZATION_DENIED
+  http_status: 403
+  audit_reason_code: AUTHORIZATION_DENIED
+  message_key_tr: reason.authorization_denied
+  default_message_tr: Bu işlem için yetkiniz bulunmuyor.
+  retryable: false
+  user_actionable: true
+  severity: WARN
+  fallback: İşlem yapılmaz; audit kaydı oluşturulur.
+  pii_safe_logging: true
+  refs:
+  - PLT-AUTH-001
+  - NFR-AUTH-001
+- id: RC-SEARCH-BUDGET-EXHAUSTED
+  kind: WARNING
+  category: BUDGET
+  machine_code: SEARCH_BUDGET_EXHAUSTED
+  http_status: null
+  audit_reason_code: SEARCH_BUDGET_EXHAUSTED
+  message_key_tr: reason.search_budget_exhausted
+  default_message_tr: Arama bütçesi dolduğu için sonuçlar kısmi olabilir.
+  retryable: true
+  user_actionable: false
+  severity: WARN
+  fallback: Kısmi sonuç açıkça etiketlenir.
+  pii_safe_logging: true
+  refs:
+  - NFR-SCL-001
+  - PLT-REL-001
+- id: RC-EVIDENCE-VERIFIED
+  kind: DECISION_REASON
+  category: EVIDENCE
+  machine_code: EVIDENCE_VERIFIED
+  http_status: null
+  audit_reason_code: EVIDENCE_VERIFIED
+  message_key_tr: reason.evidence_verified
+  default_message_tr: 'Bilgi doğrulama kaydı güncel. '
+  retryable: false
+  user_actionable: false
+  severity: INFO
+  fallback: FRESH olarak değerlendirilir.
+  pii_safe_logging: true
+  refs:
+  - BUS-004
+- id: RC-EVIDENCE-STALE
+  kind: WARNING
+  category: EVIDENCE
+  machine_code: EVIDENCE_STALE
+  http_status: null
+  audit_reason_code: EVIDENCE_STALE
+  message_key_tr: reason.evidence_stale
+  default_message_tr: 'Bilginin doğrulama tazeliği azalmış. '
+  retryable: true
+  user_actionable: true
+  severity: WARN
+  fallback: STALE olarak gösterilir.
+  pii_safe_logging: true
+  refs:
+  - BUS-004
+- id: RC-EVIDENCE-EXPIRED
+  kind: WARNING
+  category: EVIDENCE
+  machine_code: EVIDENCE_EXPIRED
+  http_status: null
+  audit_reason_code: EVIDENCE_EXPIRED
+  message_key_tr: reason.evidence_expired
+  default_message_tr: 'Bilginin doğrulama süresi dolmuş. '
+  retryable: true
+  user_actionable: true
+  severity: WARN
+  fallback: EXPIRED olarak gösterilir.
+  pii_safe_logging: true
+  refs:
+  - BUS-004
+- id: RC-PROPOSAL-REJECTED
+  kind: DECISION_REASON
+  category: DECISION
+  machine_code: PROPOSAL_REJECTED
+  http_status: null
+  audit_reason_code: PROPOSAL_REJECTED
+  message_key_tr: reason.proposal_rejected
+  default_message_tr: Öneri yetkili kullanıcı tarafından reddedildi.
+  retryable: false
+  user_actionable: false
+  severity: INFO
+  fallback: Plan değiştirilmez.
+  pii_safe_logging: true
+  refs:
+  - PLT-CONC-001
+- id: RC-VALIDATION-SCHEMA
+  kind: ERROR
+  category: VALIDATION
+  machine_code: SCHEMA_VALIDATION_FAILED
+  http_status: 400
+  audit_reason_code: SCHEMA_VALIDATION_FAILED
+  message_key_tr: reason.schema_validation_failed
+  default_message_tr: İstek biçimi veya alanları geçerli değil.
+  retryable: false
+  user_actionable: true
+  severity: WARN
+  fallback: İstek işlenmez.
+  pii_safe_logging: true
+  refs:
+  - TRIP-001
+  - TRV-001
+- id: RC-AUTHN-REQUIRED
+  kind: ERROR
+  category: AUTHENTICATION
+  machine_code: AUTHENTICATION_REQUIRED
+  http_status: 401
+  audit_reason_code: AUTHENTICATION_REQUIRED
+  message_key_tr: reason.authentication_required
+  default_message_tr: Bu işlem için kimlik doğrulaması gerekiyor.
+  retryable: false
+  user_actionable: true
+  severity: WARN
+  fallback: İşlem yapılmaz.
+  pii_safe_logging: true
+  refs:
+  - PLT-AUTH-001
+- id: RC-RESOURCE-NOT-FOUND
+  kind: ERROR
+  category: NOT_FOUND
+  machine_code: RESOURCE_NOT_FOUND
+  http_status: 404
+  audit_reason_code: RESOURCE_NOT_FOUND
+  message_key_tr: reason.resource_not_found
+  default_message_tr: İstenen kayıt bulunamadı.
+  retryable: false
+  user_actionable: true
+  severity: WARN
+  fallback: İşlem yapılmaz.
+  pii_safe_logging: true
+  refs:
+  - TRIP-001
+  - TRV-001
+  - FLT-005
+- id: RC-PROVIDER-RATE-LIMITED
+  kind: ERROR
+  category: PROVIDER
+  machine_code: PROVIDER_RATE_LIMITED
+  http_status: null
+  audit_reason_code: PROVIDER_RATE_LIMITED
+  message_key_tr: reason.provider_rate_limited
+  default_message_tr: Sağlayıcı istek sınırı nedeniyle geçici olarak yanıt veremedi.
+  retryable: true
+  user_actionable: false
+  severity: WARN
+  fallback: Provider retry/degraded-mode politikası uygulanır.
+  pii_safe_logging: true
+  refs:
+  - PLT-REL-001
+- id: RC-CONFLICT-IDEMPOTENCY-KEY
+  kind: ERROR
+  category: CONFLICT
+  machine_code: IDEMPOTENCY_KEY_CONFLICT
+  http_status: 409
+  audit_reason_code: IDEMPOTENCY_KEY_CONFLICT
+  message_key_tr: reason.idempotency_key_conflict
+  default_message_tr: Aynı idempotency anahtarı farklı bir istek için kullanılamaz.
+  retryable: false
+  user_actionable: true
+  severity: WARN
+  fallback: Yeni mutasyon uygulanmaz.
+  pii_safe_logging: true
+  refs:
+  - NFR-CONC-001
+- id: RC-PLATFORM-RATE-LIMITED
+  kind: ERROR
+  category: RATE_LIMIT
+  machine_code: PLATFORM_RATE_LIMITED
+  http_status: 429
+  audit_reason_code: PLATFORM_RATE_LIMITED
+  message_key_tr: reason.platform_rate_limited
+  default_message_tr: İstek sınırı aşıldı. Daha sonra yeniden deneyin.
+  retryable: true
+  user_actionable: true
+  severity: WARN
+  fallback: İstek işlenmez; rate-limit başlıkları uygulanır.
+  pii_safe_logging: true
+  refs:
+  - PLT-REL-001
+- id: RC-EVIDENCE-REPRICE-UNVERIFIED
+  kind: WARNING
+  category: EVIDENCE
+  machine_code: REPRICE_UNVERIFIED
+  http_status: null
+  audit_reason_code: REPRICE_UNVERIFIED
+  message_key_tr: reason.reprice_unverified
+  default_message_tr: Teklif yeniden doğrulanamadı; doğrulanmamış olarak gösteriliyor.
+  retryable: true
+  user_actionable: true
+  severity: WARN
+  fallback: Teklif UNVERIFIED olarak gösterilir; kesin fiyat olarak sunulmaz.
+  pii_safe_logging: true
+  refs:
+  - FLT-REPRICE-001
+  - AC-FLT-REPRICE-001-07
+- id: RC-DECISION-TRANSITION-APPLIED
+  kind: DECISION_REASON
+  category: DECISION
+  machine_code: TRANSITION_APPLIED
+  http_status: null
+  audit_reason_code: TRANSITION_APPLIED
+  message_key_tr: reason.transition_applied
+  default_message_tr: Durum geçişi başarıyla uygulandı.
+  retryable: false
+  user_actionable: false
+  severity: INFO
+  fallback: Yok.
+  pii_safe_logging: true
+  refs:
+  - PLT-CONC-001
+- id: RC-DECISION-TRIP-REQUEST-VALID
+  kind: DECISION_REASON
+  category: DECISION
+  machine_code: TRIP_REQUEST_VALID
+  http_status: null
+  audit_reason_code: TRIP_REQUEST_VALID
+  message_key_tr: reason.trip_request_valid
+  default_message_tr: Seyahat talebi aranabilir duruma geçmek için gerekli alanları
+    içeriyor.
+  retryable: false
+  user_actionable: false
+  severity: INFO
+  fallback: Yok.
+  pii_safe_logging: true
+  refs:
+  - TRIP-001
+  - AC-TRIP-001-01

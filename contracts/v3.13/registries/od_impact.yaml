@@ -1,0 +1,27 @@
+version: 3.13.0
+inherits: ../../v3.12/registries/od_impact.yaml
+decisions:
+  - id: OD-011
+    status: OPEN
+    impact_status: BLOCKED
+    note: Uçuş seçimi (SCH-TripRequestFlightSelection) iş modelinden bağımsız bir kayıttır; seçimden sonra partner yönlendirmesi mi booking mi yapılacağı ve yeniden doğrulamanın o adımdaki zorunluluğu bu kararla belirlenir. Seçim booking/yönlendirme değildir.
+  - id: OD-013
+    status: OPEN
+    impact_status: PARTIALLY_UNBLOCKED
+    note: Seçim kanonik teklif görüntüsünü saklar; saklama süresi ve silme politikası bu karara bağlıdır.
+  - id: OD-015
+    status: OPEN
+    impact_status: BLOCKED
+    note: Seçim kaydı partner yönlendirme/affiliate uyumunu gerektirmez ve bu kararı çözmez.
+  - id: OD-016
+    status: OPEN
+    impact_status: BLOCKED
+    note: Seçim için kural kesindir - UNVERIFIED teklif güncel seçim olamaz (RULE-FLT-REPRICE-001-04). NEEDS_VERIFICATION durumunda yönlendirme/booking engelleme politikası açık kalır; seçim kuralı bu politikayı belirlemez.
+  - id: OD-021
+    status: OPEN
+    impact_status: PARTIALLY_UNBLOCKED
+    note: Seçim TripRequest'e bağlıdır, Trip'e değil. Trip/TripRequest ilişkisi ve gelecekte seçimin Trip/ItineraryItem'a taşınması açık kalır.
+  - id: ADR-010
+    status: OPEN
+    impact_status: BLOCKED
+    note: Seçimi kimin okuyup değiştirebileceği PLT-AUTH-001 / ADR-010'a bağlıdır; bu sürüm sahiplik kuralı tanımlamaz.

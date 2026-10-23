@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.7:FlightSearchCriteria",
+  "title": "FlightSearchCriteria",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trip_request_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "x-requirement-refs": [
+        "TRIP-001",
+        "FLT-002"
+      ],
+      "description": "Kriterin türetildiği SEARCHABLE TripRequest (v3.4 FlightSearchJob.trip_request_id)."
+    },
+    "origin_place": {
+      "$ref": "../../schemas/LocationRef.schema.json",
+      "x-requirement-refs": [
+        "RULE-TRIP-001-01",
+        "FR-TRIP-001-02"
+      ],
+      "description": "TripRequest.origin_place ile birebir aynı; türe veya sağlayıcıya göre dönüştürülmez."
+    },
+    "destination_place": {
+      "$ref": "../../schemas/LocationRef.schema.json",
+      "x-requirement-refs": [
+        "RULE-TRIP-001-01",
+        "FR-TRIP-001-02"
+      ],
+      "description": "TripRequest.destination_place ile birebir aynı; türe veya sağlayıcıya göre dönüştürülmez."
+    },
+    "date_window": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "EXACT"
+            },
+            "date": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            }
+          },
+          "required": [
+            "type",
+            "date"
+          ],
+          "x-requirement-refs": [
+            "RULE-TRIP-001-02"
+          ],
+          "description": "Kesin tarih: TripRequest.date_window.exact_date değeri aynen."
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "FLEXIBLE"
+            },
+            "start_date": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            },
+            "end_date": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+            }
+          },
+          "required": [
+            "type",
+            "start_date",
+            "end_date"
+          ],
+          "x-requirement-refs": [
+            "RULE-TRIP-001-02"
+          ],
+          "description": "Esnek tarih aralığı: TripRequest.date_window.start_date ve end_date sınırları aynen; end_date start_date öncesi olamaz. Aralıktan tarih seçilmez."
+        }
+      ],
+      "x-requirement-refs": [
+        "RULE-TRIP-001-02",
+        "RULE-TRIP-001-03"
+      ],
+      "description": "Kesin ve esnek tarih ayrımı korunur (RULE-TRIP-001-02). Tarihlerin gidiş/dönüş anlamı, sınırların dahil/hariç olması, yolculuk tipi ve tarihlerin saat dilimi tanımlı değildir (OD-022 DATE); bu alanlar eklenmez."
+    },
+    "traveler_count": {
+      "allOf": [
+        {
+          "$ref": "../../schemas/TripRequest.schema.json#/properties/traveler_count"
+        }
+      ],
+      "x-requirement-refs": [
+        "RULE-TRIP-001-03"
+      ],
+      "description": "Toplam yolcu sayısı; yolcu tipi dağılımı taşınmaz (OD-020, OD-022)."
+    }
+  },
+  "required": [
+    "trip_request_id",
+    "origin_place",
+    "destination_place",
+    "date_window",
+    "traveler_count"
+  ],
+  "x-contract-id": "SCH-FlightSearchCriteria",
+  "x-version": "3.7",
+  "x-status": "ACTIVE",
+  "x-audience": "INTERNAL",
+  "x-requirement-refs": [
+    "TRIP-001",
+    "FLT-002",
+    "PLT-REL-001"
+  ],
+  "x-open-decisions": [
+    "OD-022",
+    "OD-020"
+  ],
+  "x-note": "Yalnız SEARCHABLE TripRequest alanlarının dönüştürülmemiş kopyasıdır ve provider adapter sınırında kullanılır. preferences uçuş kriteri değildir ve taşınmaz. Sağlayıcı yürütmesi için gereken yorumlar (havacılık kimliği, konum türü uygunluğu, tarih yönü/esneklik, yolcu tipi) OD-022 kapsamında OPEN kalır; adapter bu alanlardan anlam türetmez. v3.7: date_window opak nesne yerine açık EXACT/FLEXIBLE temsili taşır; konum semantiği değişmedi.",
+  "x-replaces": "urn:ai-seyahat:v3.5:FlightSearchCriteria"
+}

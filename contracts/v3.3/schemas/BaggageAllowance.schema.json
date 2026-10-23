@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.3:BaggageAllowance",
+  "title": "BaggageAllowance",
+  "$defs": {
+    "sourced_boolean": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {"type": ["boolean", "null"]},
+        "certainty": {"type": "string", "enum": ["EXACT", "ESTIMATED", "UNKNOWN"]},
+        "source_reference": {"type": "string"},
+        "fetched_at": {"type": "string", "format": "date-time"},
+        "verified_at": {"type": ["string", "null"], "format": "date-time"},
+        "expires_at": {"type": ["string", "null"], "format": "date-time"},
+        "verification_status": {"type": "string", "enum": ["FRESH", "STALE", "EXPIRED", "UNVERIFIED"]}
+      },
+      "required": ["value", "certainty", "source_reference", "fetched_at", "verified_at", "expires_at", "verification_status"],
+      "allOf": [{"if": {"properties": {"certainty": {"const": "UNKNOWN"}}, "required": ["certainty"]}, "then": {"properties": {"value": {"type": "null"}}}}]
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "personal_item": {"$ref": "#/$defs/sourced_boolean", "x-requirement-refs": ["RULE-FLT-005-01", "AC-FLT-005-02"]},
+    "cabin_baggage": {"$ref": "#/$defs/sourced_boolean", "x-requirement-refs": ["RULE-FLT-005-01", "AC-FLT-005-02"]},
+    "checked_baggage": {"$ref": "#/$defs/sourced_boolean", "x-requirement-refs": ["FR-FLT-005-01"]},
+    "fees": {"type": "array", "items": {"$ref": "./AncillaryFee.schema.json"}, "x-requirement-refs": ["RULE-FLT-005-02", "AC-FLT-005-01", "AC-FLT-005-03"]}
+  },
+  "required": ["personal_item", "cabin_baggage", "checked_baggage", "fees"],
+  "x-contract-id": "SCH-BaggageAllowance",
+  "x-version": "3.3",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["FLT-005"],
+  "x-open-decisions": ["OD-008"]
+}

@@ -1,0 +1,8 @@
+version: 3.6.0
+inherits: ../v3.5/decisions.yaml
+decisions:
+  - id: OD-022
+    status: PARTIALLY_RESOLVED
+    decision: station türündeki konum M1A uçuş arama yürütmesine girdi olamaz (çok modlu arama GND-001, M1C); havacılık kimliği olmayan konum sağlayıcıya gönderilmez ve dönüştürülmez.
+    remaining_open: [authoritative aviation location identity source and shape, city -> airport expansion, date direction and flexibility, passenger types (OD-020), cabin, trip type, criteria reason/error code]
+open_decisions: [OD-001, OD-008, OD-012, OD-013, OD-015, OD-020, OD-021, OD-022, ADR-007, ADR-010]

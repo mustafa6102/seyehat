@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.3:ProviderCapability",
+  "title": "ProviderCapability",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "operation": {"type": "string", "x-requirement-refs": ["RULE-PRV-001-01"]},
+    "supported": {"type": "boolean", "x-requirement-refs": ["RULE-PRV-001-01"]},
+    "status": {"type": "string", "x-requirement-refs": ["PRV-001"]},
+    "evidence": {"type": ["string", "null"], "x-requirement-refs": ["FR-PRV-001-01", "AC-PRV-001-03"]},
+    "verified_at": {"type": ["string", "null"], "format": "date-time", "x-requirement-refs": ["RULE-PRV-001-02", "FR-PRV-001-01", "AC-PRV-001-03"]},
+    "verification_status": {"type": "string", "enum": ["FRESH", "STALE", "EXPIRED", "UNVERIFIED"], "x-requirement-refs": ["RULE-PRV-001-02"]}
+  },
+  "required": ["operation", "supported", "status", "evidence", "verified_at", "verification_status"],
+  "x-contract-id": "SCH-ProviderCapability",
+  "x-version": "3.3",
+  "x-status": "ACTIVE",
+  "x-replaces": "urn:ai-seyahat:v3.2:ProviderCapability",
+  "x-requirement-refs": ["PRV-001"],
+  "x-open-decisions": ["OD-001", "OD-008"]
+}

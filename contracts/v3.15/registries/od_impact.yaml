@@ -1,0 +1,140 @@
+version: 3.15.0
+inherits: ../../v3.14/registries/od_impact.yaml
+new_decisions:
+  - id: OD-025
+    title: POI/aktivite sağlayıcısı, kanıt alanları ve saklama/lisans koşulları
+    accountable_role: Product + Tech + Legal
+    affects:
+    - POI-001
+    - FR-POI-001-01
+    - FR-POI-001-02
+    - FR-POI-001-03
+    - FR-POI-001-04
+    blocks_development:
+    - M3 (POI sağlayıcı entegrasyonu)
+    blocks_release:
+    - FINAL
+    decision_owner: user (2026-10-06)
+    decision_due: RESOLVED (üretim koşulları açık)
+    impact_status: PARTIALLY_UNBLOCKED
+    status: RESOLVED
+    resolution:
+      provider: OpenStreetMap verisi, Overpass API üzerinden
+      provider_id: osm_overpass
+      basis: >-
+        Yalnız birinci taraf kaynaklar: OSM verisi ODbL lisanslıdır ve atıfla saklanabilir; Google Places ve Foursquare için sunucu
+        tarafı kanonik saklama izni bu değerlendirmede resmi metinden doğrulanamadı (Google hizmet koşulları sayfası okunamadı,
+        Foursquare kullanım yönergeleri adresi 404) ve izin varsayılmadı. Giriş ücreti, rezervasyon ve ziyaret süresi zorunlu değildir;
+        SCH-Poi bunları UNKNOWN olarak korur.
+      operations:
+        poi_discovery: 'Overpass sorgusu: merkez koordinat + yarıçap çevresinde ad etiketi olan turistik/kültürel öğeler; out center (way/relation merkezleri). "Turistik/kültürel" kapsamı CFG-POI-DISCOVERY-TAG-FILTER ile tanımlıdır (RESOLVED 2026-10-06; sağlayıcı sorgu filtresi, kategori/tercih değil); config eksik/geçersizse keşif kapalı başarısız olur.'
+        poi_verify: 'Overpass sorgusu: provider_place_id ile tek öğenin yeniden okunması.'
+      storage: >-
+        ODbL: kanonik alanlar ve kimlikler sunucuda saklanabilir; ham Overpass yanıtı saklanmaz. Kanonik POI deposu türev veritabanıdır;
+        herkese açık kullanılırsa ODbL altında sunulma (share-alike) yükümlülüğü doğar - üretim öncesi Legal kabulü gerekir.
+      attribution: '"© OpenStreetMap katkıda bulunanlar" (ODbL) ve openstreetmap.org/copyright bağlantısı, POI verisinin gösterildiği her yüzeyde.'
+      access: >-
+        Geliştirme: genel overpass-api.de örneği, düzenli uygulamalar için günde 100 sorgu ve 10 MB altında, paralel betik yok.
+        Üretim: kullanım politikası gereği kendi barındırılan veya ücretli Overpass sunucusu gerekir (altyapı kararı açık).
+      capability_records: 'Mevcut ProviderCapabilityMatrix (productionCapability, environment=production kayıtları, FRESH/STALE kanıt): (osm_overpass, poi_discovery, production) ve (osm_overpass, poi_verify, production). Kayıt yoksa sağlayıcı çağrılmaz. Yetenek kaydı uç nokta onayı değildir; üretim kapısı CFG-POI-OVERPASS-ENDPOINT ile ayrıca uygulanır.'
+      runtime_fail_closed: >-
+        CFG-POI-SEARCH-RADIUS, CFG-POI-MAX-RESULTS, CFG-POI-OVERPASS-ENDPOINT veya CFG-POI-DISCOVERY-TAG-FILTER tanımsız/geçersizse, üretimde genel uç nokta
+        ayarlıysa, osm_overpass dayanıklılık profili eksikse veya yetenek kaydı yoksa sağlayıcı çağrılmaz. Keşif işi error.code=null ve
+        kısa Türkçe gerekçeyle FAILED olur (GAP-POI-CRITERIA-001), ör. "Gezilecek yer araması şu anda kullanılamıyor: arama ayarları
+        yapılandırılmadı." OP-verifyPoi sağlayıcı çağırmadan verified=false ve RC-EVIDENCE-UNVERIFIED döner. Uygulama kodunda gizli
+        sayısal varsayılan veya uç nokta bulunmaz.
+      unsupported_fields: [booking (UNKNOWN), rezervasyon bağlantısı (yok; booking.source_reference yalnız OSM kanıt referansı), visit_duration (UNKNOWN), business_status CLOSED_* (eşleme yok, UNKNOWN), categories (OD-026, boş)]
+      mapping:
+        provider_ref: 'provider_id=osm_overpass; provider_place_id="<type>/<id>" (node|way|relation).'
+        name: 'name:tr, yoksa name; adı olmayan öğe elenir.'
+        location: 'node lat/lon veya way/relation center; address = addr:street + addr:housenumber, addr:postcode + addr:city (varsa), yoksa null; iana_timezone = null (tahmin edilmez).'
+        categories: '[] (OD-026); OSM etiketleri dışarı verilmez.'
+        business_status: 'value=UNKNOWN, certainty=UNKNOWN (OSM yaşam döngüsü etiketleri bu sürümde eşlenmez).'
+        opening_hours: 'Yalnız gün aralığı + saat aralığı biçimindeki basit haftalık opening_hours değeri (ör. "Mo-Fr 09:00-17:00; Sa 10:00-14:00") weekly listesine çevrilir, certainty=ESTIMATED; tatil/koşul/ay/istisna içeren veya ayrıştırılamayan değer ve etiket yokluğu value=null, certainty=UNKNOWN.'
+        admission: 'fee=yes -> fee_required=true; fee=no -> fee_required=false (açık etiket); fee=donation, diğer değerler veya etiket yokluğu -> null. charge yalnız "<tutar> <ISO-4217>" biçimindeyse amount; aksi null. Etiket yokluğundan ücretsiz çıkarılmaz.'
+        booking: 'value=UNKNOWN, certainty=UNKNOWN, source_reference = OSM öğe URL''si (SCH-Sourced zorunlu kanıt referansı; rezervasyon URL''si değildir). Rezervasyon bağlantısı (FR-POI-001-02) yoktur: bu sürümde OSM rezervasyon etiketi eşlenmez ve web sitesi rezervasyon URL''si sayılmaz (SCH-Poi.booking açıklaması).'
+        visit_duration: 'minutes=null, certainty=UNKNOWN, source_reference=null.'
+        evidence: 'Her Sourced olgu: source_reference = https://www.openstreetmap.org/<type>/<id>, fetched_at = yanıtın osm_base zamanı, verified_at = null, verification_status = UNVERIFIED. Topluluk verisi doğrulanmış kabul edilmez; geri çağırma zamanı doğrulama kanıtı sayılmaz, bu nedenle osm_overpass olguları FRESH olmaz.'
+      verification: >-
+        OP-verifyPoi provider_place_id ile öğeyi yeniden okur ve tüm eşlenen olguları yeni fetched_at ile yeniden üretir; olgular
+        UNVERIFIED kalır (verified=true yalnız okumanın başarılı olduğunu bildirir). Öğe artık yoksa veya okuma başarısızsa olgular değişmez,
+        verified=false ve RC-EVIDENCE-UNVERIFIED (zaman aşımında RC-PROVIDER-TIMEOUT). Öğe silinmesi kapanma kanıtı sayılmaz.
+      sources:
+        - https://wiki.openstreetmap.org/wiki/Overpass_API
+        - https://osmfoundation.org/wiki/Licence/Attribution_Guidelines
+        - https://wiki.openstreetmap.org/wiki/Key:opening_hours
+        - https://wiki.openstreetmap.org/wiki/Key:fee
+    note: >-
+      Önceki değerlendirme (aşağıda) korunur. Hiçbir aday POI-001'in kanıt alanlarının tamamını sağlamıyor; osm_overpass bu alanları UNKNOWN bırakarak seçildi. Hangi sağlayıcı seçilirse seçilsin şu
+      alanlar ilk aşamada UNKNOWN kalabilir: giriş ücreti tutarı/gerekliliği, rezervasyon gereksinimi, doğrulanmış resmi rezervasyon URL'si
+      ve ziyaret süresi. Karar için gereken: kanıt alanları kapsamı, saklama/önbellek hakkı (kalıcı plan öğesi ile uyum), atıf yükümlülüğü,
+      test erişimi ve ticari koşullar.
+    evaluation:
+      - candidate: Google Places API (New)
+        supports: 'Yer kimliği, ad, konum, businessStatus, regularOpeningHours, websiteUri, priceLevel/priceRange (giriş ücreti değil).'
+        gaps: 'Giriş ücreti ve rezervasyon gereksinimi alanı belgelenmemiş.'
+        storage: 'Hizmet koşulları yalnız place_id değerinin süresiz saklanmasına, enlem/boylamın en fazla 30 gün önbelleğe alınmasına izin verir; ad, adres ve diğer içerik için önbellek istisnası yok. Kalıcı plan öğesi görüntüsüyle çelişir.'
+        verdict: NOT_SELECTED
+      - candidate: Foursquare Places API
+        supports: 'Kimlik, ad, konum, kategori, hours, url, fiyat seviyesi (mekan fiyatı, giriş ücreti değil).'
+        gaps: 'Giriş ücreti ve rezervasyon gereksinimi belgelenmemiş.'
+        storage: 'Kullanım koşulları yalnız fsq_id ve bazı kimliklerin süresiz saklanmasına izin verir; diğer öznitelikler için Enterprise müşteride yalnız cihazda 24 saat, Pay-as-you-go/Sandbox için önbellek yok. Sunucu tarafı saklama ve kalıcı plan öğesiyle çelişir.'
+        verdict: NOT_SELECTED
+      - candidate: OpenStreetMap tabanlı (Overpass / OpenTripMap)
+        supports: 'ODbL lisansı saklama ve önbelleğe almaya izin verir (atıf ve paylaşım koşullarıyla). opening_hours, fee (yes/no/donation) ve charge (tutar) etiketleri tanımlı.'
+        gaps: 'Veri topluluk kaynaklıdır; doğruluk/tazelik garantisi yok, etiketler seyrek. Rezervasyon gereksinimi için etiket kanıtı bu değerlendirmede doğrulanmadı. Genel Overpass örneğinin ticari kullanım politikası ve OpenTripMap hız sınırları doğrulanmadı.'
+        verdict: NOT_SELECTED (aday olarak değerlendirilebilir; resmi kanıt olarak kabulü ürün/hukuk kararı gerektirir)
+    sources:
+      - https://developers.google.com/maps/documentation/places/web-service/data-fields
+      - https://cloud.google.com/maps-platform/terms/maps-service-terms
+      - https://docs.foursquare.com/developer/reference/response-fields
+      - https://developer.foursquare.com/docs/usage-guidelines
+      - https://wiki.openstreetmap.org/wiki/Key:fee
+      - https://wiki.openstreetmap.org/wiki/Key:opening_hours
+      - https://dev.opentripmap.com
+    affect_evidence:
+    - target: POI-001
+      source: v3.15 contract delta
+      status: DECLARED
+  - id: OD-026
+    title: POI ilgi alanı/kategori girdisi ve kanonik POI kategori taksonomisi
+    accountable_role: Product
+    affects:
+    - FR-POI-001-01
+    - SCH-Poi.categories
+    blocks_development: []
+    blocks_release:
+    - FINAL
+    decision_owner: ATANMADI
+    decision_due: OPEN
+    impact_status: PARTIALLY_UNBLOCKED
+    status: OPEN
+    note: TripRequest yalnız pace_preference taşır; ilgi alanı/kategori tercihi ve kanonik taksonomi tanımlı değil. Karar verilene kadar keşif yalnız konumla yapılır, categories boş listedir ve sağlayıcı kategori etiketleri dışarı verilmez.
+    affect_evidence:
+    - target: FR-POI-001-01
+      source: v3.15 contract delta
+      status: DECLARED
+decisions:
+  - id: OD-013
+    status: OPEN
+    impact_status: PARTIALLY_UNBLOCKED
+    note: Keşfedilen POI'lerin saklama süresi OD-013 ve OD-025 sağlayıcı koşullarına bağlıdır.
+  - id: OD-014
+    status: OPEN
+    impact_status: BLOCKED
+    note: >-
+      osm_overpass'a gönderilenler yalnız şunlardır: keşifte merkez koordinat (varış şehri), yarıçap, etiket filtresi ve sonuç sınırı;
+      doğrulamada OSM öğe kimliği. TripRequest kimliği, tarihler, yolcu bilgisi veya başka kişisel veri gönderilmez. Genel örnek
+      (overpass-api.de) AB'de işletilir; üretim sunucusunun konumu ve işleyen sözleşmesi altyapı kararıyla değerlendirilmelidir.
+  - id: OD-021
+    status: OPEN
+    impact_status: BLOCKED
+    note: POI'nin plan öğesi olarak kalıcılığı Trip/ItineraryDay/ItineraryItem ve TripRequest ilişkisine bağlıdır.
+  - id: ADR-006
+    status: OPEN
+    impact_status: BLOCKED
+    note: osm_overpass için yalnız geliştirme profili tanımlandı (osm-overpass-dev-2026-10-06); üretim profili ve genel ADR-006 değerleri OPEN.
+  - id: ADR-010
+    status: OPEN
+    impact_status: BLOCKED
+    note: POI keşif ve ayrıntı erişimi TripRequest ile aynı sınırdadır; sahiplik tanımlanmadı.

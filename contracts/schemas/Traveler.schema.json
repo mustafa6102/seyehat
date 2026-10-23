@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.2:Traveler",
+  "title": "Traveler",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "CONFIDENTIAL",
+        "source_of_truth": "domain",
+        "verification": "OPEN",
+        "security": "masked logs",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRV-001"
+        ]
+      }
+    },
+    "age_category": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "PII",
+        "source_of_truth": "user",
+        "verification": "OPEN",
+        "security": "encrypted/masked",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRV-001"
+        ]
+      }
+    },
+    "nationalities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-metadata": {
+        "classification": "SENSITIVE_PII",
+        "source_of_truth": "user",
+        "verification": "OPEN",
+        "security": "field encrypted/masked",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRV-001"
+        ]
+      }
+    },
+    "travel_documents": {
+      "type": "array",
+      "items": {
+        "$ref": "./TravelerDocument.schema.json"
+      },
+      "x-metadata": {
+        "classification": "SENSITIVE_PII",
+        "source_of_truth": "user",
+        "verification": "VerificationStatus",
+        "security": "field encrypted/masked",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRV-001",
+          "PLT-PII-001"
+        ]
+      }
+    }
+  },
+  "required": [
+    "id",
+    "age_category",
+    "nationalities"
+  ],
+  "x-contract-id": "SCH-Traveler",
+  "x-version": "3.2",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": [
+    "PLT-PII-001",
+    "TRV-001"
+  ]
+}

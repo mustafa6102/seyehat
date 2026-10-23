@@ -1,0 +1,12 @@
+version: 3.10.0
+inherits: ../v3.9/decisions.yaml
+decisions:
+  - id: OD-022
+    status: PARTIALLY_RESOLVED
+    decision: LOCATION keşfi için duffel_places dağıtım profili tanımlıdır; profil ve erişim anahtarı tamamsa havacılık konum araması çalışır.
+    remaining_open: [PASSENGER types (OD-020), cabin, criteria reason/error code (GAP-FLT-CRITERIA-001)]
+  - id: ADR-006
+    status: OPEN
+    scoped_profiles: [geonames (geonames-ops-2026-09-28), duffel_places (duffel-places-ops-2026-09-29)]
+    note: Kapsamlı dağıtım profilleri ADR-006'yı genel olarak çözmez.
+open_decisions: [OD-001, OD-008, OD-012, OD-013, OD-015, OD-020, OD-021, OD-022, ADR-006, ADR-007, ADR-010]

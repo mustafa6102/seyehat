@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.13:TripRequestFlightSelection",
+  "title": "TripRequestFlightSelection",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trip_request_id": {"type": "string", "readOnly": true, "description": "Seçimin ait olduğu tek TripRequest. TripRequest başına en fazla bir kayıt vardır."},
+    "status": {
+      "type": "string",
+      "enum": ["CURRENT", "RECONFIRMATION_REQUIRED", "EXPIRED"],
+      "readOnly": true,
+      "x-lifecycle": "TripRequestFlightSelectionStatus",
+      "description": "Yalnız CURRENT, doğrulanmış güncel seçimdir. RECONFIRMATION_REQUIRED ve EXPIRED güncel veya satın alınabilir fiyat olarak gösterilmez."
+    },
+    "offer": {
+      "$ref": "../../v3.4/schemas/FlightOffer.schema.json",
+      "readOnly": true,
+      "description": "Seçim anında sunucuda saklanan kanonik teklif görüntüsü. Teklif önbelleği süresi dolduktan sonra da gösterim için tek yetkili kaynaktır. Tarayıcıdan gelen fiyat veya uçuş verisinden üretilmez."
+    },
+    "provider_id": {"type": "string", "readOnly": true, "description": "Yeniden doğrulamada kullanılan sağlayıcı kimliği (offer.sources kaydından)."},
+    "provider_offer_id": {"type": "string", "readOnly": true, "description": "Sağlayıcının kendi teklif kimliği; yalnız yeniden doğrulama referansıdır."},
+    "verified_price": {
+      "oneOf": [{"$ref": "../../schemas/Money.schema.json"}, {"type": "null"}],
+      "readOnly": true,
+      "description": "Son başarılı doğrulamadaki toplam fiyat. Toplam bilinen ve eksiksiz bir tutar değilse null'dur; 0 kabul edilmez (RULE-FLT-REPRICE-001-07)."
+    },
+    "verified_at": {"type": "string", "format": "date-time", "readOnly": true, "description": "Seçimi CURRENT yapan doğrulama sonucunun yakalanma zamanı (RepriceResult.current.captured_at)."},
+    "expires_at": {"type": "string", "format": "date-time", "readOnly": true, "description": "Doğrulanmış teklifin son geçerlilik zamanı (offer.expires_at)."},
+    "created_at": {"type": "string", "format": "date-time", "readOnly": true},
+    "updated_at": {"type": "string", "format": "date-time", "readOnly": true}
+  },
+  "required": ["trip_request_id", "status", "offer", "provider_id", "provider_offer_id", "verified_price", "verified_at", "expires_at", "created_at", "updated_at"],
+  "x-contract-id": "SCH-TripRequestFlightSelection",
+  "x-version": "3.13",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["FLT-REPRICE-001", "RULE-FLT-REPRICE-001-04", "RULE-FLT-REPRICE-001-05", "RULE-FLT-REPRICE-001-06", "RULE-FLT-REPRICE-001-07", "FR-FLT-REPRICE-001-02", "FR-FLT-REPRICE-001-03"],
+  "x-open-decisions": ["OD-013", "OD-021", "ADR-010"],
+  "x-persistence": {
+    "cardinality": "TripRequest başına 0..1 kayıt; trip_request_id benzersizdir.",
+    "replacement": "Yeni bir seçim mevcut kaydın yerine geçer; önceki seçimin geçmişi bu sürümde saklanmaz (PlanRevision kapsam dışı).",
+    "excluded": "Ham sağlayıcı yanıtı, erişim anahtarları ve sağlayıcıya özgü iç alanlar saklanmaz.",
+    "retention_ref": "OD-013"
+  },
+  "x-rules": {
+    "RULE-FLT-REPRICE-001-04": "Yalnız sunucudaki en son doğrulama sonucu CURRENT olan ve süresi dolmamış teklif seçilebilir; UNVERIFIED veya EXPIRED seçilemez.",
+    "RULE-FLT-REPRICE-001-05": "CHANGED sonuç seçimi sessizce değiştirmez; yalnız açık kullanıcı kabulüyle seçim yapılır veya güncellenir.",
+    "RULE-FLT-REPRICE-001-06": "TripRequest başına en fazla bir etkin seçim vardır; yeni açık seçim öncekinin yerine geçer.",
+    "RULE-FLT-REPRICE-001-07": "Bilinmeyen veya eksik toplam fiyat verified_price=null olarak saklanır ve 0 gösterilmez."
+  },
+  "description": "Bir TripRequest için kullanıcının açıkça seçtiği, yeniden doğrulanmış uçuş teklifi. Booking, ödeme veya partner yönlendirmesi değildir. Erişim TripRequest ile aynı sınırdadır; sahiplik ADR-010 / PLT-AUTH-001 kararına bağlıdır."
+}

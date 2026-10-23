@@ -1,0 +1,4 @@
+version: 3.7.0
+inherits: ../v3.6/contract_index.yaml
+contracts:
+  - {id: SCH-FlightSearchCriteria, path: contracts/v3.7/schemas/FlightSearchCriteria.schema.json, status: ACTIVE, audience: INTERNAL, replaces: 'urn:ai-seyahat:v3.5:FlightSearchCriteria'}

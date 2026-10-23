@@ -1,0 +1,12 @@
+version: 3.4.0
+inherits: ../v3.3/decisions.yaml
+decisions:
+  - id: ADR-011
+    status: ACCEPTED
+    decision: Asenkron iş + polling
+    v3_4_note: OP-startFlightSearch artık SEARCHABLE bir TripRequest'e trip_request_id ile bağlanır; sağlayıcı arama kriteri eşlemesi OD-022 ile OPEN kalır.
+new_open_decisions:
+  - [OD-020, "Traveler age_category kanonik değer kümesi", "Product + Legal", "TRV-001 UI öncesi", "M1A", "OPEN"]
+  - [OD-021, "Trip aggregate ile TripRequest ilişkisi ve Traveler.trip_id hedefi", "Product + Tech", "TRV-001 UI öncesi", "M1A", "OPEN"]
+  - [OD-022, "TripRequest'ten sağlayıcı uçuş arama kriterlerine eşleme", "Product + Tech", "İlk provider adapter öncesi", "M1A", "OPEN"]
+open_decisions: [OD-001, OD-008, OD-012, OD-013, OD-015, OD-020, OD-021, OD-022, ADR-007, ADR-010]

@@ -1,0 +1,33 @@
+version: 3.16.0
+inherits: ../../v3.15/registries/config.yaml
+new_records:
+- id: CFG-AUTH-OIDC-ISSUER
+  type: url
+  unit: n/a
+  default: none
+  range: 'Tek güvenilir OpenID Connect issuer tanımlayıcısı (https). Token iss değeri bu dizeyle birebir eşleşmelidir. Ortam yapılandırmasından gelir; depoda veya kodda üretim değeri bulunmaz.'
+  scope: bearerAuth (tüm kimlik doğrulamalı operasyonlar)
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu. Uygulama varsayılan issuer'a düşmez.
+  decision_ref: ADR-010
+  requirement_refs:
+  - RULE-PLT-AUTH-001-07
+  - FR-PLT-AUTH-001-03
+  note: >-
+    İmza anahtarları issuer'ın OpenID Connect Discovery belgesindeki jwks_uri'dan alınır (<issuer>/.well-known/openid-configuration); ayrı
+    JWKS yapılandırması yoktur. Discovery belgesinin issuer değeri yapılandırılmış issuer ile birebir eşleşmeli ve jwks_uri https olmalıdır.
+    Tanımsız/geçersizse veya anahtarlar alınamıyorsa hiçbir token kabul edilmez (kapalı başarısız; korumalı operasyonlar 401
+    RC-AUTHN-REQUIRED). Üretimde zorunludur.
+- id: CFG-AUTH-OIDC-AUDIENCE
+  type: string
+  unit: n/a
+  default: none
+  range: 'Bu API için beklenen aud değeri; token aud (dize veya dizi) bu değeri içermelidir.'
+  scope: bearerAuth
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: ADR-010
+  requirement_refs:
+  - FR-PLT-AUTH-001-03
+  note: Tanımsızsa hiçbir token kabul edilmez (kapalı başarısız). Gizli değer değildir; secret bu sözleşmede veya depoda yer almaz.
+scoped_records: []

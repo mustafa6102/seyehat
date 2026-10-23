@@ -1,0 +1,44 @@
+version: 3.4.0
+inherits: ../../v3.3/registries/od_impact.yaml
+decisions:
+  - id: ADR-011
+    status: ACCEPTED
+    decision: Asenkron iş + polling
+    resolved_contract_gaps: [canonical search request body (TripRequest ilişkisi, SCH-FlightSearchStartRequest)]
+    remaining_contract_gaps: [provider search criteria mapping (OD-022), polling interval config, job expiry TTL config]
+  - id: OD-020
+    title: Traveler age_category kanonik değer kümesi
+    accountable_role: Product + Legal
+    affects: [TRV-001, FR-TRV-001-01, AC-TRV-001-01]
+    blocks_development: []
+    blocks_release: []
+    decision_owner: ATANMADI
+    decision_due: OPEN
+    impact_status: BLOCKED
+    status: OPEN
+    source: v3.4 contract gap review
+    note: SCH-Traveler.age_category yalnız string; kapalı değer kümesi, yaş sınırları ve sınıflandırma kaynağı SSOT'ta tanımlı değil. Kanonik değer gerektiren istemci/UI toplaması bu karar verilene kadar yapılmaz; test fixture değerleri otorite değildir.
+  - id: OD-021
+    title: Trip aggregate ile TripRequest ilişkisi ve Traveler.trip_id hedefi
+    accountable_role: Product + Tech
+    affects: [TRV-001, RULE-TRV-001-01, TRIP-001, PLT-AUTH-001]
+    blocks_development: []
+    blocks_release: []
+    decision_owner: ATANMADI
+    decision_due: OPEN
+    impact_status: BLOCKED
+    status: OPEN
+    source: v3.4 contract gap review
+    note: Bölüm 11 Trip'i plan yaşam döngüsünün kalıcı aggregate root'u olarak tanımlar; TripRequest'in Trip'e dönüşümü veya ona bağlanması tanımlı değil. Traveler.trip_id, TripRequest kimliği olarak yorumlanmaz.
+  - id: OD-022
+    title: TripRequest'ten sağlayıcı uçuş arama kriterlerine eşleme
+    accountable_role: Product + Tech
+    affects: [FLT-002, TRIP-001, OP-startFlightSearch, SCH-FlightOffer]
+    blocks_development: []
+    blocks_release: []
+    decision_owner: ATANMADI
+    decision_due: OPEN
+    impact_status: BLOCKED
+    status: OPEN
+    source: v3.4 contract gap review
+    note: LocationRef türünün (city/airport/station/supported_location) havalimanı sorgusuna çözümü, esnek date_window genişletmesi, traveler_count dışındaki yolcu dağılımı, kabin sınıfı, yolculuk tipi ve segment kalkış/varış konum gösterimi tanımlı değil. Adapter'a kriter aktarımı bu karar verilene kadar yapılmaz.

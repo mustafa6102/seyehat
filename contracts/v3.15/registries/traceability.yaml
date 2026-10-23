@@ -1,0 +1,67 @@
+version: 3.15.0
+inherits: ../../v3.14/registries/traceability.yaml
+requirement_to_contract:
+  - requirement: RULE-POI-001-01
+    artifacts: [schema:Poi.schema.json]
+    tests: [TS-POI-001-03, TS-POI-001-05]
+  - requirement: RULE-POI-001-02
+    artifacts: [schema:PoiDiscoveryJob.schema.json]
+    tests: [TS-POI-001-01]
+    open_decisions: [OD-021]
+    note: Uygulanabilirlik aşaması DAY-001 ve TRIP-BLD-001 hazır olana kadar BLOCKED; adaylar uygulanabilir plan öğesi değildir (RULE-POI-001-06).
+  - requirement: RULE-POI-001-03
+    artifacts: [schema:Poi.schema.json]
+    tests: [TS-POI-001-05]
+  - requirement: RULE-POI-001-04
+    artifacts: [schema:PoiDiscoveryCriteria.schema.json, openapi:OP-startPoiDiscovery, lifecycle:PoiDiscoveryJobStatus, config:CFG-POI-SEARCH-RADIUS, config:CFG-POI-MAX-RESULTS, reason_error:GAP-POI-CRITERIA-001]
+    tests: [TS-POI-001-04]
+    open_decisions: [OD-025, OD-026]
+  - requirement: RULE-POI-001-05
+    artifacts: [schema:Poi.schema.json, schema:PoiVerificationResult.schema.json, openapi:OP-getPoi, openapi:OP-verifyPoi, config:CFG-POI-EVIDENCE-FRESHNESS]
+    tests: [TS-POI-001-06, TS-POI-001-07]
+  - requirement: RULE-POI-001-06
+    artifacts: [schema:PoiDiscoveryJob.schema.json]
+    tests: [TS-POI-001-01, TS-POI-001-04]
+    open_decisions: [OD-021]
+  - requirement: RULE-POI-001-07
+    artifacts: [schema:Poi.schema.json, openapi:OP-verifyPoi]
+    tests: [TS-POI-001-08]
+  - requirement: FR-POI-001-01
+    artifacts: [schema:PoiDiscoveryCriteria.schema.json]
+    open_decisions: [OD-026]
+    note: Bu sürümde yalnız konum filtresi; tercih (OD-026) ve açık saat/plan penceresi (DAY-001) filtreleri OPEN.
+  - requirement: FR-POI-001-02
+    artifacts: [schema:Poi.schema.json]
+    tests: [TS-POI-001-02]
+    open_decisions: [OD-025]
+  - requirement: FR-POI-001-03
+    artifacts: [openapi:OP-startPoiDiscovery, openapi:OP-pollPoiDiscovery, schema:PoiDiscoveryJob.schema.json]
+    open_decisions: [OD-025]
+  - requirement: FR-POI-001-04
+    artifacts: [openapi:OP-getPoi, openapi:OP-verifyPoi, schema:PoiVerificationResult.schema.json]
+    open_decisions: [OD-025, OD-013]
+  - requirement: AC-POI-001-02
+    artifacts: [schema:Poi.schema.json]
+    tests: [TS-POI-001-03]
+  - requirement: AC-POI-001-03
+    artifacts: [schema:Poi.schema.json]
+    tests: [TS-POI-001-02]
+  - requirement: AC-POI-001-04
+    artifacts: [openapi:OP-startPoiDiscovery, openapi:OP-pollPoiDiscovery]
+    tests: [TS-POI-001-04]
+  - requirement: AC-POI-001-05
+    artifacts: [schema:Poi.schema.json]
+    tests: [TS-POI-001-05]
+  - requirement: AC-POI-001-06
+    artifacts: [openapi:OP-verifyPoi, schema:PoiVerificationResult.schema.json]
+    tests: [TS-POI-001-06]
+  - requirement: AC-POI-001-07
+    artifacts: [openapi:OP-getPoi, openapi:OP-verifyPoi]
+    tests: [TS-POI-001-07]
+  - requirement: AC-POI-001-08
+    artifacts: [openapi:OP-verifyPoi, schema:Poi.schema.json]
+    tests: [TS-POI-001-08]
+  - requirement: POI-001
+    artifacts: [schema:Poi.schema.json]
+    open_decisions: [OD-025, OD-014, OD-021, ADR-006, ADR-010]
+    note: Plan öğesine ekleme TRIP-BLD-001 (ItineraryDay/ItineraryItem kalıcılığı, PlanRevision değişiklik anahtarı OPEN), DAY-001 ve OD-021'e bağlı olarak BLOCKED; tek seçim modeli POI için kullanılmaz.

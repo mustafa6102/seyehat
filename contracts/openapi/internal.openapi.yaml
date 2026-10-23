@@ -1,0 +1,93 @@
+openapi: 3.1.0
+info:
+  title: AI Seyahat Planlayıcısı Internal Provider API
+  version: 3.2.2
+  description: INTERNAL. Provider capability yönetim/okuma sınırı.
+servers: []
+paths:
+  /provider-capabilities:
+    get:
+      operationId: getInternalProviderCapabilities
+      summary: getProviderCapabilities
+      x-contract-id: OP-getInternalProviderCapabilities
+      x-requirement-refs:
+      - PRV-001
+      - AC-PRV-001-01
+      - AC-PRV-001-02
+      - AC-PRV-001-03
+      x-status: ACTIVE
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Kullanıcıya görünen metin dili; Türkçe varsayılan.
+      responses:
+        '200':
+          description: Başarılı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ProviderCapability.schema.json
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '400':
+          description: Geçersiz istek/şema
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '401':
+          description: Kimlik doğrulaması gerekli
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '404':
+          description: Kaynak bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '429':
+          description: İstek sınırı aşıldı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '403':
+          description: İşlem için admin scope gerekli
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+      security:
+      - adminOAuth:
+        - provider:capabilities:read
+      x-audience: INTERNAL_ADMIN
+      x-error-codes:
+      - RC-VALIDATION-SCHEMA
+      - RC-AUTHN-REQUIRED
+      - RC-AUTHZ-DENIED
+      - RC-RESOURCE-NOT-FOUND
+      - RC-PLATFORM-RATE-LIMITED
+components:
+  securitySchemes:
+    adminOAuth:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: OPEN
+          scopes:
+            provider:capabilities:read: Provider capability kayıtlarını okuma
+      x-status: OPEN
+      x-adr-ref: ADR-010
+x-boundary:
+  audience: INTERNAL_ADMIN
+  server: OPEN
+  decision_ref: ADR-010

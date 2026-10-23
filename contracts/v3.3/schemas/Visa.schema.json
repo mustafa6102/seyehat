@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.3:Visa",
+  "title": "Visa",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "verification_status": {
+      "type": "string",
+      "enum": ["FRESH", "STALE", "EXPIRED", "UNVERIFIED"],
+      "x-requirement-refs": ["TRV-001", "PLT-PII-001"]
+    }
+  },
+  "required": ["verification_status"],
+  "x-contract-id": "SCH-Visa",
+  "x-version": "3.3",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["TRV-001", "PLT-PII-001"],
+  "x-open-decisions": ["OD-013", "ADR-010"]
+}

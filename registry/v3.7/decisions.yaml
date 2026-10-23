@@ -1,0 +1,8 @@
+version: 3.7.0
+inherits: ../v3.6/decisions.yaml
+decisions:
+  - id: OD-022
+    status: PARTIALLY_RESOLVED
+    decision: Uçuş kriterinde tarih, TripRequest değerleri değiştirilmeden EXACT {date} veya FLEXIBLE {start_date, end_date} olarak temsil edilir (RULE-TRIP-001-02); gidiş/dönüş, yolculuk tipi, sınır kapsayıcılığı ve tarih saat dilimi tanımlanmamıştır.
+    remaining_open: [LOCATION aviation identity (BLOCKED), DATE departure/return meaning, trip type, bound inclusivity, date timezone, PASSENGER types (OD-020), cabin, criteria reason/error code]
+open_decisions: [OD-001, OD-008, OD-012, OD-013, OD-015, OD-020, OD-021, OD-022, ADR-007, ADR-010]

@@ -1,0 +1,37 @@
+version: 3.4.0
+inherits: ../../v3.3/registries/traceability.yaml
+requirement_to_contract:
+  - requirement: TRIP-001
+    artifacts: [schema:FlightSearchStartRequest.schema.json, schema:FlightSearchJob.schema.json, openapi:startFlightSearch]
+    note: TripRequest -> arama işi ilişkisi; sağlayıcı arama kriteri eşlemesi OD-022.
+  - requirement: FLT-002
+    artifacts: [schema:FlightSearchStartRequest.schema.json, schema:FlightOffer.schema.json, schema:FlightSearchResult.schema.json, schema:FlightSearchJob.schema.json, openapi:startFlightSearch, openapi:pollFlightSearch, openapi:getOffer, lifecycle:FlightSearchJob]
+    open_decisions: [OD-022]
+  - requirement: FR-FLT-002-01
+    artifacts: [schema:FlightOffer.schema.json, openapi:getOffer]
+  - requirement: FR-FLT-002-03
+    artifacts: [schema:FlightOffer.schema.json]
+  - requirement: RULE-FLT-002-03
+    artifacts: [schema:FlightOffer.schema.json]
+  - requirement: RULE-FLT-002-04
+    artifacts: [schema:FlightOffer.schema.json]
+  - requirement: RULE-FLT-002-05
+    artifacts: [schema:FlightOffer.schema.json]
+  - requirement: AC-FLT-002-01
+    artifacts: [schema:FlightOffer.schema.json, openapi:getOffer, openapi:pollFlightSearch]
+  - requirement: AC-FLT-002-02
+    artifacts: [schema:FlightOffer.schema.json, openapi:getOffer]
+  - requirement: AC-FLT-002-03
+    artifacts: [schema:FlightOffer.schema.json, openapi:getOffer]
+  - requirement: AC-FLT-002-04
+    artifacts: [schema:FlightOffer.schema.json, openapi:getOffer]
+  - requirement: AC-FLT-002-06
+    artifacts: [schema:FlightOffer.schema.json, openapi:getOffer]
+  - requirement: PLT-REL-001
+    artifacts: [schema:FlightSearchStartRequest.schema.json, schema:FlightSearchJob.schema.json, openapi:startFlightSearch, openapi:pollFlightSearch, lifecycle:FlightSearchJob]
+  - requirement: FLT-REPRICE-001
+    artifacts: [schema:OfferSnapshot.schema.json, schema:RepriceResult.schema.json, openapi:repriceOffer, openapi:createPartnerRedirect]
+  - requirement: TRV-001
+    artifacts: [schema:Traveler.schema.json]
+    open_decisions: [OD-020, OD-021]
+    note: age_category değer kümesi (OD-020) ve trip_id hedefi Trip ile TripRequest ilişkisi (OD-021) tanımsız; v3.3 Traveler şeması değişmedi.

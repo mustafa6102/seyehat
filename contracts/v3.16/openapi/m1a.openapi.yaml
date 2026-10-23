@@ -1,0 +1,148 @@
+openapi: 3.1.0
+info:
+  title: AI Seyahat Planlayıcısı M1A API v3.16 delta
+  version: 3.16.0
+  description: >-
+    v3.15.0 delta'sını devralan versioned contract delta. Yalnız TripRequest planının okunması, planlanmamış FLEXIBLE POI öğesi eklenmesi
+    ve plan öğesinin çıkarılması eklenir. Gün/saat ataması ve uygulanabilirlik tanımlanmadı (DAY-001). Uygulama ADR-010 yetkilendirmesine
+    bağlıdır (x-implementation-gate).
+servers: []
+x-inherits: ../../v3.15/openapi/m1a.openapi.yaml
+x-concurrency:
+  etag: 'CURRENT PlanRevision.version değerinden güçlü ETag: "<version>" (ör. "3"). Plan okuma ve başarılı değişiklik yanıtları ETag başlığı döner; Trip yoksa ETag dönmez.'
+  first_mutation: 'Trip yokken değişiklik If-None-Match: * ile yapılır; başarılıysa Trip + PlanRevision 1 + outbox kaydı tek transaction''da oluşur (OD-027).'
+  later_mutations: 'Trip varken If-Match: "<version>" zorunludur; CURRENT sürümle eşleşmiyorsa 409 RC-CONFLICT-REVISION-STALE (PLT-CONC-001). Trip varken If-None-Match: * veya Trip yokken If-Match da 409 RC-CONFLICT-REVISION-STALE döner.'
+  missing_precondition: 'Değişiklikte If-Match veya If-None-Match: * yoksa ya da ikisi birden varsa 400 RC-VALIDATION-SCHEMA.'
+  idempotency: >-
+    Idempotency-Key zorunlu; kapsam TripRequest + operasyondur. Aynı anahtar ve aynı istek (yol, gövde, ön koşul başlığı) ilk sonucu
+    aynen döndürür ve yeni revision oluşturmaz; aynı anahtar farklı istekle 409 RC-CONFLICT-IDEMPOTENCY-KEY. Anahtar oluşturduğu revision'a
+    kalıcı olarak bağlanır (ADR-002: kalıcı mutasyonda DB benzersizlik kısıtı ikinci savunma).
+x-implementation-gate: >-
+  READY (ADR-010 kimlik doğrulama kısmı RESOLVED): principal (issuer, sub) ve sahiplik kuralları tanımlıdır. Sevk ön koşulu: OP-createTripRequest
+  ve web akışındaki TripRequest oluşturma da bearerAuth ister ve owner bağlar (od_impact ADR-010 affected_operations.protect_with_increment).
+  Mevcut TripRequest operasyonlarının korumasız davranışı bu operasyonlara kopyalanmaz.
+x-token-validation:
+  protocol: 'OpenID Connect / OAuth 2.0; uygulama yalnız yapılandırılmış tek issuer''ın (CFG-AUTH-OIDC-ISSUER) verdiği erişim token''larını Authorization: Bearer başlığıyla kabul eder. Uygulama token vermez, yenilemez ve hesap/parola tutmaz.'
+  format: JWS imzalı JWT erişim token'ı. Yalnız issuer JWKS'indeki asimetrik anahtarlarla doğrulanan imzalar kabul edilir; alg=none ve HMAC (paylaşılan gizli) imzalar reddedilir.
+  required_checks: 'imza (JWKS, kid eşleşmesi); iss == CFG-AUTH-OIDC-ISSUER (birebir); aud CFG-AUTH-OIDC-AUDIENCE değerini içerir; exp zorunlu ve geçmemiş; nbf varsa gelmiş; sub mevcut ve boş değil.'
+  failure: 'Token yok, biçimsiz, doğrulanamıyor, süresi geçmiş veya auth yapılandırması eksik/geçersiz -> 401 RC-AUTHN-REQUIRED (WWW-Authenticate: Bearer). Geçerli token fakat yetki yok -> 403 RC-AUTHZ-DENIED.'
+  principal: 'SCH-PrincipalRef = (iss, sub). E-posta, ad veya diğer claim''ler yetkilendirme kimliği değildir; istemcinin gönderdiği owner/principal değeri kabul edilmez.'
+  lifetime: 'Token ömrü issuer politikasıdır; uygulama sayısal ömür tanımlamaz, yalnız exp/nbf uygular (ek tolerans yok). Yenileme ve hesap kurtarma issuer''a aittir.'
+  secrecy: 'Erişim token''ı veritabanına, loglara, PlanRevision''a, POI görüntülerine veya outbox yüklerine yazılmaz (NFR-SEC-001).'
+  clients: 'Kullanıcıya dönük istemciler token''ı Authorization Code + PKCE akışıyla edinir; implicit ve parola (ROPC) akışları kullanılmaz. İstemci entegrasyonu ayrı uygulama görevidir ve API sözleşmesini değiştirmez.'
+x-authorization:
+  principal: SCH-PrincipalRef (iss, sub) - doğrulanmış bearer token'dan (x-token-validation). İkinci bir kullanıcı kimliği modeli tanımlanmaz; Traveler kimliği owner yerine kullanılamaz.
+  ownership_source: TripRequest.owner (RULE-PLT-AUTH-001-04). Trip ve PlanRevision kendi owner'ını taşımaz; yetki Trip.trip_request_id üzerinden TripRequest owner'ından türetilir (RULE-PLT-AUTH-001-05).
+  roles: 'owner = principal == TripRequest.owner -> ALLOW (AUTH-TS-001/007/097/103). collaborator/traveler satırları POLICY-TRIP-001 olarak aynen korunur; bu sürümde Trip üyeliği/paylaşım tanımlı olmadığından hiçbir principal bu rollere sahip değildir ve sonuç reddir. Diğer roller permissions.yaml''daki gibidir.'
+  outcomes: 'Kimlik doğrulaması yok veya geçersiz -> 401 RC-AUTHN-REQUIRED. Doğrulanmış fakat owner değil (owner''sız eski kayıt dahil) -> 403 RC-AUTHZ-DENIED. TripRequest yoksa 404 RC-RESOURCE-NOT-FOUND.'
+  check_order: >-
+    (1) AuthN; (2) TripRequest yükle (yoksa 404); (3) owner karşılaştırması (aksi 401/403) - gövde doğrulaması, Idempotency-Key kaydı,
+    POI okuma ve ön koşul (If-Match / If-None-Match) değerlendirmesinden ÖNCE; (4) OD-027 akışı. İlk değişiklikte Trip, PlanRevision,
+    öğe ve outbox kaydı yalnız (3) başarılı olduktan sonra ve aynı transaction içinde yazılır; yetki hatası hiçbir kalıcı durum (Trip,
+    revision, öğe, outbox, idempotency kaydı) bırakmaz. Owner değişmez olduğundan transaction içinde yeniden kontrol gerekmez; Trip
+    owner'ı sunucuda TripRequest'ten türetilir, istemci owner gönderemez.
+paths:
+  /trip-requests/{tripRequestId}/plan:
+    get:
+      operationId: getTripRequestPlan
+      security:
+        - bearerAuth: []
+      x-contract-id: OP-getTripRequestPlan
+      x-status: ACTIVE
+      x-requirement-refs: [TRIP-BLD-001, FR-TRIP-BLD-001-03, AC-TRIP-BLD-001-04]
+      x-open-decisions: [ADR-010]
+      x-permission-refs: [AUTH-TS-001, AUTH-TS-002, AUTH-TS-097, AUTH-TS-098]
+      description: TripRequest'in Trip'ini ve CURRENT PlanRevision'ını döndürür. Trip henüz yoksa trip=null, revision=null döner ve ETag dönmez.
+      parameters:
+        - {name: tripRequestId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: Plan görünümü.
+          headers:
+            ETag: {description: 'CURRENT revision sürümü; Trip yoksa yok.', schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: ../schemas/TripPlan.schema.json}
+        '401': {description: 'Kimlik doğrulaması yok. RC-AUTHN-REQUIRED.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '403': {description: 'permissions.yaml Trip/PlanRevision read kararı izin vermiyor. RC-AUTHZ-DENIED.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '404': {description: 'TripRequest bulunamadı. RC-RESOURCE-NOT-FOUND.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+  /trip-requests/{tripRequestId}/plan/items:
+    post:
+      operationId: addTripPlanPoiItem
+      security:
+        - bearerAuth: []
+      x-contract-id: OP-addTripPlanPoiItem
+      x-status: ACTIVE
+      x-requirement-refs: [TRIP-BLD-001, FR-TRIP-BLD-001-01, FR-TRIP-BLD-001-02, FR-TRIP-BLD-001-03, RULE-TRIP-BLD-001-04, RULE-TRIP-BLD-001-05, AC-TRIP-BLD-001-05, PLT-CONC-001, RULE-POI-001-06]
+      x-open-decisions: [ADR-010, OD-013]
+      x-permission-refs: [AUTH-TS-007, AUTH-TS-008, AUTH-TS-103, AUTH-TS-104]
+      description: >-
+        Sunucuda saklı kanonik POI'yi planlanmamış FLEXIBLE öğe olarak ekler; yeni PlanRevision oluşturur (Trip yoksa Trip + revision 1).
+        Görüntü sunucudaki kayıttan alınır (OP-getPoi deposu); tarayıcıdan POI verisi kabul edilmez. Öğe uygulanabilir olarak işaretlenmez.
+      parameters:
+        - {name: tripRequestId, in: path, required: true, schema: {type: string}}
+        - {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1, maxLength: 255}}
+        - {name: If-Match, in: header, required: false, schema: {type: string}, description: 'Trip varken zorunlu: "<version>".'}
+        - {name: If-None-Match, in: header, required: false, schema: {type: string, const: '*'}, description: 'Trip yokken zorunlu.'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                poi_id: {type: string, minLength: 1, maxLength: 255}
+              required: [poi_id]
+      responses:
+        '201':
+          description: Yeni CURRENT revision oluşturuldu (aynı anahtarla tekrar istekte ilk sonuç).
+          headers:
+            ETag: {description: 'Yeni revision sürümü.', schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: ../schemas/TripPlan.schema.json}
+        '400': {description: 'Eksik Idempotency-Key, eksik/çelişkili ön koşul başlığı veya şema ihlali. RC-VALIDATION-SCHEMA.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '401': {description: 'RC-AUTHN-REQUIRED.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '403': {description: 'permissions.yaml Trip update / PlanRevision create izin vermiyor. RC-AUTHZ-DENIED.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '404': {description: 'TripRequest veya POI bulunamadı. RC-RESOURCE-NOT-FOUND.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '409': {description: 'Ön koşul CURRENT revision ile eşleşmiyor (RC-CONFLICT-REVISION-STALE) veya anahtar farklı istekle kullanıldı (RC-CONFLICT-IDEMPOTENCY-KEY).', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '422': {description: 'TripRequest SEARCHABLE değil. RC-VALIDATION-TRIP-REQUEST-INCOMPLETE.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+  /trip-requests/{tripRequestId}/plan/items/{itemId}:
+    delete:
+      operationId: removeTripPlanItem
+      security:
+        - bearerAuth: []
+      x-contract-id: OP-removeTripPlanItem
+      x-status: ACTIVE
+      x-requirement-refs: [TRIP-BLD-001, FR-TRIP-BLD-001-01, FR-TRIP-BLD-001-02, FR-TRIP-BLD-001-03, AC-TRIP-BLD-001-06, PLT-CONC-001]
+      x-open-decisions: [ADR-010]
+      x-permission-refs: [AUTH-TS-007, AUTH-TS-008, AUTH-TS-103, AUTH-TS-104]
+      description: Öğeyi CURRENT revision'dan çıkaran yeni PlanRevision oluşturur; önceki revision değişmez ve izlenebilir kalır (AC-TRIP-BLD-001-02).
+      parameters:
+        - {name: tripRequestId, in: path, required: true, schema: {type: string}}
+        - {name: itemId, in: path, required: true, schema: {type: string}}
+        - {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1, maxLength: 255}}
+        - {name: If-Match, in: header, required: true, schema: {type: string}, description: '"<version>"'}
+      responses:
+        '200':
+          description: Yeni CURRENT revision oluşturuldu (aynı anahtarla tekrar istekte ilk sonuç).
+          headers:
+            ETag: {description: 'Yeni revision sürümü.', schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: ../schemas/TripPlan.schema.json}
+        '400': {description: 'Eksik Idempotency-Key veya If-Match. RC-VALIDATION-SCHEMA.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '401': {description: 'RC-AUTHN-REQUIRED.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '403': {description: 'RC-AUTHZ-DENIED.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '404': {description: 'TripRequest, Trip veya CURRENT revision içinde öğe yok. RC-RESOURCE-NOT-FOUND.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '409': {description: 'RC-CONFLICT-REVISION-STALE veya RC-CONFLICT-IDEMPOTENCY-KEY.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: OpenID Connect issuer'ının (CFG-AUTH-OIDC-ISSUER, ortam yapılandırması) verdiği JWS imzalı erişim token'ı; doğrulama kuralları x-token-validation. v3.2 bearerAuth tanımının yerine geçer.
+      x-status: ACTIVE
+      x-adr-ref: ADR-010

@@ -1,0 +1,22 @@
+version: 3.15.0
+inherits: ../../v3.14/registries/reason_error.yaml
+new_records: []
+reused_records:
+  - id: RC-RESOURCE-NOT-FOUND
+    applies_to: [OP-startPoiDiscovery, OP-pollPoiDiscovery, OP-getPoi, OP-verifyPoi]
+  - id: RC-VALIDATION-SCHEMA
+    applies_to: [OP-startPoiDiscovery]
+    note: Eksik Idempotency-Key veya trip_request_id dışında alan (tarayıcıdan kriter) HTTP 400.
+  - id: RC-CONFLICT-IDEMPOTENCY-KEY
+    applies_to: [OP-startPoiDiscovery]
+  - id: RC-VALIDATION-TRIP-REQUEST-INCOMPLETE
+    applies_to: [OP-startPoiDiscovery]
+  - id: RC-PROVIDER-TIMEOUT
+    applies_to: [OP-startPoiDiscovery, OP-verifyPoi]
+  - id: RC-EVIDENCE-UNVERIFIED
+    applies_to: [OP-verifyPoi, RULE-POI-001-05, AC-POI-001-07]
+    note: POI olgusu sağlayıcıdan doğrulanamadı; olgu doğrulanmış gibi sunulmaz.
+contract_gaps:
+  - id: GAP-POI-CRITERIA-001
+    description: POI kriteri üretemeyen TripRequest (şehir dışı varış türü, koordinatsız kayıt), tanımsız/geçersiz config (CFG-POI-SEARCH-RADIUS, CFG-POI-MAX-RESULTS, CFG-POI-OVERPASS-ENDPOINT, CFG-POI-DISCOVERY-TAG-FILTER; üretimde genel uç nokta), eksik osm_overpass dayanıklılık profili veya yetenek kaydı olmaması için kanonik reason/error kodu yoktur; sağlayıcı çağrılmaz, PoiDiscoveryJob.error.code null ve Türkçe mesajla FAILED olur. Yeni kod uydurulmadı.
+    decision_ref: OD-025

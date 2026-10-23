@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.14:AccommodationSearchCriteria",
+  "title": "AccommodationSearchCriteria",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trip_request_id": {"type": "string"},
+    "destination_place": {"$ref": "../../v3.8/schemas/LocationRef.schema.json", "description": "TripRequest.destination_place değiştirilmeden taşınır."},
+    "destination_coordinates": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "latitude": {"type": "number", "minimum": -90, "maximum": 90},
+        "longitude": {"type": "number", "minimum": -180, "maximum": 180}
+      },
+      "required": ["latitude", "longitude"],
+      "description": "Yalnız destination_place.kind=city ve kalıcı destination_place.coordinates (SCH-LocationRef v3.14; sunucuda doğrulanan GeoNames veya Duffel Places şehir kaydından) mevcutsa bu değerlerden alınır. Koordinat tahmin edilmez; havalimanı koordinatı kullanılmaz."
+    },
+    "search_radius_km": {"type": "integer", "minimum": 1, "maximum": 100, "description": "CFG-ACCOMMODATION-SEARCH-RADIUS (5 km)."},
+    "check_in_date": {"type": "string", "format": "date"},
+    "check_out_date": {"type": "string", "format": "date"},
+    "adults": {"type": "integer", "minimum": 1},
+    "rooms": {"type": "integer", "minimum": 1, "description": "TripRequest.room_count (kullanıcının açıkça girdiği değer). room_count yoksa kriter türetilmez; varsayılan oda sayısı uydurulmaz. Misafirler odalara dağıtılmaz (sağlayıcı arama düzeyinde misafir listesi alır)."}
+  },
+  "required": ["trip_request_id", "destination_place", "destination_coordinates", "search_radius_km", "check_in_date", "check_out_date", "adults", "rooms"],
+  "x-contract-id": "SCH-AccommodationSearchCriteria",
+  "x-version": "3.14",
+  "x-status": "ACTIVE",
+  "x-audience": "INTERNAL",
+  "x-requirement-refs": ["ACC-001", "RULE-ACC-001-04", "FR-ACC-001-03", "AC-ACC-001-04"],
+  "x-open-decisions": ["OD-024", "OD-020", "OD-021", "OD-022"],
+  "x-mapping": {
+    "status": "OD-024 RESOLVED (2026-10-05)",
+    "supported_subset": "TripRequest SEARCHABLE; journey_type=ROUND_TRIP; outbound_date ve return_date EXACT; check_out_date > check_in_date; passenger_composition mevcut, adults>=1, children=0, infants=0; room_count>=1; destination kind=city ve kalıcı coordinates mevcut; duffel_stays sınırları sağlanıyor.",
+    "check_in_date": "outbound_date.date (kesin gidiş tarihi; varış günü veya gece varışı yorumlanmaz)",
+    "check_out_date": "return_date.date (kesin dönüş tarihi); check_out_date > check_in_date olmalıdır.",
+    "adults": "passenger_composition.adults; her biri sağlayıcıya yetişkin misafir olarak gider.",
+    "children_infants": "children>0 veya infants>0 desteklenmez: sağlayıcı çocuk yaşı ister, TripRequest yaş taşımaz (OD-020); çocuk/bebek yetişkine dönüştürülmez, yaş uydurulmaz.",
+    "rooms": "TripRequest.room_count; yoksa (legacy veya oda girmeyen API istemcisi) desteklenmez. Oda başına misafir dağılımı modellenmez.",
+    "destination": "kind=city + kalıcı destination_place.coordinates (GeoNames veya Duffel Places şehir kaydı) + search_radius_km=5. kind=airport/station/supported_location veya coordinates olmayan kayıtlar desteklenmez; havalimanı koordinatı konaklama bölgesi değildir.",
+    "provider_constraints": "duffel_stays: check-in en fazla 330 gün ileride; konaklama en fazla 99 gece; giriş tarihi bugünden önce olamaz. Aşılırsa kriter türetilmez; TripRequest anlamı değişmez.",
+    "not_derivable": "Yukarıdaki alt küme dışındaki her durum (ONE_WAY, FLEXIBLE, aynı gün giriş/çıkış, çocuk/bebek, legacy count-only, room_count yok, desteklenmeyen tür veya coordinates yok, sağlayıcı sınırı aşımı): sağlayıcı çağrılmaz; iş error.code=null ve Türkçe mesajla FAILED olur (GAP-ACC-CRITERIA-001)."
+  },
+  "description": "TripRequest'ten yalnız sunucuda türetilen konaklama arama kriteri; tarayıcıdan kriter kabul edilmez."
+}

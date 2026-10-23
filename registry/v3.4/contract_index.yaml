@@ -1,0 +1,14 @@
+version: 3.4.0
+inherits: ../v3.3/contract_index.yaml
+contracts:
+  - {id: SCH-FlightSearchStartRequest, path: contracts/v3.4/schemas/FlightSearchStartRequest.schema.json, status: ACTIVE}
+  - {id: SCH-FlightOffer, path: contracts/v3.4/schemas/FlightOffer.schema.json, status: ACTIVE, replaces: 'urn:ai-seyahat:v3.3:FlightOffer'}
+  - {id: SCH-FlightSearchResult, path: contracts/v3.4/schemas/FlightSearchResult.schema.json, status: ACTIVE, replaces: 'urn:ai-seyahat:v3.3:FlightSearchResult'}
+  - {id: SCH-FlightSearchJob, path: contracts/v3.4/schemas/FlightSearchJob.schema.json, status: ACTIVE, replaces: 'urn:ai-seyahat:v3.3:FlightSearchJob'}
+  - {id: SCH-OfferSnapshot, path: contracts/v3.4/schemas/OfferSnapshot.schema.json, status: ACTIVE, replaces: 'urn:ai-seyahat:v3.3:OfferSnapshot'}
+  - {id: SCH-RepriceResult, path: contracts/v3.4/schemas/RepriceResult.schema.json, status: ACTIVE, replaces: 'urn:ai-seyahat:v3.3:RepriceResult'}
+  - {id: OP-startFlightSearch, path: contracts/v3.4/openapi/m1a.openapi.yaml, status: ACTIVE, decision_ref: ADR-011}
+  - {id: OP-pollFlightSearch, path: contracts/v3.4/openapi/m1a.openapi.yaml, status: ACTIVE, decision_ref: ADR-011}
+  - {id: OP-getOffer, path: contracts/v3.4/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-repriceOffer, path: contracts/v3.4/openapi/m1a.openapi.yaml, status: ACTIVE}
+  - {id: OP-createPartnerRedirect, path: contracts/v3.4/openapi/m1a.openapi.yaml, status: PROVISIONAL, decision_ref: OD-015}

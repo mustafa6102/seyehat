@@ -1,0 +1,11 @@
+version: 3.7.0
+inherits: ../../v3.6/registries/traceability.yaml
+requirement_to_contract:
+  - requirement: RULE-TRIP-001-02
+    artifacts: [schema:FlightSearchCriteria.schema.json]
+    note: Kesin tarih (EXACT) ve esnek tarih aralığı (FLEXIBLE) kriterde ayrı temsil edilir.
+  - requirement: RULE-TRIP-001-03
+    artifacts: [schema:FlightSearchCriteria.schema.json]
+  - requirement: FLT-002
+    artifacts: [schema:FlightSearchCriteria.schema.json]
+    open_decisions: [OD-022]

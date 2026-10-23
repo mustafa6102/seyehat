@@ -1,0 +1,13 @@
+version: 3.13.0
+inherits: ../v3.12/decisions.yaml
+decisions:
+  - id: OD-011
+    status: OPEN
+    note: Ucus secimi is modelinden bagimsizdir; secim sonrasi yonlendirme/booking adimi ve o adimdaki dogrulama zorunlulugu bu karara baglidir.
+  - id: OD-016
+    status: OPEN
+    note: UNVERIFIED teklif guncel secim olamaz; NEEDS_VERIFICATION yonlendirme/booking politikasi acik kalir.
+  - id: OD-021
+    status: OPEN
+    note: Secim TripRequest'e baglidir; Trip iliskisi ve secimin Trip/ItineraryItem'a tasinmasi acik kalir.
+open_decisions: [OD-001, OD-008, OD-011, OD-012, OD-013, OD-015, OD-016, OD-020, OD-021, OD-022, ADR-006, ADR-007, ADR-010]

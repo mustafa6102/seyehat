@@ -1,0 +1,37 @@
+version: 3.15.0
+inherits: ../v3.14/story_overrides.yaml
+overrides:
+  - id: POI-001
+    phase: M3
+    semantics_changed: false
+    reason: POI keşif/ayrıntı/doğrulama sözleşmesi (v3.15). Mevcut kurallar ve kabul kriterleri korunur; plan öğesi ve zaman uygulanabilirliği BLOCKED.
+    preserved_refs:
+      rules: [RULE-POI-001-01, RULE-POI-001-02, RULE-POI-001-03]
+      functional_requirements: [FR-POI-001-01, FR-POI-001-02]
+      acceptance_criteria: [AC-POI-001-01, AC-POI-001-02, AC-POI-001-03]
+      test_scenarios: [TS-POI-001-01, TS-POI-001-02, TS-POI-001-03]
+    clarified_refs:
+      FR-POI-001-01: 'v3.15: keşif yalnız konum (varış şehri koordinatı) ile yapılır; tercih filtresi OD-026, açık saat/plan penceresi filtresi DAY-001 kararına kadar uygulanmaz.'
+      RULE-POI-001-02: 'v3.15: kural plan öğesi aşamasına aittir ve DAY-001/TRIP-BLD-001 hazır olana kadar uygulanamaz; bu aşamada hiçbir POI uygulanabilir plan öğesi olarak işaretlenmez (RULE-POI-001-06).'
+    added_refs:
+      rules:
+        RULE-POI-001-04: POI keşif kriteri yalnız sunucuda TripRequest'ten türetilir; yalnız şehir türündeki varış noktasının kayıtlı koordinatı kullanılır. Kategori tercihi, arama yarıçapı, günlük zaman penceresi ve ziyaret süresi uydurulmaz; kriter türetilemezse sağlayıcı çağrılmaz.
+        RULE-POI-001-05: POI olguları (açık/kapalı durumu, çalışma saati, giriş ücreti, rezervasyon) kaynak, kesinlik ve doğrulama durumuyla taşınır. Eskimiş, süresi geçmiş veya doğrulanmamış olgu doğrulanmış gibi sunulmaz; sağlayıcıya özgü ham alanlar dışarı verilmez.
+        RULE-POI-001-06: Keşfedilen POI yalnız aday olarak gösterilebilir ve zaman uygunluğu iddia edilmez. Uygulanabilir plan öğesi olarak işaretlenmesi için o tarih/saat için yeterince doğrulanmış çalışma saati ve DAY-001 kurallarına göre plan penceresine sığması gerekir.
+        RULE-POI-001-07: Sağlayıcı kanıtıyla geçici veya kalıcı olarak kapalı olduğu bildirilen yer kapalı olarak gösterilir ve uygulanabilir plan öğesi olamaz.
+      functional_requirements:
+        FR-POI-001-03: Sağlayıcıdan bağımsız POI keşfi asenkron iş olarak başlatılır ve yoklanır; sonuçlar kanonik POI adaylarıdır.
+        FR-POI-001-04: POI ayrıntısı sunucuda saklı kanonik kayıttan okunur ve sağlayıcı yer referansıyla yeniden doğrulanabilir; doğrulama kanıt tazeliğini günceller.
+      acceptance_criteria:
+        AC-POI-001-04: Given kriteri türetilebilen TripRequest When POI keşfi başlatılır Then kanonik adaylar döner ve hiçbiri uygulanabilir plan öğesi olarak işaretlenmez; Given türetilemeyen TripRequest veya tanımsız config Then sağlayıcı çağrılmaz ve keşif Türkçe gerekçeyle başarısız olur.
+        AC-POI-001-05: Given sağlayıcı giriş ücreti veya ziyaret süresi sağlamıyor When POI gösterilir Then giriş ücreti 0 veya ücretsiz gösterilmez ve ziyaret süresi bilinmiyor olarak belirtilir; süre varsa tahmini olarak işaretlenir.
+        AC-POI-001-06: Given POI When doğrulama başarılı olur Then dönen olgular taze olarak işaretlenir ve dönmeyen olgular bilinmiyor kalır.
+        AC-POI-001-07: Given POI olgusunun kanıtı eskimiş, süresi geçmiş veya doğrulama başarısız When gösterilir Then olgu doğrulanmış gibi sunulmaz.
+        AC-POI-001-08: Given sağlayıcı yerin kapalı olduğunu bildiriyor When POI gösterilir Then kapalı olarak gösterilir ve plan öğesi olarak önerilmez.
+      test_scenarios:
+        TS-POI-001-04: [Kriter türetilebilen/türetilemeyen TripRequest ile POI keşfi, [4]]
+        TS-POI-001-05: [Bilinmeyen giriş ücreti ve ziyaret süresi, [5]]
+        TS-POI-001-06: [Başarılı doğrulama ile taze kanıt, [6]]
+        TS-POI-001-07: [Eskimiş veya doğrulanamayan kanıt, [7]]
+        TS-POI-001-08: [Kalıcı olarak kapalı yer, [8]]
+    dependencies: [OD-025, OD-026, OD-013, OD-014, OD-021, ADR-006, ADR-010, TRIP-BLD-001, DAY-001]

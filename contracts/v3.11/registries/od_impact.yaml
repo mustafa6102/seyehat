@@ -1,0 +1,21 @@
+version: 3.11.0
+inherits: ../../v3.10/registries/od_impact.yaml
+decisions:
+  - id: OD-001
+    status: OPEN
+    note: Duffel Flights ilk somut adaptor olarak (opt-in) uygulandi; sozlesme kosullari ve provider secimi OPEN.
+  - id: OD-022
+    title: TripRequest'ten saglayici ucus arama kriterlerine esleme
+    status: PARTIALLY_RESOLVED
+    provider_findings:
+      resolved:
+        - Duffel adaptoru yalniz ONE_WAY + EXACT gidis tarihi ve katalogdan gelen IATA kimligiyle arama yapar; diger kriterler saglayici cagrisindan once reddedilir.
+    remaining_open:
+      - PASSENGER - yolcu tipi dagilimi (OD-020 bagimliligi); adaptor yalniz acik ALL_ADULT dagitim politikasiyla calisir.
+      - Kabin sinifi; desteklenmeyen kriter icin kanonik reason/error kodu (GAP-FLT-CRITERIA-001).
+      - ROUND_TRIP - FlightOffer'da slice/yon yapisi yok.
+    blocks_development: [round-trip and flexible-date provider search]
+    impact_status: PARTIALLY_UNBLOCKED
+  - id: ADR-006
+    status: OPEN
+    note: Yalniz duffel_flights icin kapsamli dagitim profili (duffel-flights-ops-2026-09-29) secildi; genel sayisal butceler OPEN.

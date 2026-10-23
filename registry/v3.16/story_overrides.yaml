@@ -1,0 +1,110 @@
+version: 3.16.0
+inherits: ../v3.15/story_overrides.yaml
+overrides:
+  - id: TRIP-BLD-001
+    phase: M3
+    semantics_changed: false
+    reason: OD-021 ve OD-027 kararlarıyla planlanmamış FLEXIBLE POI öğesi artımı (v3.16). Mevcut kurallar korunur; gün/saat ataması ve uygulanabilirlik kapsam dışıdır.
+    preserved_refs:
+      rules: [RULE-TRIP-BLD-001-01, RULE-TRIP-BLD-001-02, RULE-TRIP-BLD-001-03]
+      functional_requirements: [FR-TRIP-BLD-001-01, FR-TRIP-BLD-001-02]
+      acceptance_criteria: [AC-TRIP-BLD-001-01, AC-TRIP-BLD-001-02, AC-TRIP-BLD-001-03]
+      test_scenarios: [TS-TRIP-BLD-001-01, TS-TRIP-BLD-001-02, TS-TRIP-BLD-001-03]
+    clarified_refs:
+      FR-TRIP-BLD-001-01: >-
+        v3.16: Planın sahibi Trip'tir (OD-021). Plan her değişiklikte yeni immutable PlanRevision olarak saklanır (OD-027,
+        TRN-PLANREVISION-01/02). Bu artımda revision yalnız planlanmamış öğeleri taşır; gün bazlı yerleşim (ItineraryDay) DAY-001 ile gelir.
+        Bir plan birden çok POI öğesi içerebilir; TripRequest başına tek seçim modeli itinerary için kullanılmaz.
+      FR-TRIP-BLD-001-02: 'v3.16: diff = PlanRevision.change{base_version, added_item_ids, removed_item_ids}; reason_code = RC-DECISION-TRANSITION-APPLIED (kullanıcı ekleme/çıkarma).'
+      RULE-TRIP-BLD-001-01: 'v3.16: POI öğesi FLEXIBLE''dır; FIXED yalnız sabit saat/rezervasyon kanıtıyla atanır. Ekleme bir öğeyi FIXED yapmaz.'
+      RULE-TRIP-BLD-001-03: >-
+        v3.16: POI öğesi ekleme anındaki kanonik SCH-Poi kaydının değişmez görüntüsünü (poi_id, Sourced değer, kesinlik, kaynak referansı,
+        verification_status) taşır (ADR-005). Ham sağlayıcı verisi saklanmaz; ekleme doğrulama yapmaz, UNKNOWN'u bilinir, UNVERIFIED'ı FRESH yapmaz.
+        Saklama süresi OD-013'e, osm_overpass görüntüsünün ODbL yükümlülüğü OD-025'e bağlıdır.
+    added_refs:
+      rules:
+        RULE-TRIP-BLD-001-04: Bir TripRequest en fazla bir Trip'e sahiptir; Trip ilk kalıcı plan değişikliğinde tembel oluşturulur, doğuran TripRequest'e kalıcı olarak başvurur ve TripRequest başka bir Trip üretemez. Uçuş ve konaklama seçimleri TripRequest'e ait kalır.
+        RULE-TRIP-BLD-001-05: Planlanmamış FLEXIBLE POI öğesi gün, saat ve süre taşımaz ve uygulanabilir olarak işaretlenmez; gün/saat ataması ve uygulanabilirlik DAY-001 Domain Feasibility Gate'e aittir.
+      functional_requirements:
+        FR-TRIP-BLD-001-03: TripRequest'in kalıcı planı okunabilir; sunucuda saklı kanonik POI planlanmamış FLEXIBLE öğe olarak eklenebilir ve plan öğesi çıkarılabilir. Her değişiklik If-Match/If-None-Match ön koşulu ve Idempotency-Key ile yeni PlanRevision oluşturur.
+      acceptance_criteria:
+        AC-TRIP-BLD-001-04: Given plan değişikliği yapılmamış TripRequest When plan okunur Then trip ve revision boş döner ve Trip oluşturulmaz.
+        AC-TRIP-BLD-001-05: 'Given Trip''i olmayan TripRequest When If-None-Match: * ile POI eklenir Then tek Trip ve sürüm 1 oluşur, öğe FLEXIBLE ve planlanmamış olur, POI olguları kaynaktaki kesinlik ve doğrulama durumuyla aynen saklanır; Given aynı Idempotency-Key ile tekrar When gönderilir Then ilk sonuç döner ve yeni sürüm oluşmaz; Given eski sürüm If-Match When gönderilir Then 409 döner.'
+        AC-TRIP-BLD-001-06: Given CURRENT sürümde öğe When güncel If-Match ile çıkarılır Then yeni sürüm oluşur, öğe yeni sürümde yoktur ve önceki sürüm değişmeden izlenebilir.
+      test_scenarios:
+        TS-TRIP-BLD-001-04: [Trip'siz plan okuma, [4]]
+        TS-TRIP-BLD-001-05: [İlk POI ekleme, idempotent tekrar ve stale If-Match, [5]]
+        TS-TRIP-BLD-001-06: [POI öğesi çıkarma ve önceki sürümün korunması, [6]]
+  - id: DAY-001
+    phase: M3
+    semantics_changed: false
+    reason: Plan öğesi ekleme ile zaman uygulanabilirliği iddiasının ayrımı (v3.16).
+    preserved_refs:
+      rules: [RULE-DAY-001-01, RULE-DAY-001-02, RULE-DAY-001-03]
+      functional_requirements: [FR-DAY-001-01, FR-DAY-001-02]
+      acceptance_criteria: [AC-DAY-001-01, AC-DAY-001-02, AC-DAY-001-03, AC-DAY-001-04]
+      test_scenarios: [TS-DAY-001-01, TS-DAY-001-02, TS-DAY-001-03, TS-DAY-001-04]
+    clarified_refs:
+      RULE-DAY-001-02: 'v3.16: Planlanmamış FLEXIBLE öğe (RULE-TRIP-BLD-001-05) henüz bir güne atanmamıştır; günlük rota motoru ileride onu uygulanabilir pencereye atar. Bu, öğenin uygulanabilir olduğu anlamına gelmez.'
+      RULE-DAY-001-03: >-
+        v3.16: Plana eklenen öğe Domain Feasibility Gate'ten geçmeden uygulanabilir işaretlenmez. Gate girdileri (Sourced ulaşım süresi kaynağı,
+        tampon, temel tempo limiti) tanımlı değildir; gün/saat ataması ve zaman uygulanabilirliği BLOCKED.
+      RULE-DAY-001-01: 'v3.16: Ziyaret süresi UNKNOWN olan öğede kural değerlendirilemez; öğe uygulanabilir sayılmaz ve süre uydurulmaz. ESTIMATED süre tahmin olarak kalır.'
+  - id: POI-001
+    phase: M3
+    semantics_changed: false
+    reason: Plan öğesi sınırı ve v3.15 doğrulama ifadelerinin OD-025 ile hizalanması (v3.16). Kimlikler ve kabul amacı korunur.
+    preserved_refs:
+      rules: [RULE-POI-001-02, RULE-POI-001-06, RULE-POI-001-07]
+      functional_requirements: [FR-POI-001-04]
+      acceptance_criteria: [AC-POI-001-01, AC-POI-001-02, AC-POI-001-06]
+      test_scenarios: [TS-POI-001-06]
+    clarified_refs:
+      RULE-POI-001-02: 'v3.16: Atanan tarih/saatte kanıtla kapalı POI uygulanabilir plan öğesi olarak temsil edilemez; çalışma saati UNKNOWN ise belirsizlik açıkça taşınır. Planlanmamış öğe uygulanabilirlik iddiası taşımaz; değerlendirme DAY-001 gate''ine aittir (BLOCKED).'
+      FR-POI-001-04: >-
+        v3.16 düzeltme: POI ayrıntısı sunucuda saklı kanonik kayıttan okunur ve sağlayıcı yer referansıyla yeniden okunabilir. Başarılı yeniden
+        okuma olguları yeni yanıttan yeniden üretir ve fetched_at ilerleyebilir; kanıt yalnız onaylı/doğrulanmış kanıt tabanı olan sağlayıcıda FRESH
+        olur. osm_overpass (OD-025) olguları UNVERIFIED kalır ve verified_at null kalır; verified=true yalnız okumanın başarılı olduğunu bildirir.
+      AC-POI-001-06: >-
+        v3.16 düzeltme: Given POI When sağlayıcıdan yeniden okuma başarılı olur Then verified=true döner, dönen olgular yeni yanıttan yeniden üretilir
+        ve dönmeyen olgular bilinmiyor kalır; olgular yalnız doğrulanmış kanıt tabanı olan sağlayıcıda taze olarak işaretlenir, osm_overpass'ta
+        doğrulanmamış (UNVERIFIED, verified_at null) kalır ve doğrulanmış gibi sunulmaz.
+      TS-POI-001-06: 'v3.16: "Başarılı yeniden okuma; kanıt durumu sağlayıcıya göre (osm_overpass: UNVERIFIED kalır)".'
+  - id: PLT-AUTH-001
+    phase: M1A
+    semantics_changed: false
+    reason: TripRequest -> Trip -> PlanRevision sahiplik modeli ve OIDC principal (v3.16, ADR-010 kimlik doğrulama kısmı RESOLVED 2026-10-07). Paylaşım/katılımcı özelliği eklenmedi.
+    clarified_refs:
+      RULE-PLT-AUTH-001-03: 'v3.16: Kimlik sağlayıcı = yapılandırılmış tek OpenID Connect issuer (CFG-AUTH-OIDC-ISSUER); token ömrü issuer politikasıdır ve uygulama exp/nbf uygular; hesap kurtarma issuer''a devredilir (yerel hesap/parola yok). Ayrıcalıklı erişim logu ADR-010 altında OPEN kalır.'
+    preserved_refs:
+      rules: [RULE-PLT-AUTH-001-01, RULE-PLT-AUTH-001-02, RULE-PLT-AUTH-001-03]
+      functional_requirements: [FR-PLT-AUTH-001-01]
+      acceptance_criteria: [AC-PLT-AUTH-001-01, AC-PLT-AUTH-001-02, AC-PLT-AUTH-001-03]
+      test_scenarios: [TS-PLT-AUTH-001-01, TS-PLT-AUTH-001-02, TS-PLT-AUTH-001-03]
+    added_refs:
+      rules:
+        RULE-PLT-AUTH-001-04: Yeni TripRequest kimliği doğrulanmış principal'e owner olarak bağlanır; owner istemciden alınmaz ve TripRequest ömrü boyunca değişmez. Sahiplik gerektiren işlemde kimlik yoksa 401 RC-AUTHN-REQUIRED, principal owner değilse 403 RC-AUTHZ-DENIED.
+        RULE-PLT-AUTH-001-05: Trip owner'ı doğuran TripRequest'in owner'ıdır ve ayrıca saklanmaz; PlanRevision bağımsız owner taşımaz. Owner POI, Traveler, oturum yükü veya istek gövdesinden türetilmez; sahiplik devri kapsam dışıdır.
+        RULE-PLT-AUTH-001-06: Owner'ı olmayan eski TripRequest kayıtları sahiplenilemez; sahiplik gerektiren her işlem reddedilir ve Trip oluşturulmaz. Kayıt ilk erişen kullanıcıya atanmaz; yalnız açık bir migration/yönetici süreciyle bağlanabilir.
+        RULE-PLT-AUTH-001-07: Kanonik principal, yapılandırılmış OpenID Connect issuer'ının imzalı erişim token'ından doğrulanmış (iss, sub) çiftidir (SCH-PrincipalRef). E-posta, ad, Traveler kimliği veya istemcinin gönderdiği kimlik yetkilendirme kimliği değildir.
+        RULE-PLT-AUTH-001-08: Erişim token'ı ve oturum verisi veritabanına, loglara, PlanRevision'a, POI görüntülerine veya outbox yüklerine yazılmaz; principal kimliği kamu yanıt şemalarında yer almaz.
+      functional_requirements:
+        FR-PLT-AUTH-001-03: Korumalı her istekte token imzası (issuer JWKS), iss, aud, exp, varsa nbf ve sub doğrulanır; auth yapılandırması eksik/geçersizse veya JWKS alınamıyorsa istek kapalı başarısız olur (401).
+        FR-PLT-AUTH-001-02: Plan okuma ve değişiklik operasyonları kimlik doğrulama ve owner karşılaştırmasını gövde doğrulaması, idempotency kaydı ve ön koşul değerlendirmesinden önce yapar; yetki hatası Trip, revision, öğe, outbox veya idempotency kaydı bırakmaz.
+      acceptance_criteria:
+        AC-PLT-AUTH-001-04: Given kimliği doğrulanmamış istek When plan okunur veya değiştirilir Then 401 döner ve kalıcı durum oluşmaz.
+        AC-PLT-AUTH-001-05: Given başka bir principal'in TripRequest'i When plana POI eklenmek istenir Then 403 döner; Trip, revision, öğe ve outbox kaydı oluşmaz.
+        AC-PLT-AUTH-001-06: Given owner'ı olmayan eski TripRequest When kimliği doğrulanmış bir kullanıcı plan oluşturmak ister Then 403 döner ve kayıt kullanıcıya atanmaz.
+        AC-PLT-AUTH-001-07: Given imzası geçersiz, issuer'ı veya audience'ı farklı, süresi geçmiş ya da sub içermeyen token When korumalı operasyon çağrılır Then 401 döner.
+        AC-PLT-AUTH-001-08: Given geçerli token When TripRequest oluşturulur Then owner token'ın (iss, sub) değeridir; istek gövdesinde owner/principal alanı gönderilirse şema dışı olarak 400 RC-VALIDATION-SCHEMA döner.
+        AC-PLT-AUTH-001-09: Given auth yapılandırması eksik When korumalı operasyon çağrılır Then hiçbir token kabul edilmez ve 401 döner.
+      test_scenarios:
+        TS-PLT-AUTH-001-04: [Kimliksiz plan isteği, [4]]
+        TS-PLT-AUTH-001-05: [Başkasının TripRequest'ine POI ekleme, [5]]
+        TS-PLT-AUTH-001-06: [Owner'sız eski TripRequest, [6]]
+        TS-PLT-AUTH-001-07: [Geçersiz/eksik token doğrulaması, [7]]
+        TS-PLT-AUTH-001-08: [TripRequest owner'ının token'dan türetilmesi, [8]]
+        TS-PLT-AUTH-001-09: [Eksik auth yapılandırmasında kapalı başarısızlık, [9]]
+    note: >-
+      Traveler bağlantısı ayrı kalır: Traveler.trip_id'nin ilk atanması bu kararın kapsamında değildir, Traveler kimliği owner yerine kullanılamaz
+      ve çözülmemiş Traveler bağlantısı POI plan artımını engellemez (hiçbir gereksinim bunu zorunlu kılmaz).

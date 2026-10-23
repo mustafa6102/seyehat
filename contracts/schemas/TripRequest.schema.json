@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.2:TripRequest",
+  "title": "TripRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "SEARCHABLE"
+      ],
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "user/domain",
+        "verification": "domain validation",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    },
+    "origin_place": {
+      "$ref": "./LocationRef.schema.json",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "user",
+        "verification": "normalized",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    },
+    "destination_place": {
+      "$ref": "./LocationRef.schema.json",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "user",
+        "verification": "normalized",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    },
+    "date_window": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "user",
+        "verification": "OPEN",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    },
+    "traveler_count": {
+      "type": "integer",
+      "minimum": 1,
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "user",
+        "verification": "domain validation",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    },
+    "preferences": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "user",
+        "verification": "OPEN",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    }
+  },
+  "required": [
+    "status",
+    "origin_place",
+    "destination_place",
+    "traveler_count"
+  ],
+  "x-contract-id": "SCH-TripRequest",
+  "x-version": "3.2",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": [
+    "TRIP-001"
+  ]
+}

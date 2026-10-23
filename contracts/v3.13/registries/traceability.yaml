@@ -1,0 +1,44 @@
+version: 3.13.0
+inherits: ../../v3.12/registries/traceability.yaml
+requirement_to_contract:
+  - requirement: RULE-FLT-REPRICE-001-04
+    artifacts: [schema:TripRequestFlightSelection.schema.json, openapi:OP-selectTripRequestFlight, lifecycle:TRN-FSEL-01, reason_error:RC-DECISION-OFFER-NOT-SELECTABLE]
+    tests: [TS-FLT-REPRICE-001-08, TS-FLT-REPRICE-001-09]
+  - requirement: RULE-FLT-REPRICE-001-05
+    artifacts: [openapi:OP-selectTripRequestFlight, openapi:OP-reconfirmTripRequestFlight, openapi:OP-repriceOffer, lifecycle:TRN-FSEL-02, lifecycle:TRN-FSEL-04]
+    tests: [TS-FLT-REPRICE-001-10, TS-FLT-REPRICE-001-13]
+    open_decisions: [OD-011, OD-016]
+  - requirement: RULE-FLT-REPRICE-001-06
+    artifacts: [schema:TripRequestFlightSelection.schema.json, lifecycle:TRN-FSEL-01]
+    tests: [TS-FLT-REPRICE-001-12]
+  - requirement: RULE-FLT-REPRICE-001-07
+    artifacts: [schema:TripRequestFlightSelection.schema.json]
+    tests: [TS-FLT-REPRICE-001-08]
+  - requirement: FR-FLT-REPRICE-001-02
+    artifacts: [schema:TripRequestFlightSelection.schema.json, openapi:OP-selectTripRequestFlight]
+    open_decisions: [OD-013, OD-021]
+  - requirement: FR-FLT-REPRICE-001-03
+    artifacts: [openapi:OP-getTripRequestFlightSelection, schema:TripRequestFlightSelection.schema.json]
+    note: Seyahat Planım (TRIP-BLD-001 ekranı) yalnız okuyucudur; TRIP-BLD-001 kapsamı ve Trip/ItineraryItem/PlanRevision tanımları değişmedi.
+  - requirement: AC-FLT-REPRICE-001-08
+    artifacts: [openapi:OP-selectTripRequestFlight, lifecycle:TRN-FSEL-01]
+    tests: [TS-FLT-REPRICE-001-08]
+  - requirement: AC-FLT-REPRICE-001-09
+    artifacts: [openapi:OP-selectTripRequestFlight, reason_error:RC-DECISION-OFFER-NOT-SELECTABLE, reason_error:RC-EVIDENCE-OFFER-EXPIRED]
+    tests: [TS-FLT-REPRICE-001-09]
+  - requirement: AC-FLT-REPRICE-001-10
+    artifacts: [openapi:OP-repriceOffer, openapi:OP-reconfirmTripRequestFlight, lifecycle:TRN-FSEL-02, lifecycle:TRN-FSEL-04]
+    tests: [TS-FLT-REPRICE-001-10]
+  - requirement: AC-FLT-REPRICE-001-11
+    artifacts: [openapi:OP-getTripRequestFlightSelection, lifecycle:TRN-FSEL-03]
+    tests: [TS-FLT-REPRICE-001-11]
+  - requirement: AC-FLT-REPRICE-001-12
+    artifacts: [openapi:OP-selectTripRequestFlight, lifecycle:TRN-FSEL-01]
+    tests: [TS-FLT-REPRICE-001-12]
+  - requirement: AC-FLT-REPRICE-001-13
+    artifacts: [openapi:OP-selectTripRequestFlight, reason_error:RC-EVIDENCE-OFFER-CHANGED]
+    tests: [TS-FLT-REPRICE-001-13]
+  - requirement: FLT-REPRICE-001
+    artifacts: [schema:TripRequestFlightSelection.schema.json]
+    open_decisions: [ADR-010]
+    note: Erişim/sahiplik PLT-AUTH-001 / ADR-010 kararına kadar TripRequest ile aynı sınırdadır; yeni sahiplik kuralı tanımlanmadı.

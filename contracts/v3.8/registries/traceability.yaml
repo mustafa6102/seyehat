@@ -1,0 +1,16 @@
+version: 3.8.0
+inherits: ../../v3.7/registries/traceability.yaml
+requirement_to_contract:
+  - requirement: TRIP-001
+    artifacts: [schema:LocationRef.schema.json, schema:AviationIdentity.schema.json]
+    note: TripRequest konumu katalog kimliğinden ayrı, isteğe bağlı havacılık kimliği taşır.
+  - requirement: RULE-TRIP-001-01
+    artifacts: [schema:LocationRef.schema.json]
+  - requirement: FLT-002
+    artifacts: [schema:FlightSearchCriteria.schema.json, schema:AviationIdentity.schema.json]
+    open_decisions: [OD-022]
+    note: Uçuş arama kriteri konumları IATA_AIRPORT / IATA_CITY kimliğiyle adapter sınırına taşınır.
+  - requirement: PLT-REL-001
+    artifacts: [config:provider_resilience.duffel_places]
+    open_decisions: [ADR-006]
+    note: Duffel Places çağrıları ProviderCallGuard üzerinden yapılır; duffel_places profili sayısal değerleri onaylanmadığından tanımlı değildir (fail closed).

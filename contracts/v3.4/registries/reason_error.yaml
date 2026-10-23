@@ -1,0 +1,13 @@
+version: 3.4.0
+inherits: ../../v3.3/registries/reason_error.yaml
+new_records: []
+reused_records:
+  - id: RC-VALIDATION-SCHEMA
+    refs: [FLT-002, OP-startFlightSearch]
+  - id: RC-RESOURCE-NOT-FOUND
+    refs: [TRIP-001, OP-startFlightSearch]
+  - id: RC-CONFLICT-IDEMPOTENCY-KEY
+    refs: [FLT-002, PLT-REL-001, OP-startFlightSearch]
+  - id: RC-VALIDATION-TRIP-REQUEST-INCOMPLETE
+    refs: [TRIP-001, OP-startFlightSearch]
+note: Yeni reason/error semantiği eklenmedi.

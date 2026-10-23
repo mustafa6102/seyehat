@@ -1,0 +1,34 @@
+version: 3.3.0
+inherits: ../../registries/lifecycle.yaml
+changes:
+  - machine: OfferState
+    semantics_changed: false
+    contract_surface: schema:RepriceResult.schema.json
+    transitions: [TRN-OFFER-01, TRN-OFFER-02, TRN-OFFER-03, TRN-OFFER-04, TRN-OFFER-05, TRN-OFFER-06, TRN-OFFER-07]
+    refs: [FLT-REPRICE-001]
+  - machine: TravelerDocumentEvidenceFreshness
+    semantics_changed: false
+    applies_to: [SCH-TravelerDocument, SCH-Visa, SCH-ResidencePermit]
+    transitions: [TRN-TRAVELERDOCUMENT-01]
+    refs: [TRV-001, PLT-PII-001]
+  - machine: FlightSearchJob
+    semantics_changed: true
+    decision_ref: ADR-011
+    states: [QUEUED, RUNNING, PARTIAL, COMPLETED, FAILED, EXPIRED]
+    initial: QUEUED
+    terminal: [COMPLETED, FAILED, EXPIRED]
+    transitions:
+      - {from: QUEUED, to: RUNNING}
+      - {from: QUEUED, to: FAILED}
+      - {from: QUEUED, to: EXPIRED}
+      - {from: RUNNING, to: RUNNING, note: retry aynı search_id ile devam eder}
+      - {from: RUNNING, to: PARTIAL, note: tam snapshot mevcut sonucu değiştirir}
+      - {from: RUNNING, to: COMPLETED}
+      - {from: RUNNING, to: FAILED}
+      - {from: RUNNING, to: EXPIRED}
+      - {from: PARTIAL, to: PARTIAL, note: yeni tam snapshot öncekinin yerini alır}
+      - {from: PARTIAL, to: COMPLETED}
+      - {from: PARTIAL, to: FAILED}
+      - {from: PARTIAL, to: EXPIRED}
+    idempotency: Aynı Idempotency-Key aynı search_id ve mantıksal işi döndürür; job retry yeni mantıksal arama veya sonuç oluşturmaz.
+    refs: [ADR-011, FLT-002, PLT-REL-001]

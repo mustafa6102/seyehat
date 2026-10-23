@@ -1,0 +1,25 @@
+version: 3.6.0
+inherits: ../../v3.5/registries/od_impact.yaml
+decisions:
+  - id: OD-022
+    title: TripRequest'ten sağlayıcı uçuş arama kriterlerine eşleme
+    status: PARTIALLY_RESOLVED
+    location_findings:
+      verified:
+        - SCH-LocationRef yalnız kind, value ve iana_timezone taşır; hiçbir alan IATA/ICAO havalimanı, IATA şehir veya istasyon kodu temsil etmez.
+        - FLT-002, FLT-005 ve FLT-REPRICE-001 gereksinimleri havalimanı/havacılık konum kimliği tanımlamaz; IATA SSOT'ta yalnız iş modeli ve NDC bağlamında geçer.
+        - GeoNames kimlikleri (geonames:<id>) yalnız konum kataloğu kimliğidir; mevcut adapter alternatif ad veya havacılık kodu almaz ve GeoNames bir IATA otoritesi değildir.
+      resolved:
+        - station türündeki LocationRef M1A uçuş arama yürütmesine girdi olamaz; çok modlu arama GND-001 (M1C) kapsamındadır. TripRequest genelinde station desteği değişmez.
+        - Havacılık kimliği olmayan bir konum sağlayıcıya gönderilmez ve dönüştürülmez; iş sağlayıcı çağrılmadan FAILED olur (GAP-FLT-CRITERIA-001).
+      remaining_open:
+        - Otoritatif havacılık konum kimliği kaynağı ve kanonik kimlik şekli (havalimanı/şehir kodu türleri) tanımlı değil; bu nedenle v3.6 LocationRef şeması değiştirilmedi.
+        - city -> airport genişletmesi tanımlı değil.
+    remaining_open:
+      - Havacılık konum kimliği kaynağı ve şekli; city -> airport genişletmesi.
+      - date_window iç yapısı, gidiş/dönüş yönü ve esnek aralık genişletmesi.
+      - Yolcu tipi dağılımı (OD-020 bağımlılığı).
+      - Kabin sınıfı ve yolculuk tipi.
+      - Desteklenmeyen kriter için kanonik reason/error kodu (GAP-FLT-CRITERIA-001).
+    blocks_development: [production flight provider execution]
+    impact_status: BLOCKED

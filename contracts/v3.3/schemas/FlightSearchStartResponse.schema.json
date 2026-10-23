@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.3:FlightSearchStartResponse",
+  "title": "FlightSearchStartResponse",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "search_id": {"type": "string", "minLength": 1},
+    "status": {"const": "QUEUED"}
+  },
+  "required": ["search_id", "status"],
+  "x-contract-id": "SCH-FlightSearchStartResponse",
+  "x-version": "3.3",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["FLT-002", "PLT-REL-001"]
+}

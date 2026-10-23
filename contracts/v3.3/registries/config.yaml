@@ -1,0 +1,24 @@
+version: 3.3.0
+inherits: ../../registries/config.yaml
+records:
+  - id: CFG-OLTP-ENGINE
+    type: fixed
+    value: MySQL 8
+    status: ACCEPTED
+    decision_ref: ADR-009
+    scope: Laravel 12 web/API OLTP
+  - id: CFG-RANK-COMPARATOR
+    status: OPEN
+    phase: M1B
+    decision_ref: OD-007
+    requirement_refs: [RANK-001, NFR-AUD-001]
+  - id: CFG-RISK-THRESHOLD
+    status: OPEN
+    phase: M1B
+    decision_ref: OD-017
+    requirement_refs: [BUS-002, RANK-001]
+  - id: CFG-FX-POLICY
+    status: OPEN
+    phase: M1B
+    decision_ref: OD-005
+    requirement_refs: [RANK-001]

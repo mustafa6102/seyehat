@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.2:RankingResult",
+  "title": "RankingResult",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "route_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "derived",
+        "verification": "deterministic comparator",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "RANK-001"
+        ]
+      }
+    },
+    "comparator_version": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "config",
+        "verification": "version",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "RANK-001"
+        ]
+      }
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "decision registry",
+        "verification": "registered",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "RANK-001"
+        ]
+      }
+    }
+  },
+  "required": [
+    "route_ids",
+    "comparator_version",
+    "reason_codes"
+  ],
+  "x-contract-id": "SCH-RankingResult",
+  "x-version": "3.2",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": [
+    "RANK-001"
+  ]
+}

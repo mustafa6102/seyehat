@@ -1,0 +1,36 @@
+version: 3.13.0
+inherits: ../v3.12/story_overrides.yaml
+overrides:
+  - id: FLT-REPRICE-001
+    phase: M1A
+    semantics_changed: false
+    reason: Seyahat Planım ekranı için minimum "seçili uçuş" kararı (v3.13). Mevcut kurallar ve kabul kriterleri değişmedi; seçim kaydı eklendi.
+    preserved_refs:
+      rules: [RULE-FLT-REPRICE-001-01, RULE-FLT-REPRICE-001-02, RULE-FLT-REPRICE-001-03]
+      functional_requirements: [FR-FLT-REPRICE-001-01]
+      acceptance_criteria: [AC-FLT-REPRICE-001-01, AC-FLT-REPRICE-001-02, AC-FLT-REPRICE-001-03, AC-FLT-REPRICE-001-04, AC-FLT-REPRICE-001-05, AC-FLT-REPRICE-001-06, AC-FLT-REPRICE-001-07]
+      test_scenarios: [TS-FLT-REPRICE-001-01, TS-FLT-REPRICE-001-02, TS-FLT-REPRICE-001-03, TS-FLT-REPRICE-001-04, TS-FLT-REPRICE-001-05, TS-FLT-REPRICE-001-06, TS-FLT-REPRICE-001-07]
+    added_refs:
+      rules:
+        RULE-FLT-REPRICE-001-04: Bir TripRequest için uçuş teklifi yalnız o TripRequest'in arama sonucunda yer alıyorsa, sunucudaki en son yeniden doğrulama sonucu CURRENT ise ve süresi dolmamışsa seçilebilir. UNVERIFIED veya EXPIRED teklif güncel uçuş olarak seçilemez. Seçimde tarayıcıdan gelen fiyat veya uçuş verisi kullanılmaz.
+        RULE-FLT-REPRICE-001-05: Yeniden doğrulama CHANGED döndüğünde yeni teklif kullanıcının seçimini sessizce değiştirmez; seçim veya güncelleme yalnız yeni doğrulanmış teklifin açık kabulüyle yapılır. RECONFIRMATION_REQUIRED veya EXPIRED seçim güncel, satın alınabilir fiyat olarak gösterilmez.
+        RULE-FLT-REPRICE-001-06: Bir TripRequest'in en fazla bir etkin uçuş seçimi vardır; başka bir uygun teklifin açıkça seçilmesi öncekinin yerine geçer.
+        RULE-FLT-REPRICE-001-07: Seçimin doğrulanmış fiyatı yalnız toplam bilinen ve eksiksiz bir tutarsa saklanır; aksi halde boş kalır ve "Henüz hesaplanmadı" gösterilir, 0 kabul edilmez.
+      functional_requirements:
+        FR-FLT-REPRICE-001-02: Seçim TripRequest başına tek bir kayıt olarak kanonik teklif görüntüsü, sağlayıcı ve sağlayıcı teklif kimliği, doğrulanmış fiyat ve para birimi, doğrulama zamanı, son geçerlilik zamanı, seçim durumu ve oluşturma/güncelleme zamanlarıyla saklanır; ham sağlayıcı yanıtı ve gizli bilgiler saklanmaz.
+        FR-FLT-REPRICE-001-03: Seçim okunabilir; Seyahat Planım seçili uçuş özetini, doğrulanmış fiyatı, doğrulama zamanını ve seçim durumunu yalnız bu kayıttan gösterir.
+      acceptance_criteria:
+        AC-FLT-REPRICE-001-08: Given TripRequest'in arama sonucundaki teklifin en son doğrulama sonucu CURRENT ve süresi dolmamış When kullanıcı teklifi seçer Then seçim CURRENT olarak doğrulanmış fiyat ve doğrulama zamanıyla saklanır.
+        AC-FLT-REPRICE-001-09: Given en son sonuç UNVERIFIED veya teklif süresi dolmuş When teklif seçilmek istenir Then seçim yapılmaz ve mevcut seçim değişmez.
+        AC-FLT-REPRICE-001-10: Given CURRENT seçim When seçili teklifin yeniden doğrulaması CHANGED döner Then seçim RECONFIRMATION_REQUIRED olur, saklı fiyat güncel gösterilmez ve yalnız kullanıcı yeni teklifi açıkça kabul ederse CURRENT olur.
+        AC-FLT-REPRICE-001-11: Given seçim When son geçerlilik zamanı geçer Then seçim EXPIRED olur ve fiyat güncel veya satın alınabilir gösterilmez.
+        AC-FLT-REPRICE-001-12: Given CURRENT seçimi olan TripRequest When başka bir uygun teklif açıkça seçilir Then yeni seçim öncekinin yerine geçer ve tek etkin seçim kalır.
+        AC-FLT-REPRICE-001-13: Given en son sonuç CHANGED When kullanıcı yeni teklifi açıkça kabul etmeden seçmek ister Then seçim yapılmaz.
+      test_scenarios:
+        TS-FLT-REPRICE-001-08: [CURRENT teklif seçimi ve bilinmeyen toplam fiyatın boş kalması, [8]]
+        TS-FLT-REPRICE-001-09: [UNVERIFIED veya süresi dolmuş teklif seçilemez, [9]]
+        TS-FLT-REPRICE-001-10: [Seçili teklif CHANGED olur ve açık kabulle yeniden onaylanır, [10]]
+        TS-FLT-REPRICE-001-11: [Seçimin süresi dolar, [11]]
+        TS-FLT-REPRICE-001-12: [Yeni seçim öncekinin yerine geçer, [12]]
+        TS-FLT-REPRICE-001-13: [CHANGED teklif açık kabul olmadan seçilemez, [13]]
+    dependencies: [OD-011, OD-013, OD-016, OD-021, ADR-010]

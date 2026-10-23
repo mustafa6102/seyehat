@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.4:OfferSnapshot",
+  "title": "OfferSnapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "offer": {
+      "$ref": "./FlightOffer.schema.json",
+      "x-requirement-refs": [
+        "FLT-REPRICE-001"
+      ]
+    },
+    "fare_conditions": {
+      "$ref": "../../v3.3/schemas/FareConditionSnapshot.schema.json",
+      "x-requirement-refs": [
+        "RULE-FLT-REPRICE-001-03",
+        "AC-FLT-REPRICE-001-06"
+      ]
+    },
+    "captured_at": {
+      "type": "string",
+      "format": "date-time",
+      "x-requirement-refs": [
+        "FLT-REPRICE-001"
+      ]
+    }
+  },
+  "required": [
+    "offer",
+    "fare_conditions",
+    "captured_at"
+  ],
+  "x-contract-id": "SCH-OfferSnapshot",
+  "x-version": "3.4",
+  "x-status": "ACTIVE",
+  "x-replaces": "urn:ai-seyahat:v3.3:OfferSnapshot",
+  "x-requirement-refs": [
+    "FLT-REPRICE-001"
+  ],
+  "x-note": "Semantik değişmedi; offer v3.4 FlightOffer referansına güncellendi."
+}

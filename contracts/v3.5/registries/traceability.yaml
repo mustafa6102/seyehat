@@ -1,0 +1,18 @@
+version: 3.5.0
+inherits: ../../v3.4/registries/traceability.yaml
+requirement_to_contract:
+  - requirement: TRIP-001
+    artifacts: [schema:FlightSearchCriteria.schema.json]
+  - requirement: RULE-TRIP-001-01
+    artifacts: [schema:FlightSearchCriteria.schema.json]
+  - requirement: RULE-TRIP-001-02
+    artifacts: [schema:FlightSearchCriteria.schema.json]
+  - requirement: RULE-TRIP-001-03
+    artifacts: [schema:FlightSearchCriteria.schema.json]
+  - requirement: FR-TRIP-001-02
+    artifacts: [schema:FlightSearchCriteria.schema.json]
+  - requirement: FLT-002
+    artifacts: [schema:FlightSearchCriteria.schema.json, lifecycle:FlightSearchJob]
+    open_decisions: [OD-022]
+  - requirement: PLT-REL-001
+    artifacts: [schema:FlightSearchCriteria.schema.json, lifecycle:FlightSearchJob]

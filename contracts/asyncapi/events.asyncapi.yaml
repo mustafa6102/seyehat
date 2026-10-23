@@ -1,0 +1,29 @@
+asyncapi: 3.0.0
+info:
+  title: AI Seyahat Planlayıcısı Outbox Events
+  version: 3.2.2
+channels:
+  planRevisionOutbox:
+    address: OPEN
+    messages:
+      PlanRevisionCreated:
+        $ref: '#/components/messages/PlanRevisionCreated'
+operations:
+  publishPlanRevisionCreated:
+    action: send
+    channel:
+      $ref: '#/channels/planRevisionOutbox'
+    x-contract-id: EVT-PlanRevisionCreated
+    x-status: PROVISIONAL
+    x-adr-ref: ADR-008
+    x-requirement-refs:
+    - PLT-CONC-001
+    - ADR-003
+components:
+  messages:
+    PlanRevisionCreated:
+      name: PlanRevisionCreated
+      payload:
+        $ref: ../schemas/OutboxEvent.schema.json
+      x-note: Ordering/sequence semantics ADR-008 kapanana kadar PROVISIONAL.
+x-ordering: PROVISIONAL - ADR-008

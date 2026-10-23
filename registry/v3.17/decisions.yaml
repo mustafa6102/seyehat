@@ -1,0 +1,7 @@
+version: 3.17.0
+inherits: ../v3.16/decisions.yaml
+decisions:
+  - id: OD-028
+    status: RESOLVED
+    note: 'APPROVED (user, 2026-10-17) - Seçenek A: /web-api/v1 altında oturum + CSRF korumalı web adaptörleri (SessionWebPrincipalResolver + TripRequestOwnership + mevcut servisler); /api/v1 Bearer-only; token tarayıcıya verilmez; DB değişikliği yok.'
+open_decisions: [OD-001, OD-008, OD-011, OD-012, OD-013, OD-014, OD-015, OD-016, OD-020, OD-022, OD-026, ADR-006, ADR-007, ADR-010]

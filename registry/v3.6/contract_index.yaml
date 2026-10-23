@@ -1,0 +1,4 @@
+version: 3.6.0
+inherits: ../v3.5/contract_index.yaml
+contracts: []
+note: v3.6 yalnız registry/lifecycle/OD kayıtlarını günceller; yeni veya değişen contract artefaktı yoktur.

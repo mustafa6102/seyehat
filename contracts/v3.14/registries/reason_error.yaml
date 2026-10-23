@@ -1,0 +1,33 @@
+version: 3.14.0
+inherits: ../../v3.13/registries/reason_error.yaml
+new_records: []
+reused_records:
+  - id: RC-DECISION-OFFER-NOT-SELECTABLE
+    machine_code: OFFER_NOT_SELECTABLE
+    applies_to: [RULE-ACC-001-05, AC-ACC-001-06, OP-selectTripRequestAccommodation, OP-reconfirmTripRequestAccommodation]
+    note: Genel teklif seçilemezlik kodudur; konaklama teklifi arama sonucunda değilse, doğrulaması yoksa/UNVERIFIED ise veya geçerlilik süresi belirlenemiyorsa HTTP 409.
+  - id: RC-EVIDENCE-OFFER-CHANGED
+    machine_code: OFFER_CHANGED
+    applies_to: [RULE-ACC-001-06, AC-ACC-001-07, OP-revalidateAccommodationOffer, OP-selectTripRequestAccommodation, OP-reconfirmTripRequestAccommodation]
+    note: Revalidation sonucunda uyarı; seçim/yeniden onayda açık kabul yoksa veya expected_verified_at uyuşmuyorsa HTTP 409.
+  - id: RC-EVIDENCE-OFFER-EXPIRED
+    machine_code: OFFER_EXPIRED
+    applies_to: [AC-ACC-001-06, AC-ACC-001-08, OP-revalidateAccommodationOffer, OP-selectTripRequestAccommodation, OP-reconfirmTripRequestAccommodation]
+  - id: RC-EVIDENCE-REPRICE-UNVERIFIED
+    applies_to: [AC-ACC-001-06, OP-revalidateAccommodationOffer]
+    note: Konaklama yeniden doğrulaması tamamlanamadığında da kullanılır; teklif güncel gösterilmez.
+  - id: RC-PROVIDER-TIMEOUT
+    applies_to: [OP-revalidateAccommodationOffer, OP-startAccommodationSearch]
+  - id: RC-CONFLICT-IDEMPOTENCY-KEY
+    applies_to: [OP-startAccommodationSearch, OP-selectTripRequestAccommodation, OP-reconfirmTripRequestAccommodation]
+  - id: RC-VALIDATION-SCHEMA
+    applies_to: [OP-startAccommodationSearch, OP-selectTripRequestAccommodation, OP-reconfirmTripRequestAccommodation]
+    note: Fiyat, vergi, tesis veya uygunluk verisi gönderilmesi tanımsız alan olarak HTTP 400.
+  - id: RC-RESOURCE-NOT-FOUND
+    applies_to: [OP-startAccommodationSearch, OP-pollAccommodationSearch, OP-getAccommodationOffer, OP-revalidateAccommodationOffer, OP-getTripRequestAccommodationSelection, OP-selectTripRequestAccommodation, OP-reconfirmTripRequestAccommodation]
+  - id: RC-VALIDATION-TRIP-REQUEST-INCOMPLETE
+    applies_to: [OP-startAccommodationSearch]
+contract_gaps:
+  - id: GAP-ACC-CRITERIA-001
+    description: Konaklama kriteri üretemeyen TripRequest (ONE_WAY, FLEXIBLE, aynı gün giriş/çıkış, çocuk/bebek, legacy count-only, room_count yok, şehir dışı varış türü veya kalıcı coordinates yok, duffel_stays 330 gün/99 gece sınırı aşımı) veya sağlayıcı yetenek kanıtı olmaması için kanonik reason/error kodu yoktur; sağlayıcı çağrılmaz, AccommodationSearchJob.error.code null ve Türkçe mesajla FAILED olur. Yeni kod uydurulmadı. Durum OPEN; OD-024 RESOLVED ancak desteklenmeyen durumlar için kanonik kod tanımlı değil.
+    decision_ref: OD-024

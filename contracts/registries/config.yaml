@@ -1,0 +1,150 @@
+version: 3.2.2
+records:
+- id: CFG-MCT-FALLBACK
+  type: duration
+  unit: OPEN
+  default: OPEN
+  range: OPEN
+  scope: M1B transfer
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: OD-004
+  requirement_refs:
+  - NFR-AUD-001
+- id: CFG-TRANSFER-BUFFER
+  type: duration
+  unit: OPEN
+  default: OPEN
+  range: OPEN
+  scope: M1B transfer
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: OD-004
+  requirement_refs:
+  - BUS-003
+- id: CFG-SEARCH-BUDGET
+  type: integer
+  unit: request
+  default: OPEN
+  range: OPEN
+  scope: provider/operation
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: ADR-006
+  requirement_refs:
+  - NFR-SCL-001
+- id: CFG-CACHE-OFFER-TTL
+  type: duration
+  unit: OPEN
+  default: OPEN
+  range: OPEN
+  scope: offer
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: ADR-006
+  requirement_refs:
+  - NFR-PERF-001
+- id: CFG-CACHE-HOURS-TTL
+  type: duration
+  unit: OPEN
+  default: OPEN
+  range: OPEN
+  scope: opening hours
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: ADR-006
+  requirement_refs:
+  - NFR-PERF-001
+- id: CFG-CACHE-TRANSIT-TTL
+  type: duration
+  unit: OPEN
+  default: OPEN
+  range: OPEN
+  scope: live transit
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: ADR-006
+  requirement_refs:
+  - NFR-PERF-001
+- id: CFG-CACHE-FX-TTL
+  type: duration
+  unit: OPEN
+  default: OPEN
+  range: OPEN
+  scope: FX
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: OD-005
+  requirement_refs:
+  - NFR-PERF-001
+- id: CFG-RISK-THRESHOLD
+  type: threshold
+  unit: OPEN
+  default: OPEN
+  range: OPEN
+  scope: route risk
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: OD-017
+  requirement_refs:
+  - BUS-002
+- id: CFG-RANK-COMPARATOR
+  type: version
+  unit: n/a
+  default: OPEN
+  range: OPEN
+  scope: ranking
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: OD-007
+  requirement_refs:
+  - RANK-001
+  - NFR-AUD-001
+- id: CFG-RETRY-TIMEOUT-CIRCUIT
+  type: policy
+  unit: OPEN
+  default: OPEN
+  range: OPEN
+  scope: provider/operation
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: ADR-006
+  requirement_refs:
+  - NFR-RL-001
+- id: CFG-FX-POLICY
+  type: policy
+  unit: n/a
+  default: OPEN
+  range: OPEN
+  scope: search_session
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: OD-005
+  requirement_refs:
+  - RANK-001
+- id: CFG-PROTECTION-UNPROTECTED
+  type: policy
+  unit: n/a
+  default: SHOWN_WITH_WARNING
+  range: RECOMMENDED yasak
+  scope: self-transfer
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: null
+  requirement_refs:
+  - BUS-003
+  - RULE-STF-003-01
+  source_section: '7.1'
+  note: Kaynakta bu politika zaten kanoniktir; OD-017 yalnız RiskLevel eşikleri/HIGH
+    davranışı içindir.
+- id: CFG-OFFLINE-SNAPSHOT-TTL
+  type: duration
+  unit: OPEN
+  default: OPEN
+  range: OPEN
+  scope: M5 offline snapshot
+  owner: ATANMADI
+  override_rule: Versiyonlu değişiklik; audit/config version zorunlu.
+  decision_ref: ADR-004
+  requirement_refs:
+  - NFR-OFF-001

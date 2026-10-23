@@ -1,0 +1,336 @@
+version: 3.2.2
+m1a_blockers:
+- OD-001
+- OD-008
+- OD-012
+- OD-015
+- ADR-007
+- ADR-009
+- ADR-010
+open_decisions:
+- id: OD-001
+  title: İlk production flight provider ve sözleşme koşulları
+  accountable_role: Product + Tech
+  affects:
+  - PRV-001
+  blocks_development:
+  - M1A
+  blocks_release:
+  - FINAL
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  status: OPEN
+  affect_evidence:
+  - target: PRV-001
+    source: v3.0/v3.2 contract analysis mapping
+    status: DECLARED
+- id: OD-002
+  title: Vize/transit otoritatif veri kaynağı ve hukuki disclaimer
+  accountable_role: Business + Legal
+  affects:
+  - VIS-002
+  blocks_development:
+  - M1B
+  blocks_release:
+  - FINAL
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  status: OPEN
+  affect_evidence:
+  - target: VIS-002
+    source: v3.0/v3.2 contract analysis mapping
+    status: DECLARED
+- id: OD-003
+  title: Ground transport provider PoC
+  accountable_role: Tech + Product
+  affects: []
+  blocks_development:
+  - M1C
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  status: OPEN
+  affect_evidence: []
+- id: OD-004
+  title: Fallback MCT / safety buffer başlangıç config'i
+  accountable_role: Product + Tech
+  affects:
+  - TRF-001
+  blocks_development:
+  - M1B
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  status: OPEN
+  affect_evidence:
+  - target: TRF-001
+    source: v3.0/v3.2 contract analysis mapping
+    status: DECLARED
+- id: OD-005
+  title: FX kaynak/cache politikası
+  accountable_role: Product + Tech
+  affects:
+  - CST-001
+  blocks_development:
+  - M1B
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  status: OPEN
+  affect_evidence:
+  - target: CST-001
+    source: v3.0/v3.2 contract analysis mapping
+    status: DECLARED
+- id: OD-006
+  title: Notification kanalları
+  accountable_role: Product
+  affects: []
+  blocks_development:
+  - M2
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  status: OPEN
+  affect_evidence: []
+- id: OD-007
+  title: Route scoring / comparator politikası ve kullanıcı kontrolü (Bölüm 7.4 onayı)
+  accountable_role: Product + Data
+  affects:
+  - RANK-001
+  blocks_development:
+  - M1B
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  status: OPEN
+  affect_evidence:
+  - target: RANK-001
+    source: v3.0/v3.2 contract analysis mapping
+    status: DECLARED
+- id: OD-008
+  title: Ancillary capability kapsamı / provider matrix detay seviyesi
+  accountable_role: Product + Tech
+  affects: []
+  blocks_development:
+  - M1A
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  status: OPEN
+  affect_evidence: []
+- id: OD-009
+  title: UNCERTAIN compliance varsayılan politikası
+  accountable_role: Product + Legal
+  affects: []
+  blocks_development:
+  - M1B
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  status: OPEN
+  affect_evidence: []
+- id: OD-010
+  title: Canlı konum izin modeli / privacy yaklaşımı
+  accountable_role: Product + Legal
+  affects: []
+  blocks_development:
+  - M5
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  status: OPEN
+  affect_evidence: []
+- id: OD-011
+  title: M-1B nihai iş modeli (Model A/B/C)
+  accountable_role: Product + Business + Legal
+  affects: []
+  blocks_development:
+  - M0
+  blocks_release:
+  - FINAL
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  status: OPEN
+  affect_evidence: []
+- id: OD-012
+  title: WCAG 2.2 AA platform kapsamı ve uygulama yaklaşımı
+  accountable_role: Product + UX
+  affects:
+  - NFR-ACC-001
+  blocks_development:
+  - M1A
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  status: OPEN
+  affect_evidence:
+  - target: NFR-ACC-001
+    source: v3.0/v3.2 contract analysis mapping
+    status: DECLARED
+- id: OD-013
+  title: Kişisel/seyahat verisi saklama süreleri ve diğer yolcuların verisi için hukuki
+    dayanak
+  accountable_role: Legal + Security + Product
+  affects:
+  - PLT-PII-001
+  - NFR-PRV-001
+  blocks_development: []
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: NON_BLOCKING
+  status: OPEN
+  affect_evidence:
+  - target: PLT-PII-001
+    source: v3.0/v3.2 contract analysis mapping
+    status: DECLARED
+  - target: NFR-PRV-001
+    source: v3.0/v3.2 contract analysis mapping
+    status: DECLARED
+- id: OD-014
+  title: Yurt dışına veri aktarımı / provider-LLM DPA mekanizması
+  accountable_role: Legal + Security
+  affects:
+  - NFR-XFER-001
+  blocks_development: []
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: NON_BLOCKING
+  status: OPEN
+  affect_evidence:
+  - target: NFR-XFER-001
+    source: v3.0/v3.2 contract analysis mapping
+    status: DECLARED
+- id: OD-015
+  title: İlk provider'ın Model A partner yönlendirme/affiliate uyumu
+  accountable_role: Product + Tech + Business
+  affects:
+  - OP-createPartnerRedirect
+  - FLT-REPRICE-001
+  blocks_development:
+  - M1A
+  blocks_release:
+  - FINAL
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  status: OPEN
+  affect_evidence:
+  - target: OP-createPartnerRedirect
+    source: v3.0/v3.2 contract analysis mapping
+    status: DECLARED
+  - target: FLT-REPRICE-001
+    source: v3.0/v3.2 contract analysis mapping
+    status: DECLARED
+- id: OD-016
+  title: NEEDS_VERIFICATION durumunda yönlendirme/booking bloklama politikası
+  accountable_role: Product + Legal
+  affects: []
+  blocks_development:
+  - M1B
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  status: OPEN
+  affect_evidence: []
+- id: OD-017
+  title: RiskLevel girdileri/eşikleri ve HIGH davranışı
+  accountable_role: Product + Data + Tech
+  affects: []
+  blocks_development:
+  - M1B
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  status: OPEN
+  affect_evidence: []
+- id: OD-018
+  title: SOURCE_UNAVAILABLE compliance durumunda yönlendirme/booking politikası (v3.0
+    yeni)
+  accountable_role: Product + Legal
+  affects:
+  - VIS-002
+  blocks_development:
+  - M1B
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  status: OPEN
+  affect_evidence:
+  - target: VIS-002
+    source: v3.0/v3.2 contract analysis mapping
+    status: DECLARED
+- id: OD-019
+  title: Destek ekibi break-glass erişim modeli
+  accountable_role: Product + Security + Legal
+  affects:
+  - PLT-AUTH-001
+  blocks_development: []
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: NON_BLOCKING
+  status: OPEN
+  source: v3.2.2 review
+  affect_evidence:
+  - target: PLT-AUTH-001
+    source: v3.2.2 review
+    status: DECLARED
+adrs:
+- id: ADR-007
+  title: Mobil istemci teknolojisi
+  affects: []
+  blocks_development:
+  - M1A
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  source_status: PROPOSED — karar gerekli (M1A öncesi)
+- id: ADR-008
+  title: Trip bazlı olay sıralaması
+  affects: []
+  blocks_development:
+  - M5
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  source_status: PROPOSED — karar gerekli (M5 öncesi)
+- id: ADR-009
+  title: OLTP veritabanı motoru
+  affects: []
+  blocks_development:
+  - M1A
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  source_status: PROPOSED — karar gerekli (M1A öncesi)
+- id: ADR-010
+  title: Güvenlik baseline'ı
+  affects:
+  - PLT-AUTH-001
+  blocks_development:
+  - M1A
+  blocks_release: []
+  decision_owner: ATANMADI
+  decision_due: OPEN
+  impact_status: BLOCKED
+  source_status: PROPOSED — karar gerekli (M1A öncesi)

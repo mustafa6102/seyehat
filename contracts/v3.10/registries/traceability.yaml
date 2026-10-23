@@ -1,0 +1,12 @@
+version: 3.10.0
+inherits: ../../v3.9/registries/traceability.yaml
+requirement_to_contract:
+  - requirement: PLT-REL-001
+    artifacts: [config:provider_resilience.duffel_places]
+    config_ref: CFG-RETRY-TIMEOUT-CIRCUIT
+    config_version: duffel-places-ops-2026-09-29
+    open_decisions: [ADR-006]
+    note: Duffel Places (yalnız uçuş konum keşfi, GET /places/suggestions) için sağlayıcı/işlem kapsamlı, versiyonlu, ortam değişkeniyle değiştirilebilir dağıtım profili tanımlandı. v3.8'deki "profil tanımlı değil" notunun yerine geçer. ADR-006 sayısal bütçeleri ve diğer sağlayıcılar için değerler OPEN kalır.
+  - requirement: NFR-RL-001
+    artifacts: [config:provider_resilience.duffel_places]
+    note: timeout 2000 ms, en fazla 2 deneme, üstel backoff + tam jitter (200-1000 ms), circuit 5 hata / 60 sn, yerel hız sınırı 50 istek / 60 sn. 429 ve 4xx yeniden denenmez; ham sağlayıcı yanıtı ve erişim anahtarı kullanıcıya veya loglara sızmaz.

@@ -1,0 +1,12 @@
+version: 3.3.0
+inherits: ../registry_stories_a.js
+overrides:
+  - id: RANK-001
+    phase: M1B
+    semantics_changed: false
+    preserved_refs:
+      rules: [RULE-RANK-001-01, RULE-RANK-001-02, RULE-RANK-001-03]
+      functional_requirements: [FR-RANK-001-01, FR-RANK-001-02]
+      acceptance_criteria: [AC-RANK-001-01, AC-RANK-001-02, AC-RANK-001-03, AC-RANK-001-04]
+      test_scenarios: [TS-RANK-001-01, TS-RANK-001-02, TS-RANK-001-03, TS-RANK-001-04, TS-RANK-001-05]
+    dependencies: [OD-005, OD-007, OD-017]

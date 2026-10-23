@@ -1,0 +1,21 @@
+version: 3.9.0
+inherits: ../../v3.8/registries/od_impact.yaml
+decisions:
+  - id: OD-022
+    title: TripRequest'ten sağlayıcı uçuş arama kriterlerine eşleme
+    status: PARTIALLY_RESOLVED
+    journey_date_findings:
+      approved_product_decision: user (2026-09-29)
+      resolved:
+        - Yolculuk tipi ONE_WAY | ROUND_TRIP; açıkça seçilir, tarihlerden çıkarılmaz (RULE-TRIP-001-04).
+        - Tarihler yöne özeldir - outbound_date ve yalnız ROUND_TRIP için return_date (FR-TRIP-001-03); her biri v3.7 EXACT/FLEXIBLE anlamını korur (SCH-TravelDate).
+        - ONE_WAY - outbound_date zorunlu, return_date yasak; ROUND_TRIP - outbound_date ve return_date zorunlu.
+        - FLEXIBLE sınırları dahildir; değerler yalnız takvim tarihidir ve saat dilimi anlamı taşımaz (uçuş segmenti zamanları ayrı FLT semantiğidir).
+        - Yönler arası tek kural - latest(return_date) < earliest(outbound_date) geçersizdir (RULE-TRIP-001-05); başka örtüşme/aralık seçimi kuralı yoktur.
+        - Eski TripRequest.date_window readOnly/legacy; yeni kayıtlar yazamaz; eski kayıtlar değiştirilmez, gidiş veya seyahat süresi olarak yorumlanmaz ve uçuş kriteri üretmez.
+    remaining_open:
+      - LOCATION - duffel_places dayanıklılık profili değerleri (ADR-006) onaylanana kadar havacılık konum araması çalışma zamanında kapalı.
+      - PASSENGER - yolcu tipi dağılımı (OD-020 bağımlılığı).
+      - Kabin sınıfı; desteklenmeyen kriter için kanonik reason/error kodu (GAP-FLT-CRITERIA-001).
+    blocks_development: [production flight provider execution]
+    impact_status: BLOCKED

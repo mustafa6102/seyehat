@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.8:LocationRef",
+  "title": "LocationRef",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "kind": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "PUBLIC",
+        "source_of_truth": "user/domain",
+        "verification": "normalized",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    },
+    "value": {
+      "type": "string",
+      "description": "Katalog kimliği (ör. geonames:<id> genel katalogda, duffel:<place id> havacılık kataloğunda). Havacılık kimliği değildir.",
+      "x-metadata": {
+        "classification": "PUBLIC",
+        "source_of_truth": "user/domain",
+        "verification": "normalized",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    },
+    "iana_timezone": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "PUBLIC",
+        "source_of_truth": "domain",
+        "verification": "normalized",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "TRIP-001"
+        ]
+      }
+    },
+    "aviation_identity": {
+      "$ref": "./AviationIdentity.schema.json",
+      "readOnly": true,
+      "x-requirement-refs": [
+        "TRIP-001",
+        "FLT-002"
+      ],
+      "description": "İsteğe bağlı; uçuşa uygun olmayan konumlarda yoktur. Sunucu tarafından atanır (readOnly); istemci girdisi olarak kabul edilmez."
+    }
+  },
+  "required": [
+    "kind",
+    "value",
+    "iana_timezone"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "aviation_identity"
+        ],
+        "properties": {
+          "kind": {
+            "const": "airport"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "aviation_identity": {
+            "properties": {
+              "type": {
+                "const": "IATA_AIRPORT"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "aviation_identity"
+        ],
+        "properties": {
+          "kind": {
+            "const": "city"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "aviation_identity": {
+            "properties": {
+              "type": {
+                "const": "IATA_CITY"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "aviation_identity"
+        ]
+      },
+      "then": {
+        "properties": {
+          "kind": {
+            "enum": [
+              "airport",
+              "city"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "x-contract-id": "SCH-LocationRef",
+  "x-version": "3.8",
+  "x-status": "ACTIVE",
+  "x-audience": "INTERNAL",
+  "x-requirement-refs": [
+    "TRIP-001",
+    "FLT-002"
+  ],
+  "x-open-decisions": [
+    "OD-022"
+  ],
+  "x-replaces": "urn:ai-seyahat:v3.2:LocationRef",
+  "x-note": "v3.8: katalog kimliği (value) ile havacılık kimliği (aviation_identity) ayrıdır. kind airport yalnız IATA_AIRPORT, kind city yalnız IATA_CITY taşıyabilir. Genel (GeoNames) konumlar havacılık kimliği taşımaz; GeoNames -> IATA eşlemesi yapılmaz. Public /api/v1 SCH-TripRequest (v3.2) temsili değişmez: istek aviation_identity kabul etmez, yanıt taşımaz."
+}

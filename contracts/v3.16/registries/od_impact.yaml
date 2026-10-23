@@ -1,0 +1,106 @@
+version: 3.16.0
+inherits: ../../v3.15/registries/od_impact.yaml
+new_decisions:
+  - id: OD-027
+    title: PlanRevision ilk oluşturma, değişiklik anahtarı ve eşzamanlılık temsili
+    accountable_role: Product + Tech
+    affects:
+    - TRIP-BLD-001
+    - FR-TRIP-BLD-001-01
+    - PLT-CONC-001
+    - TRN-PLANREVISION-01
+    - POI-001
+    blocks_development: []
+    blocks_release:
+    - FINAL
+    decision_owner: user (2026-10-06)
+    decision_due: RESOLVED
+    impact_status: PARTIALLY_UNBLOCKED
+    status: RESOLVED
+    resolution:
+      first_mutation: 'Trip yokken ilk başarılı plan değişikliği If-None-Match: * ön koşuluyla Trip + PlanRevision version 1 oluşturur (TRN-PLANREVISION-02); istemci var olmayan bir sürümü bilmek zorunda değildir.'
+      revisions: Her başarılı plan değişikliği yeni immutable PlanRevision oluşturur; version Trip başına monoton artar (önceki + 1); önceki revision SUPERSEDED olur ve değiştirilmez (TRN-PLANREVISION-01).
+      concurrency: 'Güçlü ETag "<version>" CURRENT revision''ı temsil eder; Trip varken değişiklik If-Match: "<version>" ister. Eşleşmezse 409 RC-CONFLICT-REVISION-STALE (mevcut kod; yeni kod yok). Ön koşul başlığı yok/çelişkili ise 400 RC-VALIDATION-SCHEMA.'
+      idempotency: 'Idempotency-Key zorunlu (TripRequest + operasyon kapsamı). Aynı anahtar + aynı istek ilk sonucu döndürür ve yeni revision oluşturmaz; aynı anahtar + farklı istek 409 RC-CONFLICT-IDEMPOTENCY-KEY.'
+      diff_and_reason: 'FR-TRIP-BLD-001-02 gereği her revision change{base_version, added_item_ids, removed_item_ids, reason_code} taşır; kullanıcı ekleme/çıkarma reason_code = RC-DECISION-TRANSITION-APPLIED. Başka diff yapısı tanımlanmadı.'
+      outbox: PlanRevision commit'i ve EVT-PlanRevisionCreated outbox kaydı aynı transaction'da yazılır (ADR-003). Kanal adresi ve trip bazlı sıralama ADR-008 (PROPOSED) kapsamındadır; yayın/relay bu artımın koşulu değildir.
+      persistence: >-
+        Kod ajanı için kalıcılık sözleşmesi (SQL bu görevde yazılmadı): (1) Trip: trip_id birincil anahtar; trip_request_id NOT NULL ve
+        BENZERSİZ (OD-021: bir TripRequest tek Trip), sonradan değiştirilemez. (2) PlanRevision: (trip_id, version) birincil/benzersiz; version
+        >= 1; satırlar yalnız eklenir, güncellenmez/silinmez (status SUPERSEDED geçişi hariç, OD-013 saklama kararı ayrı); Trip başına en fazla
+        bir CURRENT; (trip_id, idempotency_key) BENZERSİZ ve istek parmak izi revision ile saklanır (ADR-002 ikinci savunma). (3) Öğeler
+        revision içeriğidir: her revision tam öğe listesini (SCH-ItineraryItem, poi_snapshot dahil) değişmez olarak saklar; item_id Trip içinde
+        tekil ve revision'lar arasında kararlıdır. Ayrı öğe tablosu kullanılırsa (trip_id, version, item_id) benzersiz ve revision ile aynı
+        transaction'da yazılır. (4) Tek transaction: [Trip (ilk değişiklikte)] + yeni PlanRevision + önceki CURRENT -> SUPERSEDED + outbox
+        kaydı; transaction içinde CURRENT version kontrolü (ör. satır kilidi veya version koşullu yazım) ile stale yazım reddedilir.
+        (5) trip_request_id TripRequest kimliğine başvurur; varlık Api modülünün Contracts servisiyle doğrulanır (ADR-001 modül sınırı);
+        veritabanı yabancı anahtarı yalnız mevcut seçim tablolarının uyguladığı düzenle tutarlıysa kullanılır. (6) Ham sağlayıcı verisi
+        saklanmaz; saklama süresi OD-013'e bağlıdır, TTL tanımlanmadı.
+    affect_evidence:
+    - target: TRIP-BLD-001
+      source: v3.16 contract delta
+      status: DECLARED
+decisions:
+  - id: OD-021
+    status: RESOLVED
+    impact_status: PARTIALLY_UNBLOCKED
+    decision_owner: user (2026-10-06)
+    resolution:
+      relationship: Bir TripRequest tam olarak bir Trip'e sahip olabilir (en fazla bir); bir TripRequest asla birden çok Trip üretmez.
+      creation: Trip, kalıcı bir plan değişikliği gerektirdiğinde (ilk OP-addTripPlanPoiItem) PlanRevision 1 ile aynı transaction'da tembel oluşturulur; okuma Trip oluşturmaz.
+      reference: Trip doğuran TripRequest'e kalıcı olarak başvurur (Trip.trip_request_id değişmez).
+      selections: Uçuş ve konaklama seçimleri TripRequest'e ait kalır ve mevcut tanımla (v3.13/v3.14) plan sunumuna okunur; Trip/ItineraryItem'a taşınmaz.
+      traveler: Traveler.trip_id hedefi Trip.trip_id'dir (RULE-TRV-001-01 "Bir Trip birden fazla Traveler içerir"). Traveler'ın bir Trip'e ilk kez nasıl bağlanacağı (plan değişikliğinden önce Trip yoksa) bu kararın kapsamında değildir; v3.3 Traveler şeması ve mevcut Traveler API'si değişmedi.
+      conflict_check: 'Değişmez gereksinimlerle çelişki bulunmadı: TRIP-BLD-001 Trip''i plan sahibi tanımlar; v3.13/v3.14 seçimleri bilinçli olarak TripRequest''e bağlıdır; TRV-001 yalnız Trip''in Traveler içerdiğini söyler.'
+    note: Önceki v3.16 notu (OPEN) bu kararla geçersizdir; karar uygulama davranışından değil kullanıcı ürün kararından gelir.
+  - id: ADR-010
+    status: PARTIALLY_RESOLVED
+    impact_status: PARTIALLY_UNBLOCKED
+    decision_owner: user (2026-10-07)
+    findings: >-
+      Depoda onaylı kimlik sistemi yok: sözleşmede User/Account kimlik şeması veya principal alanı yok; m1a bearerAuth bearerFormat OPEN;
+      internal adminOAuth (clientCredentials) yalnız yönetim sınırıdır ve OPEN; composer'da OIDC/JWT/Sanctum/Passport paketi yok; kullanıcı
+      tablosu, User modeli ve kimlik doğrulama ara katmanı yok; config/auth.php yalnız Laravel varsayılanıdır. Yeniden kullanılacak mekanizma
+      bulunmadığından genel OIDC kararı benimsendi; değişmez bir gereksinimle çelişki bulunmadı (NFR-SEC-001 token'ın loglara/istemci
+      sızıntısına karşı korunmasını ister; x-token-validation.secrecy ile karşılanır).
+    resolution:
+      scope: Kimlik doğrulama ve principal (RULE-PLT-AUTH-001-03 kimlik sağlayıcı, token ömrü, hesap kurtarma). Diğer güvenlik baseline kalemleri aşağıda OPEN.
+      protocol: OpenID Connect / OAuth 2.0. Uygulama tek yapılandırılmış issuer'a (CFG-AUTH-OIDC-ISSUER) güvenir; API Authorization Bearer erişim token'ı alır (m1a v3.16 bearerAuth, x-token-validation). Ticari sağlayıcı seçilmedi; sağlayıcı dağıtım yapılandırmasıdır.
+      principal: SCH-PrincipalRef = (iss, sub); kararlı, opak, değişmez; iki ayrı alan olarak saklanır ve birebir karşılaştırılır. E-posta/ad/Traveler kimliği yetkilendirme kimliği değildir; istemcinin gönderdiği owner/principal değeri kabul edilmez.
+      token_validation: imza (issuer JWKS, asimetrik algoritma, alg=none/HMAC ret), iss birebir, aud içerir (CFG-AUTH-OIDC-AUDIENCE), exp zorunlu, nbf varsa, sub zorunlu. Geçersiz/eksik -> 401 RC-AUTHN-REQUIRED; geçerli fakat yetkisiz -> 403 RC-AUTHZ-DENIED.
+      configuration: Issuer ve audience ortam yapılandırmasıdır; depoda/kodda üretim değeri yok; eksik/geçersiz yapılandırma veya alınamayan JWKS kapalı başarısızdır (401). Üretimde zorunlu.
+      token_lifetime: Issuer politikasıdır; uygulama sayısal ömür tanımlamaz, exp/nbf'yi ek tolerans olmadan uygular. Yenileme token'ı API'si yoktur.
+      account_recovery: Uygulamada yerel hesap/parola yoktur; hesap kurtarma issuer'a devredilir ve uygulamada uygulanmaz.
+      token_secrecy: Erişim token'ı DB, log, PlanRevision, POI görüntüsü veya outbox yüküne yazılmaz.
+      clients: Kullanıcıya dönük istemciler Authorization Code + PKCE kullanır; implicit/ROPC yok. İstemci entegrasyonu ayrı görevdir.
+    still_open: [OWASP ASVS seviyesi, secret yönetimi, SBOM/dependency taraması, ayrıcalıklı erişim logu, internal adminOAuth tokenUrl/issuer]
+    ownership_model:
+      status: ACTIVE (v3.16, ADR-010 kimlik doğrulama kısmı RESOLVED)
+      principal: SCH-PrincipalRef (iss, sub). Traveler, oturum yükü, istek gövdesi veya POI owner kaynağı değildir.
+      trip_request: Yeni TripRequest oluşturulurken doğrulanmış principal owner olarak sunucuda bağlanır; istek gövdesinden alınmaz; TripRequest ömrü boyunca değişmez; kimliksiz oluşturma 401. Sahiplik devri kapsam dışı (RULE-PLT-AUTH-001-04).
+      trip: Trip ve PlanRevision owner sütunu taşımaz; yetki Trip.trip_request_id -> TripRequest owner üzerinden türetilir (RULE-PLT-AUTH-001-05).
+      legacy: Owner'ı olmayan eski TripRequest satırları sahiplenilemez; sahiplik gerektiren işlemler 403 RC-AUTHZ-DENIED, Trip oluşmaz, ilk erişen sahiplenemez. Geri doldurma/yönetici süreci bu artım için gerekli değildir (RULE-PLT-AUTH-001-06).
+      roles: permissions.yaml aynen geçerlidir; collaborator/traveler satırları POLICY-TRIP-001'dir ve Trip üyeliği tanımlı olmadığından sonuç reddir.
+      privacy: PrincipalRef ve token hiçbir kamu yanıt şemasında, POI görüntüsünde veya outbox yükünde yer almaz; loglarda yalnız mevcut erişim denetimi kullanılır.
+      persistence_expectation: 'TripRequest: owner_issuer + owner_subject (SCH-PrincipalRef, her biri en fazla 255 karakter); yeni kayıtlarda NOT NULL, eski kayıtlarda boş (sahiplenilemez); oluşturulduktan sonra değiştirilemez; benzersizlik yok; sahibe göre listeleme gerekene kadar indeks zorunlu değil. Trip ve PlanRevision için owner sütunu yok.'
+    affected_operations:
+      protect_with_increment: [OP-createTripRequest (bearerAuth + owner bağlama; web akışındaki oluşturma dahil), OP-getTripRequestPlan, OP-addTripPlanPoiItem, OP-removeTripPlanItem]
+      blocked_pending_auth_task: [OP-getTripRequest, OP-startFlightSearch, OP-pollFlightSearch, OP-getTripRequestFlightSelection, OP-selectTripRequestFlight, OP-reconfirmTripRequestFlight, OP-startAccommodationSearch, OP-pollAccommodationSearch, OP-getTripRequestAccommodationSelection, OP-selectTripRequestAccommodation, OP-reconfirmTripRequestAccommodation, OP-startPoiDiscovery, OP-pollPoiDiscovery]
+      unchanged_not_trip_request_owned: [OP-getOffer, OP-repriceOffer, OP-getAccommodationOffer, OP-revalidateAccommodationOffer, OP-getPoi, OP-verifyPoi]
+      note: >-
+        POI plan artımı ancak protect_with_increment operasyonları bearerAuth ve owner kuralıyla birlikte sevk edilebilir. Kamu API'sinde
+        TripRequest güncelleme yoktur; Trip yalnız owner karşılaştırmasından geçen plan operasyonlarıyla oluşur, bu nedenle başka principal'in
+        TripRequest'i üzerinden Trip oluşturma/değiştirme yolu kalmaz. blocked_pending_auth_task operasyonları Trip sahipliği vermez fakat
+        başkasının TripRequest verisine erişime açıktır; ayrı yetki görevinde korunmalıdır.
+  - id: OD-013
+    status: OPEN
+    impact_status: BLOCKED
+    note: >-
+      PlanRevision ve içindeki POI görüntüleri (ADR-005, RULE-TRIP-BLD-001-03) yalnız eklenir; saklama süresi bu karara bağlıdır, TTL
+      tanımlanmadı. osm_overpass kaynaklı görüntü ODbL türev veritabanı yükümlülüğünü taşır (OD-025 storage).
+  - id: ADR-008
+    status: PROPOSED
+    impact_status: PARTIALLY_UNBLOCKED
+    note: >-
+      ADR-003 (ACCEPTED) outbox kaydının PlanRevision commit'iyle aynı transaction'da yazılmasını ister; EVT-PlanRevisionCreated PROVISIONAL,
+      kanal adresi OPEN ve trip bazlı sıralama ADR-008'e bağlıdır. Outbox yazımı bu artımda zorunludur; relay/yayın değildir.

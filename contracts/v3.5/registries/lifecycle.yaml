@@ -1,0 +1,8 @@
+version: 3.5.0
+inherits: ../../v3.4/registries/lifecycle.yaml
+changes:
+  - machine: FlightSearchJob
+    semantics_changed: false
+    contract_surface: schema:FlightSearchCriteria.schema.json
+    note: Yürütme, işin trip_request_id alanındaki TripRequest'ten FlightSearchCriteria türetir. TripRequest bulunamazsa, SEARCHABLE değilse veya iş v3.4 öncesinden TripRequest ilişkisi olmadan kaldıysa sağlayıcı çağrılmaz ve mevcut QUEUED/RUNNING -> FAILED geçişi uygulanır. Durumlar ve geçişler değişmedi.
+    refs: [ADR-011, TRIP-001, FLT-002, PLT-REL-001]

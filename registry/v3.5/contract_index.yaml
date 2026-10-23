@@ -1,0 +1,4 @@
+version: 3.5.0
+inherits: ../v3.4/contract_index.yaml
+contracts:
+  - {id: SCH-FlightSearchCriteria, path: contracts/v3.5/schemas/FlightSearchCriteria.schema.json, status: ACTIVE, audience: INTERNAL}

@@ -1,0 +1,9 @@
+version: 3.7.0
+inherits: ../../v3.6/registries/reason_error.yaml
+new_records: []
+reused_records: []
+contract_gaps:
+  - id: GAP-FLT-CRITERIA-001
+    description: Uçuş kriteri olarak temsil edilemeyen tarih (EXACT/FLEXIBLE biçimine uymayan veya ters aralık) için de kanonik reason/error kodu yoktur; FlightSearchJob.error.code null ve Türkçe mesajla döner.
+    decision_ref: OD-022
+note: Yeni reason/error semantiği eklenmedi.

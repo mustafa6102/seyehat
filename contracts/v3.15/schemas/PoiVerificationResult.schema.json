@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.15:PoiVerificationResult",
+  "title": "PoiVerificationResult",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "poi": {"$ref": "./Poi.schema.json", "description": "Doğrulamadan sonra sunucuda saklı kanonik POI."},
+    "captured_at": {"type": "string", "format": "date-time"},
+    "verified": {"type": "boolean", "description": "Yalnız sağlayıcı yeniden okumasının başarılı olup olmadığını bildirir; olguların doğrulandığı anlamına gelmez (olgunun kanıt durumu verification_status ile taşınır). false ise saklı olgular değişmez; yaşlandırma yalnız doğrulanmış kanıt tabanı olan sağlayıcılarda uygulanır (osm_overpass için uygulanmaz)."},
+    "reason_codes": {"type": "array", "items": {"type": "string"}}
+  },
+  "required": ["poi", "captured_at", "verified", "reason_codes"],
+  "x-contract-id": "SCH-PoiVerificationResult",
+  "x-version": "3.15",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["POI-001", "RULE-POI-001-05", "FR-POI-001-04", "AC-POI-001-06", "AC-POI-001-07"],
+  "x-open-decisions": ["OD-025"],
+  "description": "OP-verifyPoi sonucu; kanıt durumu sağlayıcının kanıt tabanına bağlıdır. Başarılı okumada (verified=true) eşlenen olgular yeni yanıttan yeniden üretilir ve fetched_at ilerleyebilir. Yalnız onaylı doğrulanmış kanıt tabanı olan bir sağlayıcıda dönen olgular FRESH olur (TRN-VERIFICATION-01, verified_at = captured_at, expires_at = captured_at + CFG-POI-EVIDENCE-FRESHNESS). osm_overpass (OD-025) topluluk verisidir: yeniden okuma doğrulama kanıtı değildir; olgular UNVERIFIED kalır, verified_at null kalır, STALE/EXPIRED yaşlandırması uygulanmaz. Sağlayıcının döndürmediği olgular UNKNOWN kalır. Başarısız okumada veya öğe artık yoksa saklı olgular değişmez, verified=false ve RC-EVIDENCE-UNVERIFIED (zaman aşımında ayrıca RC-PROVIDER-TIMEOUT); öğenin silinmesi veya bulunamaması CLOSED_* kanıtı sayılmaz."
+}

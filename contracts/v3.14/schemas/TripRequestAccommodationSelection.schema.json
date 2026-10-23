@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.14:TripRequestAccommodationSelection",
+  "title": "TripRequestAccommodationSelection",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trip_request_id": {"type": "string", "readOnly": true, "description": "Seçimin ait olduğu tek TripRequest; TripRequest başına en fazla bir kayıt."},
+    "status": {
+      "type": "string",
+      "enum": ["CURRENT", "RECONFIRMATION_REQUIRED", "EXPIRED"],
+      "readOnly": true,
+      "x-lifecycle": "TripRequestAccommodationSelectionStatus",
+      "description": "Yalnız CURRENT güncel doğrulanmış seçimdir. RECONFIRMATION_REQUIRED ve EXPIRED güncel veya rezerve edilebilir fiyat olarak gösterilmez."
+    },
+    "offer": {"$ref": "./AccommodationOffer.schema.json", "readOnly": true, "description": "Seçimi CURRENT yapan doğrulamadaki kanonik teklif görüntüsü; tarayıcı verisinden üretilmez."},
+    "provider_id": {"type": "string", "readOnly": true},
+    "provider_offer_id": {"type": "string", "readOnly": true},
+    "verified_price": {
+      "oneOf": [{"$ref": "../../schemas/Money.schema.json"}, {"type": "null"}],
+      "readOnly": true,
+      "description": "Yalnız offer.total_price.completeness=COMPLETE ve value bilinen bir tutarsa doldurulur; aksi halde null. Bilinmeyen vergi/ücret 0 kabul edilmez."
+    },
+    "verified_at": {"type": "string", "format": "date-time", "readOnly": true, "description": "AccommodationRevalidationResult.current.captured_at."},
+    "expires_at": {"type": "string", "format": "date-time", "readOnly": true, "description": "offer.expires_at; sağlayıcı bildirmezse verified_at + CFG-ACCOMMODATION-SELECTION-TTL. CFG değeri tanımlı değilken geçerliliği bilinmeyen teklif seçilemez."},
+    "created_at": {"type": "string", "format": "date-time", "readOnly": true},
+    "updated_at": {"type": "string", "format": "date-time", "readOnly": true}
+  },
+  "required": ["trip_request_id", "status", "offer", "provider_id", "provider_offer_id", "verified_price", "verified_at", "expires_at", "created_at", "updated_at"],
+  "x-contract-id": "SCH-TripRequestAccommodationSelection",
+  "x-version": "3.14",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": ["ACC-001", "RULE-ACC-001-05", "RULE-ACC-001-06", "RULE-ACC-001-07", "RULE-ACC-001-08", "FR-ACC-001-04", "FR-ACC-001-05"],
+  "x-open-decisions": ["OD-013", "OD-021", "ADR-010"],
+  "x-persistence": {
+    "cardinality": "TripRequest başına 0..1 kayıt (mevcut tek varış noktalı Seyahat Planım); trip_request_id benzersizdir.",
+    "replacement": "Yeni başarılı seçim mevcut kaydın yerine geçer; seçim geçmişi saklanmaz (PlanRevision kapsam dışı).",
+    "excluded": "Ham sağlayıcı yanıtı, erişim anahtarları ve sağlayıcıya özgü alanlar saklanmaz.",
+    "retention_ref": "OD-013"
+  },
+  "description": "Bir TripRequest için kullanıcının açıkça seçtiği, sunucuda doğrulanmış konaklama teklifi. Booking, ödeme veya partner yönlendirmesi değildir. Erişim TripRequest ile aynı sınırdadır (ADR-010)."
+}

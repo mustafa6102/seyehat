@@ -1,0 +1,16 @@
+version: 3.9.0
+inherits: ../../v3.7/registries/reason_error.yaml
+new_records: []
+reused_records:
+  - id: RC-VALIDATION-SCHEMA
+    machine_code: SCHEMA_VALIDATION_FAILED
+    applies_to: [RULE-TRIP-001-04, RULE-TRIP-001-05, AC-TRIP-001-03]
+    note: OP-createTripRequest - geçersiz journey_type, geçersiz/imkânsız tarih, beklenmeyen tarih alanı, readOnly date_window, ONE_WAY ile return_date, ters FLEXIBLE aralık ve dönüşün gidişten tamamen önce olması SCH-TripRequest v3.9 sözleşme ihlalidir (HTTP 400, details.fields).
+  - id: RC-VALIDATION-TRIP-REQUEST-INCOMPLETE
+    machine_code: TRIP_REQUEST_INCOMPLETE
+    applies_to: [RULE-TRIP-001-03, RULE-TRIP-001-04]
+    note: journey_type, outbound_date veya ROUND_TRIP için return_date eksikse talep DRAFT kalır (HTTP 422, details.missing_fields).
+contract_gaps:
+  - id: GAP-FLT-CRITERIA-001
+    description: Uçuş kriteri üretemeyen yolculuk (eski v3.2 date_window kaydı veya geçersiz v3.9 yolculuğu) için kanonik reason/error kodu yoktur; FlightSearchJob.error.code null ve Türkçe mesajla döner. Yeni kod uydurulmadı.
+    decision_ref: OD-022

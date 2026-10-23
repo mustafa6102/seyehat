@@ -1,0 +1,9 @@
+version: 3.8.0
+inherits: ../v3.7/decisions.yaml
+decisions:
+  - id: OD-022
+    status: PARTIALLY_RESOLVED
+    decision: Uçuş konumu, havacılık konum kataloğundan (Duffel Places, yalnız konum keşfi) seçilir ve sağlayıcıdan bağımsız SCH-AviationIdentity (IATA_AIRPORT | IATA_CITY, [A-Z]{3}) olarak SCH-LocationRef.aviation_identity alanında saklanır; katalog kimliği ayrı kalır. GeoNames genel konum keşfi için kalır; GeoNames -> IATA eşlemesi, elle havalimanı listesi ve bulanık eşleme yapılmaz. Kimlik yalnız sunucunun şifreli seçim belirtecinden atanır.
+    approved_by: user (2026-09-29)
+    remaining_open: [DATE departure/return meaning, trip type, bound inclusivity, date timezone, PASSENGER types (OD-020), cabin, criteria reason/error code, duffel_places resilience values (ADR-006)]
+open_decisions: [OD-001, OD-008, OD-012, OD-013, OD-015, OD-020, OD-021, OD-022, ADR-007, ADR-010]

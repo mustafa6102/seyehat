@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.2:FxSnapshot",
+  "title": "FxSnapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "system",
+        "verification": "OPEN",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "RANK-001"
+        ]
+      }
+    },
+    "source": {
+      "type": "string",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "OPEN",
+        "verification": "OPEN",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "RANK-001",
+          "OD-005"
+        ]
+      }
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "source",
+        "verification": "timestamp",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "RANK-001"
+        ]
+      }
+    },
+    "rates": {
+      "type": "object",
+      "x-metadata": {
+        "classification": "INTERNAL",
+        "source_of_truth": "source",
+        "verification": "OPEN",
+        "security": "standard",
+        "retention_ref": "OD-013",
+        "requirement_refs": [
+          "RANK-001"
+        ]
+      }
+    }
+  },
+  "required": [
+    "id",
+    "source",
+    "timestamp",
+    "rates"
+  ],
+  "x-contract-id": "SCH-FxSnapshot",
+  "x-version": "3.2",
+  "x-status": "ACTIVE",
+  "x-requirement-refs": [
+    "OD-005",
+    "RANK-001"
+  ]
+}

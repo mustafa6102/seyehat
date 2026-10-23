@@ -1,0 +1,32 @@
+version: 3.16.0
+inherits: ../../v3.15/registries/lifecycle.yaml
+new_machines: []
+new_transitions:
+  - id: TRN-PLANREVISION-02
+    machine: PlanRevisionStatus
+    from: NONE
+    to: CURRENT
+    trigger: 'command: OP-addTripPlanPoiItem (Trip yokken ilk plan değişikliği)'
+    guard: 'TripRequest mevcut ve SEARCHABLE; If-None-Match: * ve TripRequest için Trip yok; yetkilendirme permissions.yaml PlanRevision create (ADR-010).'
+    side_effects: Trip (trip_request_id benzersiz) + PlanRevision version 1 (CURRENT) + EVT-PlanRevisionCreated outbox kaydı tek transaction'da yazılır (ADR-003).
+    idempotency_key_source: Idempotency-Key başlığı (OD-027); anahtar oluşturduğu revision'a kalıcı bağlıdır.
+    conflict_behavior: Trip zaten varsa veya eşzamanlı ilk oluşturmayı başka istek kazandıysa 409 RC-CONFLICT-REVISION-STALE; ikinci Trip oluşmaz.
+    reason_error: RC-DECISION-TRANSITION-APPLIED
+    refs: [TRIP-BLD-001, FR-TRIP-BLD-001-01, RULE-TRIP-BLD-001-04, PLT-CONC-001, OD-021, OD-027]
+    outcome: SUCCESS
+changes:
+  - transition: TRN-PLANREVISION-01
+    semantics_changed: false
+    note: >-
+      OD-027 RESOLVED: idempotency_key_source = Idempotency-Key başlığı; base_revision = If-Match ile verilen "<version>"; stale base
+      409 RC-CONFLICT-REVISION-STALE. Yeni revision version = önceki + 1; önceki SUPERSEDED olur ve değişmez. Commit ile outbox kaydı aynı
+      transaction'dadır (ADR-003). Tetikleyiciler: OP-addTripPlanPoiItem (Trip varken), OP-removeTripPlanItem.
+    refs: [OD-027, PLT-CONC-001, ADR-003]
+  - machine: VerificationStatus
+    semantics_changed: false
+    contract_surface: 'schema:Poi.schema.json'
+    note: >-
+      v3.15 notunun sağlayıcı farkındalıklı düzeltmesi (OD-025): keşif veya başarılı OP-verifyPoi okuması dönen olguyu yalnız onaylı/doğrulanmış
+      kanıt tabanı olan sağlayıcıda FRESH yapar (TRN-VERIFICATION-01). osm_overpass olguları UNVERIFIED kalır, verified_at null kalır,
+      fetched_at ilerleyebilir ve STALE/EXPIRED yaşlandırması uygulanmaz. Plana ekleme kanıt durumunu değiştirmez.
+    refs: [POI-001, OD-025, FR-POI-001-04, AC-POI-001-06]

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.3:FlightOffer",
+  "title": "FlightOffer",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "provider_offer_id": {"type": "string", "x-requirement-refs": ["FLT-002"]},
+    "state": {"type": "string", "enum": ["CURRENT", "CHANGED", "EXPIRED", "UNVERIFIED"], "x-requirement-refs": ["FLT-REPRICE-001"]},
+    "price": {"$ref": "./DerivedMoney.schema.json", "x-requirement-refs": ["FLT-002", "FLT-005"]},
+    "expires_at": {"type": ["string", "null"], "format": "date-time", "x-requirement-refs": ["FLT-002"]},
+    "baggage": {"oneOf": [{"$ref": "./BaggageAllowance.schema.json"}, {"type": "null"}], "x-requirement-refs": ["FLT-002", "FLT-005"]}
+  },
+  "required": ["provider_offer_id", "state", "price", "expires_at", "baggage"],
+  "x-contract-id": "SCH-FlightOffer",
+  "x-version": "3.3",
+  "x-status": "ACTIVE",
+  "x-replaces": "urn:ai-seyahat:v3.2:FlightOffer",
+  "x-requirement-refs": ["FLT-002", "FLT-005", "FLT-REPRICE-001"]
+}

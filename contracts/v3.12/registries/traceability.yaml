@@ -1,0 +1,15 @@
+version: 3.12.0
+inherits: ../../v3.10/registries/traceability.yaml
+requirement_to_contract:
+  - requirement: RULE-TRIP-001-06
+    artifacts: [schema:PassengerComposition.schema.json, schema:TripRequest.schema.json, schema:FlightSearchCriteria.schema.json]
+  - requirement: FR-TRIP-001-04
+    artifacts: [schema:PassengerComposition.schema.json, schema:TripRequest.schema.json]
+  - requirement: AC-TRIP-001-04
+    artifacts: [schema:PassengerComposition.schema.json, schema:TripRequest.schema.json]
+  - requirement: AC-TRIP-001-05
+    artifacts: [schema:TripRequest.schema.json]
+    open_decisions: [OD-021]
+  - requirement: AC-TRIP-001-06
+    artifacts: [schema:FlightSearchCriteria.schema.json]
+    open_decisions: [OD-020]

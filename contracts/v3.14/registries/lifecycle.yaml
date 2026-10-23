@@ -1,0 +1,139 @@
+version: 3.14.0
+inherits: ../../v3.13/registries/lifecycle.yaml
+new_machines:
+  - name: AccommodationSearchJobStatus
+    enum_ref: SCH-AccommodationSearchJob.status
+    phase: M3
+    states: [QUEUED, RUNNING, PARTIAL, COMPLETED, FAILED, EXPIRED]
+    transitions_ref: FlightSearchJob
+    allowed_reason_categories: [VALIDATION, EVIDENCE, PROVIDER]
+    note: FlightSearchJob (ADR-011) ile aynı durumlar ve geçişler. Kriter türetilemiyorsa veya onaylı sağlayıcı yoksa RUNNING öncesi FAILED; sağlayıcı çağrılmaz.
+    refs: [ACC-001, FR-ACC-001-03, ADR-011, OD-023, OD-024]
+  - name: AccommodationOfferState
+    enum_ref: SCH-AccommodationOffer.state
+    phase: M3
+    states: [CURRENT, CHANGED, EXPIRED, UNVERIFIED]
+    allowed_reason_categories: [EVIDENCE, DECISION]
+    initial: UNVERIFIED (TRN-ACCOFFER-04)
+    note: >-
+      OfferState (FLT-REPRICE-001) ile aynı değerler; konaklama teklifine ayrı makine olarak uygulanır. UNVERIFIED tek anlamlıdır -
+      "sunucuda başarılı bir sağlayıcı teyidi (duffel_stays quote) ile doğrulanmamış". Henüz yeniden doğrulanmamış arama sonucu ve
+      tamamlanamayan yeniden doğrulama aynı durumdadır; ikisi de seçilemez ve güncel gösterilmez. Ayrım durumla değil kanıtla yapılır:
+      source.verified_at null ise hiç teyit yoktur; AccommodationRevalidationResult.reason_codes RC-EVIDENCE-REPRICE-UNVERIFIED /
+      RC-PROVIDER-TIMEOUT başarısız denemeyi gösterir.
+  - name: TripRequestAccommodationSelectionStatus
+    enum_ref: SCH-TripRequestAccommodationSelection.status
+    phase: M3
+    states: [CURRENT, RECONFIRMATION_REQUIRED, EXPIRED]
+    initial: 'NONE (kayıt yok)'
+    allowed_reason_categories: [EVIDENCE, DECISION]
+    note: Yalnız CURRENT güncel doğrulanmış seçimdir; RECONFIRMATION_REQUIRED ve EXPIRED güncel fiyat olarak gösterilmez. Booking durumu değildir.
+new_transitions:
+  - id: TRN-ACCOFFER-04
+    machine: AccommodationOfferState
+    from: NONE
+    to: UNVERIFIED
+    trigger: 'event: accommodationSearchResult (OP-pollAccommodationSearch sonucu)'
+    guard: Teklif arama/fetch_all_rates ile keşfedildi; quote ile teyit edilmedi.
+    side_effects: source.verified_at = null; teklif güncel veya seçilebilir gösterilmez. expires_at geçmişse doğrudan EXPIRED (TRN-ACCOFFER-02).
+    idempotency_key_source: provider_offer_id
+    conflict_behavior: Yok (keşif yan etkisizdir).
+    reason_error: null
+    refs: [RULE-ACC-001-09, AC-ACC-001-12, TS-ACC-001-12]
+    outcome: SUCCESS
+  - id: TRN-ACCOFFER-05
+    machine: AccommodationOfferState
+    from: [UNVERIFIED, CURRENT, CHANGED]
+    to: CURRENT
+    trigger: 'event: accommodationRevalidationResult (quote başarılı)'
+    guard: Quote fiyat ve uygunluğu teyit etti ve sunucuda saklı önceki görüntüye (arama sonucu veya önceki doğrulama) göre toplam fiyat, zorunlu ücret/vergi, uygunluk ve iptal koşulunda değişiklik yok (zaman damgaları hariç).
+    side_effects: source.verified_at = current.captured_at; teklif sunucudaki en son doğrulama olarak saklanır.
+    idempotency_key_source: provider_offer_id + revalidation attempt (kaynak ayrıntısı OPEN)
+    conflict_behavior: Yok.
+    reason_error: null
+    refs: [RULE-ACC-001-05, RULE-ACC-001-09, AC-ACC-001-05, AC-ACC-001-12, TS-ACC-001-12]
+    outcome: SUCCESS
+  - id: TRN-ACCOFFER-01
+    machine: AccommodationOfferState
+    from: [UNVERIFIED, CURRENT, CHANGED]
+    to: CHANGED
+    trigger: 'event: accommodationRevalidationResult (quote başarılı)'
+    guard: Quote teklifi teyit etti ancak sunucuda saklı önceki görüntüye (arama sonucu veya önceki doğrulama) göre toplam fiyat, zorunlu ücret/vergi, uygunluk veya iptal koşulu değişti (zaman damgaları hariç). source.verified_at = current.captured_at.
+    side_effects: Eski kullanıcı kabulü geçersiz; yeni teklif yalnız açık kabulle seçilebilir.
+    idempotency_key_source: provider_offer_id + revalidation attempt (kaynak ayrıntısı OPEN)
+    conflict_behavior: Açık kabul olmadan seçim/yeniden onay yapılmaz.
+    reason_error: RC-EVIDENCE-OFFER-CHANGED
+    refs: [RULE-ACC-001-06, AC-ACC-001-07, TS-ACC-001-07]
+    outcome: DEGRADED
+  - id: TRN-ACCOFFER-02
+    machine: AccommodationOfferState
+    from: [CURRENT, CHANGED, UNVERIFIED]
+    to: EXPIRED
+    trigger: 'event: expiryCheck'
+    guard: expires_at (Duffel rate.expires_at) geçmiş veya quote oranın artık mevcut olmadığını açıkça bildirdi. Arama sonucunda expires_at zaten geçmişse teklif EXPIRED olarak keşfedilir.
+    side_effects: Teklif seçilebilir veya güncel gösterilmez.
+    idempotency_key_source: provider_offer_id
+    conflict_behavior: Yeni arama gerekir.
+    reason_error: RC-EVIDENCE-OFFER-EXPIRED
+    refs: [RULE-ACC-001-05, AC-ACC-001-06, TS-ACC-001-06]
+    outcome: DEGRADED
+  - id: TRN-ACCOFFER-03
+    machine: AccommodationOfferState
+    from: [UNVERIFIED, CURRENT, CHANGED]
+    to: UNVERIFIED
+    trigger: 'event: accommodationRevalidationResult (quote tamamlanamadı)'
+    guard: Doğrulama tamamlanamadı (zaman aşımı, sağlayıcı hatası, yetenek kanıtı yok, oranın artık mevcut olmadığı açıkça bildirilmeyen hata). UNVERIFIED -> UNVERIFIED durum değişmez, yalnız başarısız deneme kanıtlanır.
+    side_effects: Teklif doğrulanmış/güncel gösterilmez ve yeni seçim olarak kabul edilmez; önceki başarılı doğrulamanın source.verified_at değeri güncel teyit gibi sunulmaz.
+    idempotency_key_source: provider_offer_id + revalidation attempt (kaynak ayrıntısı OPEN)
+    conflict_behavior: Seçim durumu değişmez (TRN-ACCSEL-02 tetiklenmez).
+    reason_error: RC-EVIDENCE-REPRICE-UNVERIFIED
+    refs: [RULE-ACC-001-05, AC-ACC-001-06, TS-ACC-001-06]
+    outcome: DEGRADED
+  - id: TRN-ACCSEL-01
+    machine: TripRequestAccommodationSelectionStatus
+    from: [NONE, CURRENT, RECONFIRMATION_REQUIRED, EXPIRED]
+    to: CURRENT
+    trigger: 'command: selectTripRequestAccommodation'
+    guard: Teklif bu TripRequest'in konaklama arama sonucunda yer alır; en son doğrulama CURRENT (veya CHANGED ve açık kabul); süresi dolmamış; expires_at belirlenebilir (offer.expires_at veya CFG-ACCOMMODATION-SELECTION-TTL); expected_verified_at = captured_at.
+    side_effects: Kanonik teklif görüntüsü, provider_id, provider_offer_id, verified_price, verified_at, expires_at saklanır; mevcut seçimin yerine geçer.
+    idempotency_key_source: Idempotency-Key başlığı + tripRequestId
+    conflict_behavior: Koşul sağlanmazsa 409 (OFFER_NOT_SELECTABLE / OFFER_CHANGED / OFFER_EXPIRED); mevcut seçim değişmez.
+    reason_error: RC-DECISION-OFFER-NOT-SELECTABLE
+    refs: [RULE-ACC-001-05, RULE-ACC-001-07, RULE-ACC-001-08, AC-ACC-001-05, AC-ACC-001-06, AC-ACC-001-09, TS-ACC-001-05, TS-ACC-001-06, TS-ACC-001-09]
+    outcome: SUCCESS
+  - id: TRN-ACCSEL-02
+    machine: TripRequestAccommodationSelectionStatus
+    from: CURRENT
+    to: RECONFIRMATION_REQUIRED
+    trigger: 'event: accommodationRevalidationResult (TRN-ACCOFFER-01)'
+    guard: Doğrulanan teklifin provider_id + provider_offer_id değeri seçiminkiyle aynı ve sonuç CHANGED.
+    side_effects: Saklı teklif görüntüsü ve verified_price değiştirilmez; güncel gösterilmez.
+    idempotency_key_source: provider_offer_id + revalidation attempt (kaynak ayrıntısı OPEN)
+    conflict_behavior: Seçim zaten RECONFIRMATION_REQUIRED veya EXPIRED ise değişiklik yok.
+    reason_error: RC-EVIDENCE-OFFER-CHANGED
+    refs: [RULE-ACC-001-06, AC-ACC-001-07, TS-ACC-001-07]
+    outcome: DEGRADED
+  - id: TRN-ACCSEL-03
+    machine: TripRequestAccommodationSelectionStatus
+    from: [CURRENT, RECONFIRMATION_REQUIRED]
+    to: EXPIRED
+    trigger: 'event: expiryCheck (her okuma ve yazmada değerlendirilir)'
+    guard: expires_at <= şimdi.
+    side_effects: Seçim güncel gösterilmez; saklı görüntü yalnız geçmiş bilgi olarak okunabilir.
+    idempotency_key_source: tripRequestId
+    conflict_behavior: Yalnız yeni arama ve yeni seçimle CURRENT olunur.
+    reason_error: RC-EVIDENCE-OFFER-EXPIRED
+    refs: [AC-ACC-001-08, TS-ACC-001-08]
+    outcome: DEGRADED
+  - id: TRN-ACCSEL-04
+    machine: TripRequestAccommodationSelectionStatus
+    from: RECONFIRMATION_REQUIRED
+    to: CURRENT
+    trigger: 'command: reconfirmTripRequestAccommodation'
+    guard: Aynı provider_offer_id için sunucuda saklı en son doğrulanmış teklif (CURRENT veya CHANGED) mevcut ve süresi dolmamış; expected_verified_at = captured_at.
+    side_effects: Teklif görüntüsü, verified_price, verified_at ve expires_at kabul edilen doğrulanmış teklifle değiştirilir; created_at korunur.
+    idempotency_key_source: Idempotency-Key başlığı + tripRequestId
+    conflict_behavior: Koşul sağlanmazsa 409; süre dolmuşsa seçim EXPIRED olur.
+    reason_error: RC-DECISION-OFFER-NOT-SELECTABLE
+    refs: [RULE-ACC-001-06, AC-ACC-001-07, TS-ACC-001-07]
+    outcome: SUCCESS

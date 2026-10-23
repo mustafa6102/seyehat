@@ -1,0 +1,10 @@
+version: 3.15.0
+inherits: ../v3.14/decisions.yaml
+decisions:
+  - id: OD-025
+    status: RESOLVED
+    note: osm_overpass (OSM/ODbL) secildi; olgular UNVERIFIED, rezervasyon/ziyaret suresi UNKNOWN. Uretim icin kendi barindirilan/ucretli Overpass sunucusu ve ODbL share-alike Legal kabulu gerekir.
+  - id: OD-026
+    status: OPEN
+    note: POI ilgi alani/kategori girdisi ve kanonik taksonomi tanimli degil; kesif yalniz konumla, categories bos.
+open_decisions: [OD-001, OD-008, OD-011, OD-012, OD-013, OD-014, OD-015, OD-016, OD-020, OD-021, OD-022, OD-026, ADR-006, ADR-007, ADR-010]

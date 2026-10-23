@@ -1,0 +1,26 @@
+version: 3.7.0
+inherits: ../../v3.6/registries/od_impact.yaml
+decisions:
+  - id: OD-022
+    title: TripRequest'ten sağlayıcı uçuş arama kriterlerine eşleme
+    status: PARTIALLY_RESOLVED
+    date_findings:
+      verified:
+        - SCH-TripRequest.date_window yalnız object|null tipindedir ve doğrulaması OPEN'dır; alt alanlar sözleşmede tanımlı değildir.
+        - RULE-TRIP-001-02 esnek tarih aralığının kesin tarihten ayrı tutulmasını, RULE-TRIP-001-03 tarih veya tarih penceresinin zorunlu olmasını tanımlar.
+        - SSOT gidiş/dönüş tarihi, tek yön/gidiş-dönüş, aralık sınırlarının dahil/hariç olması ve tarihlerin saat dilimi anlamını tanımlamaz.
+      resolved:
+        - FlightSearchCriteria.date_window v3.7 ile açık EXACT {date} veya FLEXIBLE {start_date, end_date} temsilidir; TripRequest değerleri aynen taşınır, aralıktan tarih seçilmez, kesin/esnek birbirine dönüştürülmez.
+        - Bu iki biçimden birine uymayan veya end_date < start_date olan tarih uçuş kriteri olamaz; iş sağlayıcı çağrılmadan FAILED olur (GAP-FLT-CRITERIA-001).
+      remaining_open:
+        - Kesin tarihin ve esnek aralığın gidiş tarihi mi, yolculuk süresi mi olduğu; dönüş tarihi.
+        - Tek yön / gidiş-dönüş yolculuk tipi.
+        - Esnek aralık sınırlarının dahil/hariç olması ve sağlayıcı arama penceresine çevrimi.
+        - Tarih değerlerinin hangi saat dilimine göre yorumlanacağı.
+    remaining_open:
+      - LOCATION - otoritatif havacılık konum kimliği kaynağı ve şekli; city -> airport genişletmesi (BLOCKED).
+      - DATE - gidiş/dönüş anlamı, yolculuk tipi, sınır kapsayıcılığı, tarih saat dilimi.
+      - PASSENGER - yolcu tipi dağılımı (OD-020 bağımlılığı).
+      - Kabin sınıfı; desteklenmeyen kriter için kanonik reason/error kodu (GAP-FLT-CRITERIA-001).
+    blocks_development: [production flight provider execution]
+    impact_status: BLOCKED

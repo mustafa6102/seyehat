@@ -1,0 +1,48 @@
+version: 3.14.0
+inherits: ../v3.13/story_overrides.yaml
+overrides:
+  - id: ACC-001
+    phase: M3
+    semantics_changed: false
+    reason: Seyahat Planım konaklama akışı için minimum sözleşme (v3.14). Mevcut kurallar ve kabul kriterleri değişmedi; arama, doğrulama ve kalıcı seçim eklendi.
+    preserved_refs:
+      rules: [RULE-ACC-001-01, RULE-ACC-001-02, RULE-ACC-001-03]
+      functional_requirements: [FR-ACC-001-01, FR-ACC-001-02]
+      acceptance_criteria: [AC-ACC-001-01, AC-ACC-001-02, AC-ACC-001-03]
+      test_scenarios: [TS-ACC-001-01, TS-ACC-001-02, TS-ACC-001-03]
+    clarified_refs:
+      RULE-ACC-001-04: 'OD-024 RESOLVED (2026-10-05) desteklenen alt küme: ROUND_TRIP + EXACT tarihler (giriş = gidiş tarihi, çıkış = dönüş tarihi, çıkış > giriş), yalnız yetişkin passenger_composition, room_count >= 1, kind=city varış noktasının kalıcı koordinatları, 5 km yarıçap ve duffel_stays sınırları.'
+    added_refs:
+      rules:
+        RULE-ACC-001-04: Konaklama arama kriteri yalnız sunucuda TripRequest'ten türetilir; tarayıcıdan kriter kabul edilmez. Tarih, konum veya misafir dağılımı türetilemiyorsa sağlayıcı çağrılmaz ve arama Türkçe gerekçeyle başarısız olur.
+        RULE-ACC-001-05: Bir konaklama teklifi yalnız o TripRequest'in arama sonucunda yer alıyorsa, sunucudaki en son doğrulaması CURRENT ise (CHANGED ise açık kabulle), süresi dolmamışsa ve geçerlilik süresi belirlenebiliyorsa seçilebilir. UNVERIFIED veya EXPIRED teklif güncel seçim olamaz. Seçimde tarayıcıdan gelen fiyat, vergi, tesis veya uygunluk verisi kullanılmaz.
+        RULE-ACC-001-06: Doğrulamada toplam fiyat, zorunlu ücret/vergi, uygunluk veya iptal koşulu değişirse yeni teklif kullanıcının seçimini sessizce değiştirmez; seçim yeniden onay bekler ve yalnız açık kabulle güncellenir. Doğrulama tamamlanamazsa seçim durumu değişmez ve teklif doğrulanmış gösterilmez.
+        RULE-ACC-001-07: Bir TripRequest'in en fazla bir etkin konaklama seçimi vardır; başka bir uygun teklifin açıkça seçilmesi öncekinin yerine geçer.
+        RULE-ACC-001-09: Arama ile keşfedilen konaklama teklifi sağlayıcı teyidi (yeniden doğrulama) olmadan doğrulanmış veya güncel sayılmaz; durumu UNVERIFIED ve doğrulama zamanı boştur. UNVERIFIED hem henüz doğrulanmamış hem doğrulaması tamamlanamamış teklifi kapsar; yalnız başarılı yeniden doğrulama teklifi CURRENT veya CHANGED yapar.
+        RULE-ACC-001-08: Seçimin doğrulanmış fiyatı yalnız toplam bilinen ve eksiksiz bir tutarsa saklanır; aksi halde boş kalır, bilinen alt sınır ve bilinmeyen kalemler gösterilir, 0 veya "dahil" kabul edilmez. Doğrulanmamış giriş bilgisi kesin gösterilmez.
+      functional_requirements:
+        FR-ACC-001-03: Sağlayıcıdan bağımsız konaklama araması asenkron iş olarak başlatılır ve yoklanır; teklif okunur ve sağlayıcı teklif referansıyla yeniden doğrulanır.
+        FR-ACC-001-04: Konaklama seçimi TripRequest başına tek kayıt olarak kanonik teklif görüntüsü, sağlayıcı ve sağlayıcı teklif kimliği, doğrulanmış fiyat ve para birimi, doğrulama zamanı, geçerlilik zamanı, seçim durumu ve oluşturma/güncelleme zamanlarıyla saklanır; ham sağlayıcı yanıtı ve gizli bilgiler saklanmaz.
+        FR-ACC-001-05: Seyahat Planım seçili konaklamayı, doğrulanmış fiyatı, doğrulama zamanını ve seçim durumunu yalnız kalıcı seçim kaydından gösterir.
+        FR-ACC-001-06: TripRequest, kullanıcının planlayıcıda açıkça girdiği oda sayısını (en az 1) ve seçilen varış noktasının sunucuda doğrulanan katalog koordinatlarını saklar; konum ikinci kez seçtirilmez ve uçuş kimliği değişmez.
+      acceptance_criteria:
+        AC-ACC-001-04: Given kriteri türetilebilen TripRequest When konaklama araması başlatılır Then sonuçlar kanonik tekliflerle döner; Given türetilemeyen TripRequest Then sağlayıcı çağrılmaz ve arama Türkçe gerekçeyle başarısız olur.
+        AC-ACC-001-05: Given arama sonucundaki teklifin en son doğrulaması CURRENT ve süresi dolmamış When kullanıcı seçer Then seçim CURRENT olarak doğrulanmış bilgilerle saklanır.
+        AC-ACC-001-06: Given teklif UNVERIFIED, süresi dolmuş veya geçerlilik süresi belirlenemiyor When seçilmek istenir Then seçim yapılmaz ve mevcut seçim değişmez.
+        AC-ACC-001-07: Given CURRENT seçim When yeniden doğrulamada fiyat, zorunlu ücret, uygunluk veya iptal koşulu değişir Then seçim yeniden onay bekler, saklı fiyat güncel gösterilmez ve yalnız açık kabulle CURRENT olur.
+        AC-ACC-001-08: Given seçim When geçerlilik süresi geçer Then seçim EXPIRED olur ve fiyat güncel gösterilmez.
+        AC-ACC-001-09: Given CURRENT seçimi olan TripRequest When başka bir uygun konaklama açıkça seçilir Then yeni seçim öncekinin yerine geçer.
+        AC-ACC-001-10: Given vergi/zorunlu ücreti bilinmeyen veya giriş bilgisi doğrulanmamış seçili konaklama When Seyahat Planım gösterilir Then fiyat 0 veya kesin toplam olarak gösterilmez ve giriş bilgisi doğrulanmamış olarak belirtilir.
+        AC-ACC-001-12: Given arama sonucundan gelen konaklama teklifi When gösterilir veya seçilmek istenir Then doğrulanmamış olarak işaretlenir ve seçilemez; When yeniden doğrulama değişiklik olmadan tamamlanır Then CURRENT olur, maddi değişiklikle tamamlanır Then CHANGED olur, tamamlanamazsa UNVERIFIED kalır.
+        AC-ACC-001-11: Given kullanıcı planlayıcıda oda sayısını girip bir şehir varış noktası seçer When talep kaydedilir Then oda sayısı ve şehir koordinatları talepte saklanır; oda sayısı girilmeyen veya 1'den küçük talep oda sayısı varsayılarak kaydedilmez.
+      test_scenarios:
+        TS-ACC-001-04: [Kriter türetilebilen ve türetilemeyen TripRequest ile konaklama araması, [4]]
+        TS-ACC-001-05: [CURRENT konaklama teklifinin seçimi, [5]]
+        TS-ACC-001-06: [UNVERIFIED, süresi dolmuş veya geçerliliği bilinmeyen teklif seçilemez, [6]]
+        TS-ACC-001-07: [Seçili konaklama değişir ve açık kabulle yeniden onaylanır, [7]]
+        TS-ACC-001-08: [Konaklama seçiminin süresi dolar, [8]]
+        TS-ACC-001-09: [Yeni konaklama seçimi öncekinin yerine geçer, [9]]
+        TS-ACC-001-10: [Bilinmeyen şehir vergisi ve doğrulanmamış giriş saati Seyahat Planım'da, [10]]
+        TS-ACC-001-12: [Arama sonucundaki UNVERIFIED teklifin yeniden doğrulamayla CURRENT/CHANGED olması veya UNVERIFIED kalması, [12]]
+        TS-ACC-001-11: [Oda sayısı ve şehir koordinatlarının talepte saklanması; geçersiz oda sayısı, [11]]
+    dependencies: [OD-013, OD-014, OD-020, OD-021, OD-022, OD-023, OD-024, ADR-010]

@@ -1,0 +1,940 @@
+openapi: 3.1.0
+info:
+  title: AI Seyahat Planlayıcısı M1A API
+  version: 3.2.2
+  description: CONDITIONAL. Teknik contract; kullanıcı metinleri Türkçe.
+servers: []
+paths:
+  /trip-requests:
+    post:
+      operationId: createTripRequest
+      summary: createTripRequest
+      x-contract-id: OP-createTripRequest
+      x-requirement-refs:
+      - TRIP-001
+      - AC-TRIP-001-01
+      - AC-TRIP-001-02
+      x-status: ACTIVE
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Kullanıcıya görünen metin dili; Türkçe varsayılan.
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Gereken mutationlarda kullanılır; kesin kapsam requirement/operation
+          bazında.
+      responses:
+        '200':
+          description: Başarılı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/TripRequest.schema.json
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '400':
+          description: Geçersiz istek/şema
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '401':
+          description: Kimlik doğrulaması gerekli
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '404':
+          description: Kaynak bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '429':
+          description: İstek sınırı aşıldı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '409':
+          description: Conflict / idempotency anahtarı uyuşmazlığı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '403':
+          description: İşlem için yetki yok
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/TripRequest.schema.json
+      x-error-codes:
+      - RC-VALIDATION-SCHEMA
+      - RC-AUTHN-REQUIRED
+      - RC-AUTHZ-DENIED
+      - RC-RESOURCE-NOT-FOUND
+      - RC-CONFLICT-IDEMPOTENCY-KEY
+      - RC-PLATFORM-RATE-LIMITED
+  /trip-requests/{tripRequestId}:
+    get:
+      operationId: getTripRequest
+      summary: getTripRequest
+      x-contract-id: OP-getTripRequest
+      x-requirement-refs:
+      - TRIP-001
+      - AC-TRIP-001-01
+      x-status: ACTIVE
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Kullanıcıya görünen metin dili; Türkçe varsayılan.
+      - name: tripRequestId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Başarılı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/TripRequest.schema.json
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '400':
+          description: Geçersiz istek/şema
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '401':
+          description: Kimlik doğrulaması gerekli
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '404':
+          description: Kaynak bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '429':
+          description: İstek sınırı aşıldı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '403':
+          description: İşlem için yetki yok
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+      security:
+      - bearerAuth: []
+      x-error-codes:
+      - RC-VALIDATION-SCHEMA
+      - RC-AUTHN-REQUIRED
+      - RC-AUTHZ-DENIED
+      - RC-RESOURCE-NOT-FOUND
+      - RC-PLATFORM-RATE-LIMITED
+  /travelers:
+    post:
+      operationId: createTraveler
+      summary: createTraveler
+      x-contract-id: OP-createTraveler
+      x-requirement-refs:
+      - TRV-001
+      - AC-TRV-001-01
+      - AC-TRV-001-03
+      - AC-TRV-001-02
+      x-status: ACTIVE
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Kullanıcıya görünen metin dili; Türkçe varsayılan.
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Gereken mutationlarda kullanılır; kesin kapsam requirement/operation
+          bazında.
+      responses:
+        '200':
+          description: Başarılı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/Traveler.schema.json
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '400':
+          description: Geçersiz istek/şema
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '401':
+          description: Kimlik doğrulaması gerekli
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '404':
+          description: Kaynak bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '429':
+          description: İstek sınırı aşıldı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '409':
+          description: Conflict / idempotency anahtarı uyuşmazlığı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '403':
+          description: İşlem için yetki yok
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/Traveler.schema.json
+      x-error-codes:
+      - RC-VALIDATION-SCHEMA
+      - RC-AUTHN-REQUIRED
+      - RC-AUTHZ-DENIED
+      - RC-RESOURCE-NOT-FOUND
+      - RC-CONFLICT-IDEMPOTENCY-KEY
+      - RC-PLATFORM-RATE-LIMITED
+  /travelers/{travelerId}:
+    get:
+      operationId: getTraveler
+      summary: getTraveler
+      x-contract-id: OP-getTraveler
+      x-requirement-refs:
+      - TRV-001
+      - AC-TRV-001-01
+      - PLT-AUTH-001
+      - AC-PLT-AUTH-001-01
+      - AC-PLT-AUTH-001-02
+      - AC-PLT-AUTH-001-03
+      - PLT-PII-001
+      - AC-PLT-PII-001-02
+      - AC-PLT-PII-001-03
+      x-status: ACTIVE
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Kullanıcıya görünen metin dili; Türkçe varsayılan.
+      - name: travelerId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Başarılı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/Traveler.schema.json
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '400':
+          description: Geçersiz istek/şema
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '401':
+          description: Kimlik doğrulaması gerekli
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '404':
+          description: Kaynak bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '429':
+          description: İstek sınırı aşıldı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '403':
+          description: İşlem için yetki yok
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+      security:
+      - bearerAuth: []
+      x-error-codes:
+      - RC-VALIDATION-SCHEMA
+      - RC-AUTHN-REQUIRED
+      - RC-AUTHZ-DENIED
+      - RC-RESOURCE-NOT-FOUND
+      - RC-PLATFORM-RATE-LIMITED
+  /flight-search-jobs:
+    post:
+      operationId: startFlightSearch
+      summary: startFlightSearch
+      x-contract-id: OP-startFlightSearch
+      x-requirement-refs:
+      - FLT-002
+      - AC-FLT-002-01
+      - AC-FLT-002-04
+      - RANK-001
+      - AC-RANK-001-01
+      - AC-RANK-001-02
+      - AC-RANK-001-03
+      - AC-RANK-001-04
+      - AC-FLT-002-02
+      - AC-FLT-002-03
+      - AC-FLT-002-06
+      - PLT-REL-001
+      - AC-PLT-REL-001-01
+      - AC-PLT-REL-001-02
+      - AC-PLT-REL-001-03
+      x-status: PROVISIONAL
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Kullanıcıya görünen metin dili; Türkçe varsayılan.
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Gereken mutationlarda kullanılır; kesin kapsam requirement/operation
+          bazında.
+      responses:
+        '200':
+          description: Başarılı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/FlightSearchResult.schema.json
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '400':
+          description: Geçersiz istek/şema
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '401':
+          description: Kimlik doğrulaması gerekli
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '404':
+          description: Kaynak bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '429':
+          description: İstek sınırı aşıldı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '409':
+          description: Conflict / idempotency anahtarı uyuşmazlığı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '403':
+          description: İşlem için yetki yok
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+      security:
+      - bearerAuth: []
+      x-adr-ref: ADR-011
+      description: 'Progressive search transport seçimi PROPOSED: async job + polling.
+        SSE alternatifi ADR-011 kararıyla netleşir.'
+      x-ranking-in-search-result: true
+      x-error-codes:
+      - RC-VALIDATION-SCHEMA
+      - RC-AUTHN-REQUIRED
+      - RC-AUTHZ-DENIED
+      - RC-RESOURCE-NOT-FOUND
+      - RC-CONFLICT-IDEMPOTENCY-KEY
+      - RC-PLATFORM-RATE-LIMITED
+  /flight-search-jobs/{searchId}:
+    get:
+      operationId: pollFlightSearch
+      summary: pollFlightSearch
+      x-contract-id: OP-pollFlightSearch
+      x-requirement-refs:
+      - FLT-002
+      - AC-FLT-002-01
+      - AC-FLT-002-05
+      - RANK-001
+      - AC-RANK-001-01
+      - AC-RANK-001-02
+      - AC-RANK-001-03
+      - AC-RANK-001-04
+      x-status: PROVISIONAL
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Kullanıcıya görünen metin dili; Türkçe varsayılan.
+      - name: searchId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Başarılı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/FlightSearchResult.schema.json
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '400':
+          description: Geçersiz istek/şema
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '401':
+          description: Kimlik doğrulaması gerekli
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '404':
+          description: Kaynak bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '429':
+          description: İstek sınırı aşıldı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '403':
+          description: İşlem için yetki yok
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+      security:
+      - bearerAuth: []
+      x-adr-ref: ADR-011
+      description: 'Progressive search transport seçimi PROPOSED: async job + polling.
+        SSE alternatifi ADR-011 kararıyla netleşir.'
+      x-ranking-in-search-result: true
+      x-error-codes:
+      - RC-VALIDATION-SCHEMA
+      - RC-AUTHN-REQUIRED
+      - RC-AUTHZ-DENIED
+      - RC-RESOURCE-NOT-FOUND
+      - RC-PLATFORM-RATE-LIMITED
+  /offers/{offerId}:
+    get:
+      operationId: getOffer
+      summary: getOffer
+      x-contract-id: OP-getOffer
+      x-requirement-refs:
+      - FLT-005
+      - AC-FLT-005-01
+      - AC-FLT-005-02
+      - AC-FLT-005-03
+      x-status: ACTIVE
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Kullanıcıya görünen metin dili; Türkçe varsayılan.
+      - name: offerId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Başarılı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/FlightOffer.schema.json
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '400':
+          description: Geçersiz istek/şema
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '401':
+          description: Kimlik doğrulaması gerekli
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '404':
+          description: Kaynak bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '429':
+          description: İstek sınırı aşıldı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '403':
+          description: İşlem için yetki yok
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+      security:
+      - bearerAuth: []
+      x-error-codes:
+      - RC-VALIDATION-SCHEMA
+      - RC-AUTHN-REQUIRED
+      - RC-AUTHZ-DENIED
+      - RC-RESOURCE-NOT-FOUND
+      - RC-PLATFORM-RATE-LIMITED
+  /offers/{offerId}/reprice:
+    post:
+      operationId: repriceOffer
+      summary: repriceOffer
+      x-contract-id: OP-repriceOffer
+      x-requirement-refs:
+      - FLT-REPRICE-001
+      - AC-FLT-REPRICE-001-01
+      - AC-FLT-REPRICE-001-07
+      - AC-FLT-REPRICE-001-03
+      - AC-FLT-REPRICE-001-04
+      - AC-FLT-REPRICE-001-05
+      - AC-FLT-REPRICE-001-06
+      x-status: ACTIVE
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Kullanıcıya görünen metin dili; Türkçe varsayılan.
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Gereken mutationlarda kullanılır; kesin kapsam requirement/operation
+          bazında.
+      - name: offerId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Reprice sonucu; provider timeout durumunda OfferState=UNVERIFIED
+            içeren durum yanıtı dönebilir.
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/OfferSnapshot.schema.json
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '400':
+          description: Geçersiz istek/şema
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '401':
+          description: Kimlik doğrulaması gerekli
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '404':
+          description: Kaynak bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '429':
+          description: İstek sınırı aşıldı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '409':
+          description: Conflict / idempotency anahtarı uyuşmazlığı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '403':
+          description: İşlem için yetki yok
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+      security:
+      - bearerAuth: []
+      x-degraded-state-response: 'AC-FLT-REPRICE-001-07: provider timeout transport
+        hatası olarak zorunlu 503 değildir; teklif UNVERIFIED durumuyla temsil edilir.'
+      x-error-codes:
+      - RC-VALIDATION-SCHEMA
+      - RC-AUTHN-REQUIRED
+      - RC-AUTHZ-DENIED
+      - RC-RESOURCE-NOT-FOUND
+      - RC-CONFLICT-IDEMPOTENCY-KEY
+      - RC-PLATFORM-RATE-LIMITED
+      x-warning-codes:
+      - RC-EVIDENCE-REPRICE-UNVERIFIED
+  /offers/{offerId}/partner-redirect:
+    post:
+      operationId: createPartnerRedirect
+      summary: createPartnerRedirect
+      x-contract-id: OP-createPartnerRedirect
+      x-requirement-refs:
+      - FLT-REPRICE-001
+      - AC-FLT-REPRICE-001-01
+      - AC-FLT-REPRICE-001-02
+      x-status: PROVISIONAL
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Kullanıcıya görünen metin dili; Türkçe varsayılan.
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          type: string
+        description: Gereken mutationlarda kullanılır; kesin kapsam requirement/operation
+          bazında.
+      - name: offerId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Başarılı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/OfferSnapshot.schema.json
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '400':
+          description: Geçersiz istek/şema
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '401':
+          description: Kimlik doğrulaması gerekli
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '404':
+          description: Kaynak bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '429':
+          description: İstek sınırı aşıldı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '409':
+          description: Conflict / idempotency anahtarı uyuşmazlığı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '403':
+          description: İşlem için yetki yok
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+      security:
+      - bearerAuth: []
+      x-decision-ref: OD-015
+      x-error-codes:
+      - RC-VALIDATION-SCHEMA
+      - RC-AUTHN-REQUIRED
+      - RC-AUTHZ-DENIED
+      - RC-RESOURCE-NOT-FOUND
+      - RC-CONFLICT-IDEMPOTENCY-KEY
+      - RC-PLATFORM-RATE-LIMITED
+  /account/export:
+    post:
+      operationId: requestAccountExport
+      summary: requestAccountExport
+      x-contract-id: OP-requestAccountExport
+      x-requirement-refs:
+      - PLT-PII-001
+      - AC-PLT-PII-001-01
+      x-status: PROVISIONAL
+      x-decision-ref: OD-013
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '202':
+          description: İstek kabul edildi; ayrıntılı işlem modeli OD-013 ile kesinleşir.
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '400':
+          description: Geçersiz istek/şema
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '401':
+          description: Kimlik doğrulaması gerekli
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '404':
+          description: Kaynak bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '429':
+          description: İstek sınırı aşıldı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '409':
+          description: Conflict / idempotency anahtarı uyuşmazlığı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '403':
+          description: İşlem için yetki yok
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+      security:
+      - bearerAuth: []
+      x-error-codes:
+      - RC-VALIDATION-SCHEMA
+      - RC-AUTHN-REQUIRED
+      - RC-AUTHZ-DENIED
+      - RC-RESOURCE-NOT-FOUND
+      - RC-CONFLICT-IDEMPOTENCY-KEY
+      - RC-PLATFORM-RATE-LIMITED
+  /account:
+    delete:
+      operationId: deleteAccountData
+      summary: deleteAccountData
+      x-contract-id: OP-deleteAccountData
+      x-requirement-refs:
+      - PLT-PII-001
+      - AC-PLT-PII-001-01
+      - AC-PLT-PII-001-04
+      x-status: PROVISIONAL
+      x-decision-ref: OD-013
+      parameters:
+      - name: Accept-Language
+        in: header
+        required: false
+        schema:
+          type: string
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+      responses:
+        '202':
+          description: İstek kabul edildi; ayrıntılı işlem modeli OD-013 ile kesinleşir.
+        default:
+          description: Hata
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '400':
+          description: Geçersiz istek/şema
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '401':
+          description: Kimlik doğrulaması gerekli
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '404':
+          description: Kaynak bulunamadı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '429':
+          description: İstek sınırı aşıldı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '409':
+          description: Conflict / idempotency anahtarı uyuşmazlığı
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+        '403':
+          description: İşlem için yetki yok
+          content:
+            application/json:
+              schema:
+                $ref: ../schemas/ErrorEnvelope.schema.json
+      security:
+      - bearerAuth: []
+      x-error-codes:
+      - RC-VALIDATION-SCHEMA
+      - RC-AUTHN-REQUIRED
+      - RC-AUTHZ-DENIED
+      - RC-RESOURCE-NOT-FOUND
+      - RC-CONFLICT-IDEMPOTENCY-KEY
+      - RC-PLATFORM-RATE-LIMITED
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: OPEN
+      x-status: OPEN
+      x-adr-ref: ADR-010
+x-contract-principles:
+  pagination: Liste endpointleri için model OPEN; somut limit uydurulmaz.
+  rate_limit_headers: Header adları/değerleri OPEN; provider ve platform politikasıyla
+    kesinleşir.
+  etag_if_match: PlanRevision mutationlarında If-Match/ETag zorunlu; M1A operasyonlarında
+    PlanRevision mutation endpointi yok.
+  progressive_search: ADR-011 PROPOSED
+  model_a_redirect: OD-015 PROVISIONAL
