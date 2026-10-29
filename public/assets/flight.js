@@ -80,7 +80,21 @@
         return rest === 0 ? `${hours} sa` : `${hours} sa ${rest} dk`;
     };
 
-    // Card summary derived only from the canonical segment list (one ordered one-way itinerary per offer).
+    // v3.23 (OD-022): a ROUND_TRIP offer is one offer whose ordered segments carry OUTBOUND then INBOUND. Each direction
+    // is summarized on its own; an offer without journey_type (stored before v3.23) is one-way.
+    const legsOf = (offer) => {
+        const segments = Array.isArray(offer?.segments) ? offer.segments : [];
+        if (offer?.journey_type !== 'ROUND_TRIP') {
+            return [{ label: null, segments }];
+        }
+
+        return [
+            { label: 'Gidiş', segments: segments.filter((segment) => segment.direction !== 'INBOUND') },
+            { label: 'Dönüş', segments: segments.filter((segment) => segment.direction === 'INBOUND') },
+        ];
+    };
+
+    // Card summary for one direction, derived only from its canonical segments.
     // Segments carry no airport codes, so no route endpoints are shown or guessed.
     const describeItinerary = (segments) => {
         const list = Array.isArray(segments) ? segments : [];
@@ -214,14 +228,25 @@
         return section;
     };
 
-    const renderSegments = (segments) => {
+    const renderSegments = (offer) => {
         const section = el('div', 'segments');
         section.append(el('h4', 'baggage-title', 'Uçuş bölümleri'));
-        if (!Array.isArray(segments) || segments.length === 0) {
+        if (!Array.isArray(offer.segments) || offer.segments.length === 0) {
             section.append(el('p', 'summary-meta', 'Uçuş bölümü bilgisi yok.'));
 
             return section;
         }
+        legsOf(offer).forEach(({ label, segments }) => {
+            if (label) {
+                section.append(el('p', 'offer-direction-label', label));
+            }
+            section.append(renderSegmentList(segments));
+        });
+
+        return section;
+    };
+
+    const renderSegmentList = (segments) => {
         const list = el('ol', 'segment-list');
         segments.forEach((segment) => {
             const item = el('li', 'segment');
@@ -237,9 +262,8 @@
             }
             list.append(item);
         });
-        section.append(list);
 
-        return section;
+        return list;
     };
 
     const renderSources = (offer) => {
@@ -259,32 +283,44 @@
     // The provider offer id is never displayed; it only addresses the offer detail page.
     const renderOffer = (offer, detailUrl, { expanded = false } = {}) => {
         const card = el('article', 'offer-card');
-        const itinerary = describeItinerary(offer.segments);
+        const legs = legsOf(offer).map((leg) => ({ ...leg, itinerary: describeItinerary(leg.segments) }));
+        const described = legs.filter((leg) => leg.itinerary);
         const header = el('header', 'offer-card-header');
         const title = el('div', 'offer-heading');
-        title.append(el('h3', 'offer-title', itinerary ? itinerary.flights.join(' · ') : 'Uçuş teklifi'));
+        title.append(el('h3', 'offer-title', described.length > 0
+            ? described.map((leg) => leg.itinerary.flights.join(' · ')).join(' / ')
+            : 'Uçuş teklifi'));
         if (offer.state !== 'CURRENT') {
             title.append(el('span', `badge badge-state-${String(offer.state).toLowerCase()}`, STATE_LABELS[offer.state] ?? offer.state));
         }
         header.append(title, renderPrice(offer.price));
         card.append(header);
 
-        if (itinerary) {
-            const route = el('div', 'offer-route');
-            const departure = el('p', 'offer-endpoint');
-            departure.append(el('span', 'offer-clock', itinerary.departure), el('span', 'offer-endpoint-label', 'Kalkış'));
-            const path = el('p', 'offer-path');
-            const line = el('span', 'offer-line');
-            line.setAttribute('aria-hidden', 'true');
-            path.append(el('span', 'offer-duration', itinerary.duration), line, el('span', 'offer-stops', itinerary.stops));
-            const arrival = el('p', 'offer-endpoint offer-endpoint-arrival');
-            const arrivalClock = el('span', 'offer-clock', itinerary.arrival);
-            if (itinerary.dayShift > 0) {
-                arrivalClock.append(el('span', 'offer-day-shift', ` +${itinerary.dayShift} gün`));
+        if (described.length > 0) {
+            described.forEach(({ label, itinerary }) => {
+                if (label) {
+                    card.append(el('p', 'offer-direction-label', label));
+                }
+                const route = el('div', 'offer-route');
+                const departure = el('p', 'offer-endpoint');
+                departure.append(el('span', 'offer-clock', itinerary.departure), el('span', 'offer-endpoint-label', 'Kalkış'));
+                const path = el('p', 'offer-path');
+                const line = el('span', 'offer-line');
+                line.setAttribute('aria-hidden', 'true');
+                path.append(el('span', 'offer-duration', itinerary.duration), line, el('span', 'offer-stops', itinerary.stops));
+                const arrival = el('p', 'offer-endpoint offer-endpoint-arrival');
+                const arrivalClock = el('span', 'offer-clock', itinerary.arrival);
+                if (itinerary.dayShift > 0) {
+                    arrivalClock.append(el('span', 'offer-day-shift', ` +${itinerary.dayShift} gün`));
+                }
+                arrival.append(arrivalClock, el('span', 'offer-endpoint-label', 'Varış'));
+                route.append(departure, path, arrival);
+                card.append(route, el('p', 'offer-date', itinerary.date));
+            });
+            if (offer.journey_type === 'ROUND_TRIP') {
+                // RULE-FLT-002-07: one offer, one total; nothing is priced or protected per direction.
+                card.append(el('p', 'summary-meta', 'Gidiş ve dönüş tek teklif ve tek toplam fiyattır; yön başına fiyat gösterilmez.'));
             }
-            arrival.append(arrivalClock, el('span', 'offer-endpoint-label', 'Varış'));
-            route.append(departure, path, arrival);
-            card.append(route, el('p', 'offer-date', itinerary.date));
         } else {
             card.append(el('p', 'summary-meta', 'Uçuş bölümü bilgisi yok.'));
         }
@@ -299,11 +335,20 @@
         details.open = expanded;
         details.append(el('summary', 'offer-details-toggle', 'Ayrıntıları gör'));
         const body = el('div', 'offer-details-body');
-        const components = describePrice(offer.price).components;
-        if (components.length > 0) {
-            body.append(el('p', 'summary-meta', `Bilinmeyen bileşenler: ${components.join(', ')}`));
+        const priceDescription = describePrice(offer.price);
+        const costScope = el('section', 'cost-breakdown');
+        costScope.append(el('h4', 'baggage-title', 'Maliyet kapsamı'));
+        if (priceDescription.components.length > 0) {
+            costScope.append(
+                el('p', 'summary-meta', 'Gösterilen tutar yalnız bilinen maliyetlerin alt sınırıdır.'),
+                el('p', 'summary-meta', `Bilinmeyen bileşenler: ${priceDescription.components.join(', ')}`),
+            );
+        } else if (offer.price?.completeness === 'COMPLETE') {
+            costScope.append(el('p', 'summary-meta', 'Sunulan maliyet kaydında bilinmeyen zorunlu kalem yok.'));
+        } else {
+            costScope.append(el('p', 'summary-meta', 'Maliyet kapsamı doğrulanamadı; kesin toplam gösterilmiyor.'));
         }
-        body.append(renderSegments(offer.segments), renderBaggage(offer.baggage));
+        body.append(costScope, renderSegments(offer), renderBaggage(offer.baggage));
         body.append(el('p', 'summary-meta', offer.expires_at ? `Teklif geçerliliği: ${formatDate(offer.expires_at)}` : 'Geçerlilik süresi bildirilmedi.'));
         body.append(renderSources(offer));
         if (detailUrl) {
@@ -436,7 +481,11 @@
             renderResults(job, offers);
             startButton.hidden = true;
             refreshButton.hidden = settled;
-            restartButton.hidden = !(job.status === 'FAILED' || job.status === 'EXPIRED');
+            restartButton.hidden = !(
+                job.status === 'FAILED'
+                || job.status === 'EXPIRED'
+                || (job.status === 'PARTIAL' && Boolean(job.error))
+            );
 
             return settled;
         };
@@ -513,6 +562,9 @@
                     body: JSON.stringify({ trip_request_id: root.dataset.tripRequestId }),
                 });
                 if (response.status !== 202 || !response.body?.search_id) {
+                    // A definitive HTTP response is not an interrupted request; do not auto-replay it after reload.
+                    storage.clear(storageKey);
+                    state = {};
                     showStatus(response.body?.error?.message_tr ?? 'Arama başlatılamadı. Lütfen yeniden deneyin.', 'danger');
                     startButton.disabled = false;
                     startButton.textContent = startLabel;
@@ -548,6 +600,10 @@
 
         if (state.searchId) {
             poll();
+        } else if (state.key) {
+            // The start response may have been lost after the durable job was created. Replaying the same key
+            // recovers the authoritative search_id without starting a second logical search.
+            start();
         }
     };
 
@@ -706,9 +762,21 @@
             let existing = null;
             try {
                 const response = await request(root.dataset.selectionUrl);
-                existing = response.ok ? response.body : null;
+                if (response.ok) {
+                    existing = response.body;
+                } else if (response.status !== 404) {
+                    status.textContent = response.body?.error?.message_tr ?? 'Mevcut uçuş seçiminiz kontrol edilemedi. Seçim yapılmadı; yeniden doğrulamayı tekrar deneyin.';
+                    content.replaceChildren(el('p', 'alert alert-warning', 'Mevcut seçim doğrulanmadan yeni uçuş kaydedilemez.'));
+                    box.hidden = false;
+
+                    return;
+                }
             } catch {
-                existing = null;
+                status.textContent = 'Mevcut uçuş seçiminiz kontrol edilemedi. Bağlantınızı kontrol edip yeniden doğrulamayı tekrar deneyin.';
+                content.replaceChildren(el('p', 'alert alert-warning', 'Mevcut seçim doğrulanmadan yeni uçuş kaydedilemez.'));
+                box.hidden = false;
+
+                return;
             }
             const sameOffer = existing?.offer?.provider_offer_id === offerId;
             // The client-only acknowledgement is replaced by the server-side selection when a TripRequest is known.
@@ -721,12 +789,17 @@
                 return;
             }
             const reconfirm = sameOffer && existing.status === 'RECONFIRMATION_REQUIRED';
+            const replacing = Boolean(existing?.offer) && !sameOffer;
             const label = reconfirm
                 ? 'Yeni fiyatı onayla'
-                : (outcome === 'changed' ? 'Yeni fiyatı kabul et ve bu uçuşu seç' : 'Bu uçuşu seç');
+                : (outcome === 'changed'
+                    ? (replacing ? 'Yeni fiyatı kabul et ve mevcut uçuşun yerine seç' : 'Yeni fiyatı kabul et ve bu uçuşu seç')
+                    : (replacing ? 'Mevcut uçuşun yerine bunu seç' : 'Bu uçuşu seç'));
             const intro = reconfirm
                 ? 'Seçtiğiniz uçuşun fiyatı veya koşulları değişti. Seçiminizin geçerli kalması için yeni değerleri onaylayın.'
-                : 'Bu uçuşu seyahat planınıza ekleyebilirsiniz. Rezervasyon veya ödeme yapılmaz.';
+                : (replacing
+                    ? 'Bu seçim mevcut uçuş seçiminizin yerine geçer. Rezervasyon veya ödeme yapılmaz.'
+                    : 'Bu uçuşu seyahat planınıza ekleyebilirsiniz. Rezervasyon veya ödeme yapılmaz.');
             const button = el('button', 'btn btn-primary', label);
             button.type = 'button';
             const key = newIdempotencyKey();

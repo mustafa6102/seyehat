@@ -61,6 +61,13 @@
                 // Unavailable storage only loses resumption after a reload.
             }
         },
+        remove: (key) => {
+            try {
+                window.sessionStorage.removeItem(key);
+            } catch {
+                // Unavailable storage only loses resumption after a reload.
+            }
+        },
     };
 
     // RULE-ACC-001-08: only a COMPLETE price is a total; PARTIAL shows the known lower bound and that fees are unknown.
@@ -86,10 +93,20 @@
         return cancellation?.verification_status === 'VERIFIED' || cancellation?.policy === 'UNKNOWN' || !cancellation ? text : `${text} (doğrulanmadı)`;
     };
     const STATES = {
-        UNVERIFIED: ['badge-neutral', 'Doğrulanmadı'],
+        UNVERIFIED: ['badge-unverified', 'Doğrulanmadı'],
         CURRENT: ['badge-success', 'Doğrulandı'],
         CHANGED: ['badge-warning', 'Koşullar değişti'],
         EXPIRED: ['badge-error', 'Süresi doldu'],
+    };
+    const describeChanges = (changes) => {
+        const labels = [
+            ['price_changed', 'Toplam fiyat'],
+            ['mandatory_fees_changed', 'Zorunlu ücretler veya vergiler'],
+            ['availability_changed', 'Oda veya tesis uygunluğu'],
+            ['cancellation_changed', 'İptal koşulu'],
+        ];
+
+        return labels.filter(([field]) => changes?.[field] === true).map(([, label]) => label);
     };
 
     const renderOffer = (offer) => {
@@ -131,6 +148,7 @@
     const storageKey = `accommodation-search:${root.dataset.tripRequestId}`;
     const pollInterval = Number(root.dataset.pollInterval) || 0;
     let pollTimer = null;
+    let selectedOfferId = null;
 
     const setStatus = (text, tone = '') => {
         status.className = `status-text${tone ? ` status-${tone}` : ''}`;
@@ -161,7 +179,9 @@
                     body: JSON.stringify(payload),
                 });
                 if (response.ok && response.body?.status === 'CURRENT') {
+                    selectedOfferId = response.body.offer?.offer_id ?? selectedOfferId;
                     container.replaceChildren(el('p', 'alert alert-success', 'Konaklama seyahat planınıza kaydedildi. Rezervasyon yapılmadı.'), planLink());
+                    await showSelection();
 
                     return;
                 }
@@ -199,13 +219,26 @@
         const actions = el('div', 'stack');
         if (offer.state === 'CURRENT' || offer.state === 'CHANGED') {
             if (offer.state === 'CHANGED') {
-                actions.append(el('p', 'alert alert-warning', 'Teklifin fiyatı, zorunlu ücretleri, uygunluğu veya iptal koşulu değişti. Yukarıdaki güncel bilgileri inceleyin.'));
+                actions.append(el('p', 'alert alert-warning', 'Teklifin kritik koşulları değişti. Güncel bilgileri inceleyip açıkça onaylamadan seçim değiştirilmez.'));
+                const changedFields = describeChanges(response.body.changes);
+                if (changedFields.length > 0) {
+                    const list = el('ul', 'facts');
+                    changedFields.forEach((field) => list.append(el('li', 'fact', `${field} değişti`)));
+                    actions.append(list);
+                }
             }
             const expected = offer.source?.verified_at;
             if (reconfirm) {
                 commit(actions, 'Yeni koşulları onayla', root.dataset.reconfirmUrl, 'POST', { expected_verified_at: expected });
             } else {
-                commit(actions, offer.state === 'CHANGED' ? 'Yeni koşulları kabul et ve bu konaklamayı seç' : 'Bu konaklamayı seç', root.dataset.selectionUrl, 'PUT', {
+                const replacing = selectedOfferId !== null && selectedOfferId !== offer.offer_id;
+                if (replacing) {
+                    actions.append(el('p', 'alert alert-warning', 'Bu seçim mevcut konaklama seçiminizin yerine geçer. Rezervasyon yapılmaz.'));
+                }
+                const selectLabel = offer.state === 'CHANGED'
+                    ? (replacing ? 'Yeni koşulları kabul et ve mevcut seçimin yerine geçir' : 'Yeni koşulları kabul et ve bu konaklamayı seç')
+                    : (replacing ? 'Mevcut konaklamanın yerine bunu seç' : 'Bu konaklamayı seç');
+                commit(actions, selectLabel, root.dataset.selectionUrl, 'PUT', {
                     offer_id: offer.offer_id,
                     expected_verified_at: expected,
                     accept_changed_offer: offer.state === 'CHANGED',
@@ -266,8 +299,22 @@
         try {
             const response = await request(root.dataset.pollUrl.replace('__SEARCH__', encodeURIComponent(searchId)));
             if (!response.ok || !response.body) {
-                setStatus(message(response.body, 'Arama durumu alınamadı.'), 'danger');
-                searchButton.disabled = false;
+                if (response.status === 401 || response.status === 403) {
+                    setStatus(message(response.body, 'Bu konaklama aramasını görüntüleme yetkiniz bulunmuyor.'), 'danger');
+                    refreshButton.hidden = true;
+                    searchButton.disabled = true;
+
+                    return;
+                }
+                setStatus(message(response.body, 'Arama durumu alınamadı. Mevcut aramayı yeniden kontrol edebilirsiniz.'), 'danger');
+                if (response.status === 404) {
+                    storage.remove(storageKey);
+                    refreshButton.hidden = true;
+                    searchButton.disabled = false;
+                } else {
+                    refreshButton.hidden = false;
+                    searchButton.disabled = true;
+                }
 
                 return;
             }
@@ -275,8 +322,9 @@
                 pollTimer = setTimeout(() => poll(searchId), pollInterval);
             }
         } catch {
-            setStatus('Arama durumu alınamadı. Bağlantınızı kontrol edin.', 'danger');
-            searchButton.disabled = false;
+            setStatus('Arama durumu alınamadı. Bağlantınızı kontrol edip mevcut aramayı yeniden kontrol edin.', 'danger');
+            refreshButton.hidden = false;
+            searchButton.disabled = true;
         }
     };
 
@@ -285,7 +333,9 @@
         searchButton.disabled = true;
         results.replaceChildren();
         setStatus('Konaklama araması başlatılıyor…');
-        const key = newKey();
+        const pending = storage.read(storageKey);
+        const key = pending?.searchId ? newKey() : (pending?.key ?? newKey());
+        storage.write(storageKey, { key, searchId: null });
         try {
             const response = await request(root.dataset.startUrl, {
                 method: 'POST',
@@ -293,6 +343,7 @@
                 body: JSON.stringify({ trip_request_id: root.dataset.tripRequestId }),
             });
             if (response.status !== 202 || !response.body?.search_id) {
+                storage.remove(storageKey);
                 setStatus(message(response.body, 'Konaklama araması başlatılamadı.'), 'danger');
                 searchButton.disabled = false;
 
@@ -306,20 +357,44 @@
         }
     };
 
+    const showSelectionError = (text) => {
+        const content = el('div', 'stack');
+        const retry = el('button', 'btn btn-secondary', 'Seçimi yeniden kontrol et');
+        retry.type = 'button';
+        retry.addEventListener('click', showSelection);
+        content.append(el('p', 'alert alert-warning', text), retry);
+        selectionBox.replaceChildren(content);
+        selectionBox.hidden = false;
+    };
+
     // OP-getTripRequestAccommodationSelection: the persisted selection is authoritative, not browser state.
     const showSelection = async () => {
         let response;
         try {
             response = await request(root.dataset.selectionUrl);
         } catch {
+            showSelectionError('Mevcut konaklama seçiminiz alınamadı. Bağlantınızı kontrol edip yeniden deneyin.');
+
             return;
         }
-        if (!response.ok || !response.body?.offer) {
-            selectionBox.hidden = true;
+        if (!response.ok) {
+            if (response.status === 404) {
+                selectedOfferId = null;
+                selectionBox.hidden = true;
+
+                return;
+            }
+            showSelectionError(message(response.body, 'Mevcut konaklama seçiminiz alınamadı. Yeniden deneyin.'));
+
+            return;
+        }
+        if (!response.body?.offer) {
+            showSelectionError('Sunucudan geçerli bir konaklama seçimi alınamadı. Yeni seçim yapılmadı.');
 
             return;
         }
         const selection = response.body;
+        selectedOfferId = selection.offer.offer_id;
         const content = el('div', 'stack');
         if (selection.status === 'CURRENT') {
             content.append(el('p', 'alert alert-success', 'Seçili konaklamanız. Başka bir konaklama seçerseniz bu seçimin yerine geçer.'), renderOffer(selection.offer));
@@ -350,5 +425,8 @@
     const resume = storage.read(storageKey);
     if (resume?.searchId) {
         poll(resume.searchId);
+    } else if (resume?.key) {
+        // Reuse the durable idempotency key when the start response was lost before search_id reached the browser.
+        start();
     }
 })();

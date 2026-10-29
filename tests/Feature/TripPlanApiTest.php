@@ -81,7 +81,8 @@ final class TripPlanApiTest extends TestCase
     public function reading_without_a_trip_returns_null_plan_and_creates_nothing(): void
     {
         $this->plan($this->owned)->assertOk()->assertHeaderMissing('ETag')
-            ->assertExactJson(['trip_request_id' => $this->owned, 'trip' => null, 'revision' => null]);
+            ->assertExactJson(['trip_request_id' => $this->owned, 'trip' => null, 'revision' => null,
+                'day_frame' => ['status' => 'UNAVAILABLE', 'iana_timezone' => null, 'days' => [], 'unavailable_reason' => 'NOT_ROUND_TRIP']]);
         $this->assertNothingPersisted();
     }
 
@@ -109,9 +110,11 @@ final class TripPlanApiTest extends TestCase
         $revision = $response->json('revision');
         self::assertSame(1, $revision['version']);
         self::assertSame('CURRENT', $revision['status']);
-        self::assertSame(['base_version' => null, 'added_item_ids' => [$revision['items'][0]['item_id']], 'removed_item_ids' => [], 'reason_code' => 'RC-DECISION-TRANSITION-APPLIED'], $revision['change']);
+        self::assertSame(['base_version' => null, 'added_item_ids' => [$revision['items'][0]['item_id']], 'removed_item_ids' => [], 'moved_item_ids' => [], 'updated_item_ids' => [], 'reason_code' => 'RC-DECISION-TRANSITION-APPLIED'], $revision['change']);
         $item = $revision['items'][0];
-        self::assertSame(['item_id', 'item_type', 'constraint_type', 'poi_snapshot'], array_keys($item));
+        self::assertSame(['item_id', 'item_type', 'constraint_type', 'poi_snapshot', 'day_assignment', 'planning_duration'], array_keys($item));
+        self::assertNull($item['day_assignment']);
+        self::assertNull($item['planning_duration']);
         self::assertSame(['POI', 'FLEXIBLE'], [$item['item_type'], $item['constraint_type']]);
         // The snapshot is the stored canonical SCH-Poi unchanged: UNKNOWN stays UNKNOWN, UNVERIFIED stays UNVERIFIED.
         self::assertSame($this->poi('poi-1', 'Kolezyum'), $item['poi_snapshot']);
@@ -172,7 +175,7 @@ final class TripPlanApiTest extends TestCase
 
         $removed = $this->remove($this->owned, $a, 'c', '"2"')->assertOk()->assertHeader('ETag', '"3"');
         self::assertSame([$b], array_column($removed->json('revision.items'), 'item_id'));
-        self::assertSame(['base_version' => 2, 'added_item_ids' => [], 'removed_item_ids' => [$a], 'reason_code' => 'RC-DECISION-TRANSITION-APPLIED'], $removed->json('revision.change'));
+        self::assertSame(['base_version' => 2, 'added_item_ids' => [], 'removed_item_ids' => [$a], 'moved_item_ids' => [], 'updated_item_ids' => [], 'reason_code' => 'RC-DECISION-TRANSITION-APPLIED'], $removed->json('revision.change'));
         // Earlier revisions are unchanged and traceable.
         self::assertCount(2, json_decode(DB::table('plan_revisions')->where('version', 2)->value('items_json'), true));
 

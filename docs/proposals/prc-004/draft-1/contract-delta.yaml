@@ -1,0 +1,128 @@
+proposal_version: prc-004-draft-1
+status: PROPOSED_NON_NORMATIVE
+base_contract: 3.21.0
+target_contract_version: OPEN
+recorded_at: 2026-10-25
+active_contract_changes: []
+architecture:
+  - id: ADR-009
+    status: ACCEPTED
+    decision: MySQL 8
+    source: registry/v3.3/decisions.yaml
+  - id: OD-013
+    status: OPEN
+    subject: retention_deletion_privacy
+requirements:
+  approved_existing: [PRC-004, RULE-PRC-004-01, RULE-PRC-004-02, RULE-PRC-004-03, FR-PRC-004-01, AC-PRC-004-01, AC-PRC-004-02, AC-PRC-004-03, TS-PRC-004-01, TS-PRC-004-02, TS-PRC-004-03, NFR-AUD-001]
+user_selected_policy_proposals:
+  - id: OD-PRC-001
+    status: USER_SELECTED_PROPOSAL
+    selection:
+      product_scope: [FLIGHT]
+      match: EXACT
+      dimensions: [canonical_route, canonical_fare_product, canonical_baggage, currency]
+      missing_dimension_result: NON_COMPARABLE
+    maps_to: [CFG-PRC-COHORT-MAPPING-PROPOSED, SCH-PriceSnapshot-PROPOSED, RULE-PRC-004-03, AC-PRC-004-01, AC-PRC-004-02, TS-PRC-004-01, TS-PRC-004-02]
+    approval_required: [Product, Data]
+  - id: OD-PRC-002
+    status: USER_SELECTED_PROPOSAL
+    selection:
+      minimum_comparable_snapshot_count: 20
+      minimum_observation_span: {value: 14, unit: CALENDAR_DAY}
+    maps_to: [CFG-PRC-SUFFICIENCY-PROPOSED, SCH-PriceHistoryEvaluation-PROPOSED, RULE-PRC-004-01, RULE-PRC-004-03, AC-PRC-004-01, AC-PRC-004-02, TS-PRC-004-01, TS-PRC-004-02]
+    approval_required: [Product, Data]
+  - id: OD-PRC-003
+    status: USER_SELECTED_PROPOSAL
+    selection:
+      method: MEDIAN_MAD_MODIFIED_Z_SCORE
+      threshold: 3.5
+      mad_zero_behavior: NO_AUTOMATIC_EXCLUSION
+    maps_to: [CFG-PRC-OUTLIER-PROPOSED, SCH-PriceHistoryEvaluation-PROPOSED, RULE-PRC-004-02, RULE-PRC-004-03, AC-PRC-004-03, TS-PRC-004-03]
+    approval_required: [Product, Data]
+  - id: OD-PRC-004
+    status: USER_SELECTED_PROPOSAL
+    selection:
+      operation: OWNER_ONLY_READ
+      ui_language: tr
+      excluded: [notifications, target_prices, guarantees]
+    maps_to: [OP-getTripRequestPriceHistoryEvaluation-PROPOSED, PRC-PRICE-HISTORY-OWNER-PROPOSED, SCH-PriceHistoryEvaluation-PROPOSED, PRC-EVALUATION-LIFECYCLE-PROPOSED, RC-AUTHN-REQUIRED, RC-AUTHZ-DENIED, RC-RESOURCE-NOT-FOUND]
+    approval_required: [Product, Security]
+  - id: OD-PRC-005
+    status: USER_SELECTED_PROPOSAL
+    selection:
+      notification_independent_initial_slice: true
+    maps_to: [PRC-004, OP-getTripRequestPriceHistoryEvaluation-PROPOSED]
+    approval_required: [Product]
+  - id: OD-013
+    status: USER_SELECTED_PROPOSAL_PENDING_FORMAL_DECISION
+    selection:
+      retention: 13 months from captured_at or approved TripRequest deletion, whichever occurs first
+    maps_to: [SCH-PriceSnapshot-PROPOSED, PRC-PRICE-SNAPSHOT-LIFECYCLE-PROPOSED, FR-PRC-004-01, NFR-AUD-001]
+    approval_required: [Legal, Security]
+proposed_contract_records:
+  config:
+    - {id: CFG-PRC-COHORT-MAPPING-PROPOSED, status: PROPOSED, owner: OPEN, version: OPEN, effective_at: OPEN}
+    - {id: CFG-PRC-SUFFICIENCY-PROPOSED, status: PROPOSED, owner: OPEN, version: OPEN, effective_at: OPEN}
+    - {id: CFG-PRC-OUTLIER-PROPOSED, status: PROPOSED, owner: OPEN, version: OPEN, effective_at: OPEN}
+  schemas:
+    - {id: SCH-PriceSnapshot-PROPOSED, status: PROPOSED, scope: FLIGHT_ONLY}
+    - {id: SCH-PriceHistoryEvaluation-PROPOSED, status: PROPOSED, scope: OWNER_READ_MODEL}
+  operation:
+    id: OP-getTripRequestPriceHistoryEvaluation-PROPOSED
+    status: PROPOSED
+    method: GET
+    path: /trip-requests/{tripRequestId}/price-history/{productType}/{offerId}
+  permission:
+    id: PRC-PRICE-HISTORY-OWNER-PROPOSED
+    status: PROPOSED
+    evaluation_order: [AUTHN_401, RESOURCE_404, OWNER_403]
+  lifecycle:
+    - {id: PRC-PRICE-SNAPSHOT-LIFECYCLE-PROPOSED, status: PROPOSED, semantics: [IMMUTABLE, APPEND_ONLY, PROVENANCE_BACKED, IDEMPOTENT]}
+    - {id: PRC-EVALUATION-LIFECYCLE-PROPOSED, status: PROPOSED, states: [CONFIGURATION_UNRESOLVED, INSUFFICIENT_DATA, AVAILABLE]}
+  reasons:
+    proposed: [RC-PRC-COHORT-MAPPING-UNRESOLVED, RC-PRC-SUFFICIENCY-CONFIG-UNRESOLVED, RC-PRC-OUTLIER-CONFIG-UNRESOLVED, RC-PRC-HISTORY-INSUFFICIENT]
+    reused_active_errors: [RC-AUTHN-REQUIRED, RC-AUTHZ-DENIED, RC-RESOURCE-NOT-FOUND]
+open_contract_details:
+  canonical_fields:
+    - canonical route identity and direction field references
+    - canonical fare-product identifier and normalization authority
+    - canonical baggage identity including unit and applicability semantics
+    - whether comparison currency is observed currency only or an approved FX-normalized field
+  outlier_determinism:
+    - modified-z scale constant and precision
+    - strict greater-than versus greater-than-or-equal threshold comparison
+    - median convention for even-sized cohorts
+    - whether sufficiency count and span are measured before or after exclusion
+  snapshot_creation:
+    - approved source operation and capture trigger
+    - idempotency key/fingerprint fields and conflict behavior
+    - provenance field references and provider-offer identity lifetime
+  retention_and_privacy:
+    - authoritative TripRequest deletion event/state
+    - month-boundary/timezone calculation
+    - deletion execution and verification responsibility
+    - legal hold, audit exception and crypto-shredding interaction
+  api:
+    - active target contract version
+    - productType path handling when only FLIGHT is supported
+    - exact 200 response revision including comparable and excluded snapshot counts
+governance_metadata_required:
+  each_policy: [accountable_owner, policy_version, effective_at]
+  approvals:
+    Product: OPEN
+    Data: OPEN
+    Legal: OPEN
+    Security: OPEN
+activation_gates:
+  AC-PRC-004-01:
+    status: BLOCKED
+    requires: [active operation, active response schema, active permission, active reason/lifecycle records, approved cohort mapping, approved sufficiency policy metadata]
+  AC-PRC-004-02:
+    status: BLOCKED
+    requires: [AC-PRC-004-01 gate, approved snapshot schema/lifecycle/provenance/idempotency, approved canonical field mapping, approved persistence and OD-013 treatment]
+  AC-PRC-004-03:
+    status: BLOCKED
+    requires: [AC-PRC-004-02 gate, approved deterministic outlier details, auditable included/excluded counts]
+manual_sql:
+  status: NOT_PREPARED
+  reason: SCH-PriceSnapshot-PROPOSED and OD-013 retention contract are not approved/active

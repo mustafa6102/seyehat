@@ -1,0 +1,23 @@
+version: 3.21.0
+inherits: ../v3.20/story_overrides.yaml
+overrides:
+  - id: DAY-001
+    phase: M3
+    implementation_scope: PARTIAL_EVIDENCE_POLICY_ONLY
+    semantics_changed: false
+    preserved_refs:
+      acceptance_criteria: [AC-DAY-001-03]
+      rules: [RULE-DAY-001-03]
+    clarification: >-
+      OD-031 muhafazakâr kanıt politikası onaylıdır; fakat feasibility sonuç sözleşmesi ve gate operasyonu yoktur.
+      ItineraryItem.feasibility_status NOT_EVALUATED kalır ve AC-DAY-001-03 tamamlanmış sayılmaz.
+    dependencies: [OD-031, OD-032, OD-033, OD-034, OD-035]
+  - id: POI-001
+    phase: M3
+    semantics_changed: false
+    preserved_refs:
+      rules: [RULE-POI-001-02, RULE-POI-001-06]
+    clarification: >-
+      Missing/UNVERIFIED/STALE/EXPIRED opening-hours veya availability kanıtı FEASIBLE sonucu üretemez; mevcut Türkçe
+      kanıt gösterimi değişmez. Tam uygulanabilirlik DAY-001 gate sözleşmesine bağlıdır.
+    dependencies: [OD-031, OD-032, OD-033, OD-034, OD-035]

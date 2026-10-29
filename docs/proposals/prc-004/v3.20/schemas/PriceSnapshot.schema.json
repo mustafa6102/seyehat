@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:proposal:v3.20:PriceSnapshot",
+  "title": "PriceSnapshot",
+  "description": "NON-NORMATIVE proposal. Immutable observed price evidence; it does not itself assert cohort comparability.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "snapshot_id": {"type": "string", "minLength": 1, "description": "Opaque server identifier."},
+    "product_type": {"type": "string", "enum": ["FLIGHT", "ACCOMMODATION"]},
+    "source_offer_id": {"type": "string", "minLength": 1},
+    "price": {"$ref": "../../../../../contracts/v3.3/schemas/DerivedMoney.schema.json"},
+    "observed_dimensions": {
+      "oneOf": [
+        {"$ref": "#/$defs/flight_dimensions"},
+        {"$ref": "#/$defs/accommodation_dimensions"}
+      ]
+    },
+    "source": {"$ref": "#/$defs/source"},
+    "fetched_at": {"type": "string", "format": "date-time"},
+    "captured_at": {"type": "string", "format": "date-time"},
+    "schema_version": {"type": "string", "const": "proposal-v3.20"}
+  },
+  "required": ["snapshot_id", "product_type", "source_offer_id", "price", "observed_dimensions", "source", "fetched_at", "captured_at", "schema_version"],
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider_id": {"type": "string", "minLength": 1},
+        "provider_offer_id": {"type": "string", "minLength": 1},
+        "verified_at": {"type": ["string", "null"], "format": "date-time"}
+      },
+      "required": ["provider_id", "provider_offer_id", "verified_at"]
+    },
+    "flight_dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {"const": "FLIGHT"},
+        "segments": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "../../../../../contracts/v3.4/schemas/FlightOffer.schema.json#/$defs/flight_segment"}
+        },
+        "baggage": {
+          "oneOf": [
+            {"$ref": "../../../../../contracts/v3.3/schemas/BaggageAllowance.schema.json"},
+            {"type": "null"}
+          ]
+        },
+        "fare_conditions": {"$ref": "../../../../../contracts/v3.3/schemas/FareConditionSnapshot.schema.json"},
+        "currency": {"type": "string", "pattern": "^[A-Z]{3}$"}
+      },
+      "required": ["type", "segments", "baggage", "fare_conditions", "currency"],
+      "x-cohort-readiness": "BLOCKED: route LocationRef and canonical fare identity are absent"
+    },
+    "accommodation_dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {"const": "ACCOMMODATION"},
+        "property_id": {"type": "string", "minLength": 1},
+        "check_in_date": {"type": "string", "format": "date"},
+        "check_out_date": {"type": "string", "format": "date"},
+        "room_description": {"type": ["string", "null"]},
+        "cancellation": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "policy": {"type": "string", "enum": ["REFUNDABLE", "PARTIALLY_REFUNDABLE", "NON_REFUNDABLE", "UNKNOWN"]},
+            "free_cancellation_until": {"type": ["string", "null"], "format": "date-time"},
+            "verification_status": {"type": "string", "enum": ["VERIFIED", "UNVERIFIED"]}
+          },
+          "required": ["policy", "free_cancellation_until", "verification_status"]
+        },
+        "currency": {"type": "string", "pattern": "^[A-Z]{3}$"}
+      },
+      "required": ["type", "property_id", "check_in_date", "check_out_date", "room_description", "cancellation", "currency"],
+      "x-cohort-readiness": "BLOCKED: canonical room/rate-plan and occupancy identifiers are absent"
+    }
+  },
+  "x-contract-id": "SCH-PriceSnapshot-PROPOSED",
+  "x-version": "proposal-v3.20",
+  "x-status": "PROPOSED",
+  "x-requirement-refs": ["PRC-004", "FR-PRC-004-01", "NFR-AUD-001"]
+}

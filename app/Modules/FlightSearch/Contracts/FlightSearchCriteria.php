@@ -87,17 +87,14 @@ final readonly class FlightSearchCriteria
     }
 
     /**
-     * OD-022 (v3.11 remaining_open, blocks_development "round-trip and flexible-date provider search"): Turkish reason
-     * why this journey cannot be searched with any provider yet, or null. ROUND_TRIP: the canonical FlightOffer has no
-     * slice/direction structure, so a return journey cannot be represented. FLEXIBLE: no provider date selection is
-     * defined. Nothing is converted (no split into one-way searches, no date picked from a range).
+     * OD-022 (v3.23 remaining_open "FLEXIBLE date provider search"): Turkish reason why this journey cannot be searched
+     * with any provider yet, or null. EXACT/EXACT ROUND_TRIP is searchable since v3.23 (D1) as one multi-slice request.
+     * FLEXIBLE: no provider date selection is defined. Nothing is converted (no split into one-way searches, no date
+     * picked from a range).
      */
     public function journeyBlockerTr(): ?string
     {
         $reasons = [];
-        if ($this->journeyType === 'ROUND_TRIP') {
-            $reasons[] = 'Gidiş-dönüş uçuş araması henüz yapılamıyor: uçuş teklifleri gidiş ve dönüş yönlerini ayrı gösterecek yapıya henüz sahip değil.';
-        }
         foreach ([$this->outboundDate, $this->returnDate] as $date) {
             if (($date['type'] ?? null) === 'FLEXIBLE') {
                 $reasons[] = 'Esnek tarih aralığıyla uçuş araması henüz yapılamıyor; aralıktan bir tarih seçilmez.';

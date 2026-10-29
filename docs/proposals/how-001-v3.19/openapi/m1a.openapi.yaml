@@ -1,0 +1,59 @@
+openapi: 3.1.0
+info:
+  title: HOW-001 proposal - NON-NORMATIVE
+  version: 3.19.0-draft
+servers: []
+x-status: DRAFT_NON_NORMATIVE
+x-inherits: contracts/v3.18/openapi/m1a.openapi.yaml
+paths:
+  /trip-requests/{tripRequestId}/plan/items/{itemId}/guide:
+    get:
+      operationId: getTripPlanItemGuide
+      security: [{bearerAuth: []}]
+      x-contract-id: OP-getTripPlanItemGuide
+      x-status: PROPOSED
+      x-requirement-refs: [HOW-001, FR-HOW-001-01, RULE-HOW-001-01, RULE-HOW-001-02, RULE-HOW-001-03, AC-HOW-001-01, AC-HOW-001-02]
+      x-open-decisions: [OD-HOW-001, OD-HOW-002, OD-HOW-003, OD-HOW-005, OD-HOW-006, OD-HOW-007, OD-HOW-008, OD-HOW-010, OD-HOW-011]
+      description: CURRENT PlanRevision içindeki öğe için yan etkisiz, Türkçe ve evidence-slot tabanlı rehber okuması önerisi.
+      parameters:
+        - {name: tripRequestId, in: path, required: true, schema: {type: string}}
+        - {name: itemId, in: path, required: true, schema: {type: string}}
+        - {name: If-Match, in: header, required: true, schema: {type: string}, description: 'CURRENT PlanRevision: "<version>".'}
+      responses:
+        '200': {description: Rehber, content: {application/json: {schema: {$ref: ../schemas/ContextualGuide.schema.json}}}}
+        '401': {description: RC-AUTHN-REQUIRED}
+        '403': {description: RC-AUTHZ-DENIED}
+        '404': {description: RC-RESOURCE-NOT-FOUND}
+        '409': {description: RC-CONFLICT-REVISION-STALE}
+        '422': {description: RC-HOW-CONTEXT-UNSUPPORTED}
+  /trip-requests/{tripRequestId}/plan/items/{itemId}/guide/refresh:
+    post:
+      operationId: refreshTripPlanItemGuide
+      security: [{bearerAuth: []}]
+      x-contract-id: OP-refreshTripPlanItemGuide
+      x-status: PROPOSED
+      x-requirement-refs: [HOW-001, FR-HOW-001-02, AC-HOW-001-03]
+      x-open-decisions: [OD-HOW-003, OD-HOW-004, OD-HOW-005, OD-HOW-007, OD-HOW-008, OD-HOW-009, OD-HOW-010]
+      description: >-
+        Yalnız desteklenen canonical source reverify işlemlerini çağırır ve ardından rehberi yeniden hesaplar. HOW kaydı veya
+        PlanRevision oluşturmaz; kaynağın VerificationStatus anlamını değiştirmez.
+      parameters:
+        - {name: tripRequestId, in: path, required: true, schema: {type: string}}
+        - {name: itemId, in: path, required: true, schema: {type: string}}
+        - {name: If-Match, in: header, required: true, schema: {type: string}}
+        - {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1, maxLength: 255}}
+      responses:
+        '200': {description: Refresh denendi; güncel veya STALE etiketli rehber, content: {application/json: {schema: {$ref: ../schemas/ContextualGuide.schema.json}}}}
+        '401': {description: RC-AUTHN-REQUIRED}
+        '403': {description: RC-AUTHZ-DENIED}
+        '404': {description: RC-RESOURCE-NOT-FOUND}
+        '409': {description: RC-CONFLICT-REVISION-STALE veya RC-CONFLICT-IDEMPOTENCY-KEY}
+        '422': {description: RC-HOW-CONTEXT-UNSUPPORTED}
+        '503': {description: RC-HOW-REVERIFY-UNAVAILABLE; mevcut kanıt STALE olarak döndürülebilir davranışı onaya bağlıdır}
+x-web-channel:
+  status: PROPOSED
+  decision_ref: OD-HOW-010
+  paths:
+    - GET /web-api/v1/trip-requests/{tripRequestId}/plan/items/{itemId}/guide
+    - POST /web-api/v1/trip-requests/{tripRequestId}/plan/items/{itemId}/guide/refresh
+  note: OD-028 modeli; session principal, POST için CSRF, tarayıcıya bearer token verilmez.

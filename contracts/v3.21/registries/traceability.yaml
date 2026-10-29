@@ -1,0 +1,13 @@
+version: 3.21.0
+inherits: ../../v3.20/registries/traceability.yaml
+traceability:
+  - requirement: RULE-POI-001-02
+    artifacts: [registry:od_impact.OD-031, schema:v3.15/Poi.schema.json]
+    note: Yetersiz veya doğrulanmamış kanıt uygulanabilirlik iddiası üretemez.
+  - requirement: RULE-POI-001-06
+    artifacts: [registry:od_impact.OD-031, schema:v3.15/Poi.schema.json]
+    note: POI ancak yeterli doğrulanmış kanıt ve ileride onaylanacak tam DAY gate ile uygulanabilir sayılabilir.
+  - requirement: AC-DAY-001-03
+    artifacts: [registry:od_impact.OD-031]
+    open_decisions: [OD-032, OD-033, OD-034, OD-035]
+    note: Politika onaylıdır; sonuç sözleşmesi ve tam gate olmadığı için AC tamamlanmış değildir.

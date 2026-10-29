@@ -1,0 +1,93 @@
+{
+  "version": "3.22.0",
+  "inherits": "../../v3.19/registries/reason_error.yaml",
+  "records": [
+    {
+      "id": "RC-CONNECTION-UNPROTECTED",
+      "machine_code": "CONNECTION_UNPROTECTED",
+      "kind": "DECISION_REASON",
+      "http_status": null,
+      "status": "ACTIVE",
+      "default_message_tr": "Ba?lant? ayr? biletlerden olu?uyor.",
+      "pii_safe_logging": true
+    },
+    {
+      "id": "RC-PROTECTION-UNKNOWN",
+      "machine_code": "PROTECTION_UNKNOWN",
+      "kind": "DECISION_REASON",
+      "http_status": null,
+      "status": "ACTIVE",
+      "default_message_tr": "Ba?lant? korumas? do?rulanamad?.",
+      "pii_safe_logging": true
+    },
+    {
+      "id": "RC-BAGGAGE-RECLAIM-REQUIRED",
+      "machine_code": "BAGGAGE_RECLAIM_REQUIRED",
+      "kind": "DECISION_REASON",
+      "http_status": null,
+      "status": "ACTIVE",
+      "default_message_tr": "Bagaj? teslim al?p yeniden vermeniz gerekiyor.",
+      "pii_safe_logging": true
+    },
+    {
+      "id": "RC-TERMINAL-TRANSFER-REQUIRED",
+      "machine_code": "TERMINAL_TRANSFER_REQUIRED",
+      "kind": "DECISION_REASON",
+      "http_status": null,
+      "status": "ACTIVE",
+      "default_message_tr": "Terminal de?i?imi gerekiyor.",
+      "pii_safe_logging": true
+    },
+    {
+      "id": "RC-AIRPORT-TRANSFER-REQUIRED",
+      "machine_code": "AIRPORT_TRANSFER_REQUIRED",
+      "kind": "DECISION_REASON",
+      "http_status": null,
+      "status": "ACTIVE",
+      "default_message_tr": "Havaliman? de?i?imi gerekiyor.",
+      "pii_safe_logging": true
+    },
+    {
+      "id": "RC-CHECK-IN-CUTOFF-MISSED",
+      "machine_code": "CHECK_IN_CUTOFF_MISSED",
+      "kind": "DECISION_REASON",
+      "http_status": null,
+      "status": "ACTIVE",
+      "default_message_tr": "Son check-in saatine yeti?ilemiyor.",
+      "pii_safe_logging": true
+    },
+    {
+      "id": "RC-TRANSFER-WINDOW-INSUFFICIENT",
+      "machine_code": "TRANSFER_WINDOW_INSUFFICIENT",
+      "kind": "DECISION_REASON",
+      "http_status": null,
+      "status": "ACTIVE",
+      "default_message_tr": "Ba?lant? i?in yeterli s?re yok.",
+      "pii_safe_logging": true
+    },
+    {
+      "id": "RC-EVIDENCE-INSUFFICIENT",
+      "machine_code": "EVIDENCE_INSUFFICIENT",
+      "kind": "DECISION_REASON",
+      "http_status": null,
+      "status": "ACTIVE",
+      "default_message_tr": "Bu bilgi do?rulanamad?.",
+      "pii_safe_logging": true
+    },
+    {
+      "id": "RC-TRANSFER-DURATION-ESTIMATED",
+      "machine_code": "TRANSFER_DURATION_ESTIMATED",
+      "kind": "DECISION_REASON",
+      "http_status": null,
+      "status": "ACTIVE",
+      "default_message_tr": "Ba?lant? s?resi tahminidir.",
+      "pii_safe_logging": true
+    }
+  ],
+  "reused_errors": [
+    "RC-VALIDATION-SCHEMA",
+    "RC-AUTHN-REQUIRED",
+    "RC-AUTHZ-DENIED",
+    "RC-RESOURCE-NOT-FOUND"
+  ]
+}

@@ -8,14 +8,69 @@
 @endpush
 
 @section('content')
+    @php
+        $journeyCategories = config('frontend_screens.categories');
+    @endphp
+    <section class="home-dashboard" aria-labelledby="home-title">
+        <div class="home-dashboard-copy">
+            <p class="eyebrow">Seyahat merkezi</p>
+            <h1 id="home-title">Planınıza kaldığınız yerden devam edin</h1>
+            <p>Yeni bir rota oluşturun, mevcut seyahatinizi açın veya yolculuğun her adımında hangi seçeneklerin bulunduğunu keşfedin.</p>
+            <div class="home-actions">
+                <a class="btn btn-secondary" href="#yeni-plan">Yeni plan oluştur</a>
+                <a class="btn btn-secondary" href="{{ route('trip-requests.mine') }}">Seyahatlerime git</a>
+            </div>
+        </div>
+
+        <div class="home-recent" aria-labelledby="recent-title">
+            <h2 id="recent-title">Son seyahatler</h2>
+            @if (($recentTrips ?? []) === [])
+                <p>Bu oturumda henüz bir seyahat yok. Aşağıdaki formdan ilk planınızı başlatabilirsiniz.</p>
+            @else
+                <ul class="home-recent-list">
+                    @foreach ($recentTrips as $recentTrip)
+                        <li>
+                            <a href="{{ route('trip-plan.show', ['tripRequestId' => $recentTrip['id']]) }}">
+                                <strong>{{ $recentTrip['origin'] }} → {{ $recentTrip['destination'] }}</strong>
+                                <span>{{ $recentTrip['status'] === 'SEARCHABLE' ? 'Planlamaya hazır' : 'Taslak' }} · Plana devam et</span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </div>
+    </section>
+
+    <section class="journey-shortcuts" aria-labelledby="journey-shortcuts-title">
+        <div class="section-heading-row">
+            <div>
+                <p class="eyebrow">Yolculuğun her adımı</p>
+                <h2 id="journey-shortcuts-title">Ne yapmak istiyorsunuz?</h2>
+            </div>
+            <a class="btn btn-link" href="{{ route('journey.index') }}">Tüm yolculuk rehberi</a>
+        </div>
+        <ul class="journey-category-grid">
+            @foreach ($journeyCategories as $categoryId => $category)
+                <li>
+                    <a class="journey-category-card" href="{{ route('journey.category', ['categoryId' => $categoryId]) }}">
+                        <span class="icon-tile"><x-ui.icon :name="$category['icon']" /></span>
+                        <strong>{{ $category['title'] }}</strong>
+                        <span>{{ $category['description'] }}</span>
+                    </a>
+                </li>
+            @endforeach
+        </ul>
+    </section>
+
+    <div id="yeni-plan" class="anchor-target"></div>
     @include('partials.flow-steps', ['current' => 'request'])
 
-    <section class="intro" aria-labelledby="page-title">
-        <h1 id="page-title">Yolculuğunuzu planlayın</h1>
+    <section class="intro" aria-labelledby="new-plan-title">
+        <h2 id="new-plan-title">Yolculuğunuzu planlayın</h2>
         <p>Nereden nereye ve ne zaman gideceğinizi söyleyin; uçuş seçeneklerini sizin için arayalım.</p>
     </section>
 
-    <section class="planner-panel" aria-labelledby="page-title">
+    <section class="planner-panel" aria-labelledby="new-plan-title">
         @if ($errors->any())
             <div class="error-summary" role="alert" tabindex="-1" data-error-summary>
                 <h2>Bilgileri kontrol edin</h2>

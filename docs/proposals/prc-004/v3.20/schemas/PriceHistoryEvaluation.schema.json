@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:proposal:v3.20:PriceHistoryEvaluation",
+  "title": "PriceHistoryEvaluation",
+  "description": "NON-NORMATIVE owner-visible read model. It never contains target, recommended or guaranteed prices.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trip_request_id": {"type": "string", "minLength": 1},
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "product_type": {"type": "string", "enum": ["FLIGHT", "ACCOMMODATION"]},
+        "offer_id": {"type": "string", "minLength": 1}
+      },
+      "required": ["product_type", "offer_id"]
+    },
+    "status": {"type": "string", "enum": ["CONFIGURATION_UNRESOLVED", "INSUFFICIENT_DATA", "AVAILABLE"]},
+    "summary": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "snapshot_count": {"type": "integer", "minimum": 0},
+            "range_start": {"type": "string", "format": "date-time"},
+            "range_end": {"type": "string", "format": "date-time"},
+            "sources": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+          },
+          "required": ["snapshot_count", "range_start", "range_end", "sources"]
+        }
+      ]
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cohort_mapping_version": {"type": ["string", "null"]},
+        "sufficiency_config_version": {"type": ["string", "null"]},
+        "outlier_config_version": {"type": ["string", "null"]}
+      },
+      "required": ["cohort_mapping_version", "sufficiency_config_version", "outlier_config_version"]
+    },
+    "reason_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "RC-PRC-COHORT-MAPPING-UNRESOLVED",
+          "RC-PRC-SUFFICIENCY-CONFIG-UNRESOLVED",
+          "RC-PRC-OUTLIER-CONFIG-UNRESOLVED",
+          "RC-PRC-HISTORY-INSUFFICIENT"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "evaluated_at": {"type": "string", "format": "date-time"}
+  },
+  "required": ["trip_request_id", "subject", "status", "summary", "policy", "reason_codes", "evaluated_at"],
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "CONFIGURATION_UNRESOLVED"}}, "required": ["status"]},
+      "then": {"properties": {"summary": {"type": "null"}}, "x-rule": "No grouping or evaluation is performed."}
+    },
+    {
+      "if": {"properties": {"status": {"const": "AVAILABLE"}}, "required": ["status"]},
+      "then": {"properties": {"summary": {"type": "object"}}}
+    }
+  ],
+  "x-contract-id": "SCH-PriceHistoryEvaluation-PROPOSED",
+  "x-version": "proposal-v3.20",
+  "x-status": "PROPOSED",
+  "x-requirement-refs": ["PRC-004", "RULE-PRC-004-01", "RULE-PRC-004-02", "RULE-PRC-004-03", "AC-PRC-004-01", "AC-PRC-004-02", "AC-PRC-004-03", "NFR-AUD-001"]
+}

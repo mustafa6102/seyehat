@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.18:ItineraryItem",
+  "title": "ItineraryItem",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "item_id": {"type": "string", "minLength": 1, "readOnly": true, "description": "Öğenin kararlı kimliği; Trip içinde tekildir ve sonraki revision'larda aynı kalır."},
+    "item_type": {"type": "string", "enum": ["POI"]},
+    "constraint_type": {"type": "string", "enum": ["FLEXIBLE"], "description": "v3.16 ile aynı. Güne atama öğeyi FIXED yapmaz (RULE-TRIP-BLD-001-01)."},
+    "poi_snapshot": {
+      "$ref": "../../v3.15/schemas/Poi.schema.json",
+      "description": "v3.16 ile aynı değişmez görüntü. Güne atama, sıralama veya atamanın kaldırılması görüntüyü değiştirmez; UNKNOWN/UNVERIFIED olgular aynen korunur."
+    },
+    "day_assignment": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "date": {"type": "string", "format": "date", "description": "TripPlan.day_frame.days içindeki yerel takvim günü (varış noktasının IANA saat diliminde, OD-029)."},
+            "position": {"type": "integer", "minimum": 1, "description": "Aynı gündeki kullanıcı sırası; gün içinde 1..n kesintisizdir. Saat, süre veya uygulanabilirlik anlamı taşımaz."},
+            "feasibility_status": {"type": "string", "enum": ["NOT_EVALUATED"], "description": "Atama uygulanabilirlik iddiası taşımaz (RULE-DAY-001-05). Değerlendirme DAY-001 Domain Feasibility Gate'e aittir (OD-030..035 OPEN)."}
+          },
+          "required": ["date", "position", "feasibility_status"]
+        }
+      ],
+      "description": "null = güne atanmamış (UNSCHEDULED). Saat, başlangıç/bitiş ve süre alanı yoktur. v3.16 revision'larındaki öğeler bu alan olmadan saklanmıştır ve null olarak okunur."
+    }
+  },
+  "required": ["item_id", "item_type", "constraint_type", "poi_snapshot", "day_assignment"],
+  "x-contract-id": "SCH-ItineraryItem",
+  "x-version": "3.18",
+  "x-status": "ACTIVE",
+  "x-replaces": "urn:ai-seyahat:v3.16:ItineraryItem",
+  "x-requirement-refs": ["TRIP-BLD-001", "RULE-TRIP-BLD-001-01", "RULE-TRIP-BLD-001-03", "RULE-TRIP-BLD-001-05", "RULE-POI-001-06", "DAY-001", "RULE-DAY-001-04", "RULE-DAY-001-05", "FR-DAY-001-03"],
+  "x-open-decisions": ["OD-013", "OD-025", "OD-030", "OD-031", "OD-032", "OD-033", "OD-034", "OD-035"],
+  "description": "v3.18: v3.16 FLEXIBLE POI öğesine elle gün ataması ve gün içi sıra eklenir (OD-029 RESOLVED, Seçenek A). Atanmış öğe yalnız bir takvim gününe ve sıraya sahiptir; saat, süre, ulaşım veya uygulanabilirlik taşımaz."
+}

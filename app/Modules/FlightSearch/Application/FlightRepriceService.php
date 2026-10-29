@@ -22,6 +22,8 @@ final readonly class FlightRepriceService
 
     private const FAILED = 'failed';
 
+    private const ITINERARY_CHANGED = 'itinerary_changed';
+
     public function __construct(
         private FlightOfferRepository $offers,
         private ProviderCapabilityMatrix $capabilities,
@@ -49,6 +51,11 @@ final readonly class FlightRepriceService
             return $this->unverified($previousSnapshot, $previous, $capturedAt, $capability, self::TIMED_OUT);
         } catch (RepriceFailed) {
             return $this->unverified($previousSnapshot, $previous, $capturedAt, $capability, self::FAILED);
+        }
+        // OD-022 D3: a different itinerary (segments, order or direction) under the same offer id is not evidence for
+        // the stored offer; it is UNVERIFIED and the stored offer and any selection stay as they are.
+        if ($current->itinerarySignature() !== $previous->itinerarySignature()) {
+            return $this->unverified($previousSnapshot, $previous, $capturedAt, $capability, self::ITINERARY_CHANGED);
         }
 
         $changes = $this->changes($previous, $current);
@@ -111,6 +118,7 @@ final readonly class FlightRepriceService
                 : match ($cause) {
                     self::TIMED_OUT => 'Sağlayıcı yanıtı zamanında alınamadı; teklif doğrulanamadı.',
                     self::FAILED => 'Teklif sağlayıcıdan doğrulanamadı; güncel olarak gösterilmez.',
+                    self::ITINERARY_CHANGED => 'Sağlayıcı bu teklif için farklı bir uçuş güzergâhı döndürdü; teklif doğrulanamadı ve seçiminiz değiştirilmedi.',
                     default => 'Sağlayıcı yeniden fiyatlamayı desteklemiyor; fiyat değişebilir.',
                 },
         );

@@ -23,7 +23,10 @@ final class RunAccommodationSearch implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public readonly string $searchId) {}
+    public function __construct(public readonly string $searchId)
+    {
+        $this->onQueue('live-ingestion');
+    }
 
     public function uniqueId(): string
     {

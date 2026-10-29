@@ -1,0 +1,42 @@
+{
+  "version": "3.23.0",
+  "inherits": "../v3.22/decisions.json",
+  "decisions": [
+    {
+      "id": "OD-022",
+      "status": "PARTIALLY_RESOLVED",
+      "scope": "ROUND_TRIP sub-decision only (D1-D4); other OD-022 items unchanged",
+      "decision": "APPROVED D1-D4. D1: SCH-FlightOffer 3.23 requires journey_type (ONE_WAY|ROUND_TRIP from provider slice count) and segment direction (OUTBOUND|INBOUND from slice order); segments stay one contiguous ordered array. D2: v3.4-shaped persisted offers are normalized on read to ONE_WAY/OUTBOUND without SQL migration. D3: a reprice whose segment/direction list differs from the stored snapshot is UNVERIFIED (RC-EVIDENCE-REPRICE-UNVERIFIED) and the existing selection is preserved. D4: requirement records RULE-FLT-002-07/08, FR-FLT-002-04, AC-FLT-002-07..09, TS-FLT-002-08..11, AC/TS-FLT-005-04, RULE-FLT-REPRICE-001-08, AC/TS-FLT-REPRICE-001-14..16; provider offers whose slice count/order/endpoints do not match the criteria are dropped. One EXACT/EXACT ROUND_TRIP search is one multi-slice provider request; independent one-way offers are never combined.",
+      "resolved": [
+        "ROUND_TRIP - FlightOffer'da slice/yon yapisi yok (v3.11 remaining_open)"
+      ],
+      "consequences_of_existing_contract": {
+        "A1": "single provider_offer_id per offer (SCH-FlightOffer, SCH-TripRequestFlightSelection, OP-repriceOffer, RULE-FLT-002-01)",
+        "A2": "deduplication key unchanged (FR-FLT-002-02/03)",
+        "A3": "one total price for all directions and passengers (SCH-FlightOffer.price, RULE-FLT-REPRICE-001-07, RULE-FLT-005-02)",
+        "A4": "offer-level baggage; UNKNOWN when directions differ (SCH-BaggageAllowance, RULE-FLT-005-01/02)",
+        "A5": "selection stays on TripRequestFlightSelection; TripPlan unchanged (OD-021, OD-034 OPEN)",
+        "A6": "existing search capability evidence (RULE-PRV-001-01)",
+        "A7": "no protection claim; bookable rule unchanged (OD-017, RULE-FLT-002-03)",
+        "A8": "EXACT/EXACT only; FLEXIBLE stays blocked (GAP-FLT-CRITERIA-001)"
+      },
+      "remaining_open": [
+        "FLEXIBLE date provider search (GAP-FLT-CRITERIA-001)",
+        "cabin class",
+        "segment departure/arrival location (LocationRef)",
+        "PASSENGER type distribution (OD-020); adapter runs only with explicit ALL_ADULT deployment policy"
+      ],
+      "blocks_development": [
+        "flexible-date provider search",
+        "cabin class selection"
+      ],
+      "decision_version": "3.23.0",
+      "recorded_at": "2026-10-29",
+      "decision_owner": "Project owner",
+      "recorded_by": "Claude Code",
+      "approval_basis": "Project owner instruction 2026-10-29: 'Project-owner approval applies to D1-D4 for ROUND_TRIP only' (docs/proposals/od-022-round-trip/approval-document.md)",
+      "external_approval_claimed": false
+    }
+  ],
+  "note": "Corrects the v3.22 omission: v3.22 decisions.json did not list OD-022, whose status was only inherited from registry/v3.21/decisions.yaml open_decisions. OD-022 stays PARTIALLY_RESOLVED; all other inherited records unchanged."
+}

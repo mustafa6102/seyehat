@@ -2,6 +2,7 @@
 
 namespace App\Modules\FlightSearch\Application;
 
+use App\Modules\Api\Contracts\TripRequestService;
 use App\Modules\FlightSearch\Contracts\FlightSelectionReader;
 use App\Modules\FlightSearch\Domain\FlightOfferRepository;
 use App\Modules\FlightSearch\Infrastructure\Persistence\DatabaseFlightSelectionRepository;
@@ -17,6 +18,7 @@ final readonly class FlightSelectionService implements FlightSelectionReader
     public function __construct(
         private DatabaseFlightSelectionRepository $selections,
         private FlightOfferRepository $offers,
+        private TripRequestService $tripRequests,
     ) {}
 
     public function find(string $tripRequestId, ?DateTimeImmutable $now = null): ?array
@@ -44,6 +46,11 @@ final readonly class FlightSelectionService implements FlightSelectionReader
     {
         $offer = $this->offers->find($offerId) ?? throw FlightSelectionRejected::notFound('Seçilecek uçuş teklifi bulunamadı.');
         if (! $this->selections->tripRequestHasOffer($tripRequestId, $offer->providerOfferId)) {
+            throw FlightSelectionRejected::notSelectable();
+        }
+        // RULE-FLT-REPRICE-001-08: the offer's journey must be the TripRequest's current journey (it may have been
+        // edited after the search ran).
+        if ($this->tripRequests->get($tripRequestId)?->journeyType !== $offer->journeyType()) {
             throw FlightSelectionRejected::notSelectable();
         }
         $verification = $this->selections->latestVerification($offer->providerOfferId);

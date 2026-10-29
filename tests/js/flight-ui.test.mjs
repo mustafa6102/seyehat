@@ -543,3 +543,35 @@ test('Taleplerim cards show a Turkish search label only for a search this tab al
     assert.equal(requests.filter((request) => request.method === 'POST').length, 0);
     assert.equal(requests.length, 6);
 });
+
+// v3.23 OD-022: one ROUND_TRIP offer shows both directions in order with a single total; legacy offers stay one-way.
+test('a round-trip offer shows Gidiş and Dönüş separately with one total and no per-direction price or protection claim', async () => {
+    const outbound = { ...DIRECT[0], direction: 'OUTBOUND' };
+    // AMS 11:20 (UTC+1, after the DST change) -> IST 16:45 (UTC+3): 3 h 25 min.
+    const inbound = { ...segment('ZZ', '1235', time('2026-10-31T11:20:00', 'Europe/Amsterdam', '2026-10-31T10:20:00Z'), time('2026-10-31T16:45:00', 'Europe/Istanbul', '2026-10-31T13:45:00Z'), 205), direction: 'INBOUND' };
+    const roundTrip = { ...offer('RT-1', price('COMPLETE', 'EXACT', money(410000, 'EUR')), [], [outbound, inbound], knownBaggage()), journey_type: 'ROUND_TRIP' };
+    const legacy = offer('OW-1', price('COMPLETE', 'EXACT', money(120000, 'EUR')), [], DIRECT, knownBaggage());
+    const { nodes } = searchPage(job('COMPLETED', [roundTrip, legacy]));
+
+    await nodes['[data-search-start]'].click();
+    await settle();
+
+    const [rtCard, owCard] = nodes['[data-offer-list]'].byClass('offer-card');
+    const summary = summaryText(rtCard);
+    assert.equal(rtCard.byClass('offer-title')[0].textContent, 'ZZ 1234 / ZZ 1235');
+    assert.deepEqual(rtCard.children.filter((child) => child.className === 'offer-direction-label').map(text), ['Gidiş', 'Dönüş']);
+    assert.equal(rtCard.byClass('offer-route').length, 2);
+    assert.match(summary, /06:11.*3 sa 29 dk.*08:40/);
+    assert.match(summary, /11:20.*3 sa 25 dk.*16:45/);
+    assert.match(summary, /Gidiş ve dönüş tek teklif ve tek toplam fiyattır; yön başına fiyat gösterilmez\./);
+    assert.equal((summary.match(/€/g) ?? []).length, 1, 'exactly one price on the card');
+    assert.doesNotMatch(text(rtCard), /korumalı|garantili/i);
+    // Details list each direction's segments under its own label.
+    assert.deepEqual(detailsOf(rtCard).byClass('offer-direction-label').map(text), ['Gidiş', 'Dönüş']);
+    assert.equal(detailsOf(rtCard).byClass('segment').length, 2);
+
+    // An offer stored before v3.23 (no journey_type/direction) renders exactly like a one-way offer.
+    assert.equal(owCard.byClass('offer-direction-label').length, 0);
+    assert.equal(owCard.byClass('offer-route').length, 1);
+    assert.doesNotMatch(text(owCard), /Dönüş/);
+});

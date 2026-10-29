@@ -1,0 +1,9 @@
+{
+  "version": "3.23.0",
+  "contract_index": "registry/v3.23/contract_index.json",
+  "decisions": "registry/v3.23/decisions.json",
+  "story_overrides": "registry/v3.23/story_overrides.json",
+  "base": "3.22.0",
+  "authority": "Project owner approval of OD-022 D1-D4 (ROUND_TRIP only), 2026-10-29",
+  "external_approvals_closed": []
+}

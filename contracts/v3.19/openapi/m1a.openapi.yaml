@@ -1,0 +1,59 @@
+openapi: 3.1.0
+info:
+  title: AI Travel Planner M1A API
+  version: 3.19.0
+  description: v3.18.0'ı devralan HOW-001 POI-only bağlamsal rehber deltası.
+servers: []
+x-inherits: ../../v3.18/openapi/m1a.openapi.yaml
+paths:
+  /trip-requests/{tripRequestId}/plan/items/{itemId}/guide:
+    get:
+      operationId: getTripPlanItemGuide
+      security: [{bearerAuth: []}]
+      x-contract-id: OP-getTripPlanItemGuide
+      x-status: ACTIVE
+      x-requirement-refs: [HOW-001, FR-HOW-001-01, RULE-HOW-001-01, RULE-HOW-001-02, RULE-HOW-001-03, AC-HOW-001-01, AC-HOW-001-02]
+      x-open-decisions: [OD-013, ADR-010]
+      description: CURRENT PlanRevision içindeki POI öğesi için yan etkisiz, deterministik Türkçe rehber döndürür.
+      parameters:
+        - {name: tripRequestId, in: path, required: true, schema: {type: string}}
+        - {name: itemId, in: path, required: true, schema: {type: string}}
+        - {name: If-Match, in: header, required: true, schema: {type: string}, description: 'CURRENT PlanRevision: "<version>".'}
+      responses:
+        '200': {description: Rehber, headers: {ETag: {schema: {type: string}}}, content: {application/json: {schema: {$ref: ../schemas/ContextualGuide.schema.json}}}}
+        '400': {description: RC-VALIDATION-SCHEMA}
+        '401': {description: RC-AUTHN-REQUIRED}
+        '403': {description: RC-AUTHZ-DENIED}
+        '404': {description: RC-RESOURCE-NOT-FOUND}
+        '409': {description: RC-CONFLICT-REVISION-STALE}
+        '422': {description: RC-HOW-CONTEXT-UNSUPPORTED}
+  /trip-requests/{tripRequestId}/plan/items/{itemId}/guide/refresh:
+    post:
+      operationId: refreshTripPlanItemGuide
+      security: [{bearerAuth: []}]
+      x-contract-id: OP-refreshTripPlanItemGuide
+      x-status: ACTIVE
+      x-requirement-refs: [HOW-001, FR-HOW-001-02, AC-HOW-001-03]
+      x-open-decisions: [OD-013, ADR-006, ADR-010]
+      description: >-
+        Desteklenen kanonik POI source reverify operasyonunu senkron çağırır. Source operation'ın onaylı resilience profilini
+        devralır; HOW timeout değeri uydurmaz. Profil/capability yokluğu veya provider başarısızlığı 503 fail-closed'dur.
+        PlanRevision ve outbox üretmez. Aynı idempotency scope/key/fingerprint ilk status/body sonucunu birebir replay eder.
+      parameters:
+        - {name: tripRequestId, in: path, required: true, schema: {type: string}}
+        - {name: itemId, in: path, required: true, schema: {type: string}}
+        - {name: If-Match, in: header, required: true, schema: {type: string}}
+        - {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1, maxLength: 255}}
+      responses:
+        '200': {description: Source tekrar okundu ve rehber yeniden hesaplandı, headers: {ETag: {schema: {type: string}}}, content: {application/json: {schema: {$ref: ../schemas/ContextualGuide.schema.json}}}}
+        '400': {description: RC-VALIDATION-SCHEMA}
+        '401': {description: RC-AUTHN-REQUIRED}
+        '403': {description: RC-AUTHZ-DENIED}
+        '404': {description: RC-RESOURCE-NOT-FOUND}
+        '409': {description: RC-CONFLICT-REVISION-STALE, RC-CONFLICT-IDEMPOTENCY-KEY veya RC-CONFLICT-IDEMPOTENCY-IN-PROGRESS}
+        '422': {description: RC-HOW-CONTEXT-UNSUPPORTED}
+        '503': {description: RC-HOW-REVERIFY-UNAVAILABLE; istemci önceki GET rehberini işaretli olarak korur}
+x-web-channel:
+  decision: OD-028
+  operations: [OP-getTripPlanItemGuide, OP-refreshTripPlanItemGuide]
+  note: Aynı yollar /web-api/v1 altında session principal ile; refresh POST CSRF korumalıdır.

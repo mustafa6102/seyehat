@@ -59,6 +59,13 @@
                 // Unavailable storage only loses resumption after a reload.
             }
         },
+        remove: (key) => {
+            try {
+                window.sessionStorage.removeItem(key);
+            } catch {
+                // Unavailable storage only loses resumption after a reload.
+            }
+        },
     };
 
     // SCH-Sourced evidence: only FRESH evidence is presented without a caveat; nothing is called verified otherwise.
@@ -146,7 +153,7 @@
         title.append(el('h3', 'hotel-name', poi.name));
         const evidence = poi.opening_hours ?? poi.admission;
         if (!fresh(evidence)) {
-            title.append(el('span', 'badge badge-neutral', 'Doğrulanmamış bilgi'));
+            title.append(el('span', 'badge badge-unverified', 'Doğrulanmamış bilgi'));
         }
         heading.append(title, el('p', 'offer-date', poi.location?.address ?? 'Adres bilgisi yok'));
         header.append(heading);
@@ -258,6 +265,9 @@
      * revision (empty before the first one) and a per-action idempotency key. The server loads the stored canonical POI.
      */
     const planAction = (poi) => {
+        if (['CLOSED_TEMPORARILY', 'CLOSED_PERMANENTLY'].includes(poi.business_status?.value)) {
+            return el('p', 'summary-meta', 'Bu yer kapalı olarak bildirildiği için plan öğesi olarak önerilmiyor.');
+        }
         if (root.dataset.planAccess === 'OWNER' && root.dataset.planAddUrl) {
             const form = el('form');
             form.method = 'post';
@@ -342,8 +352,22 @@
         try {
             const response = await request(root.dataset.pollUrl.replace('__SEARCH__', encodeURIComponent(searchId)));
             if (!response.ok || !response.body) {
-                setStatus(message(response.body, 'Arama durumu alınamadı.'), 'danger');
-                searchButton.disabled = false;
+                if (response.status === 401 || response.status === 403) {
+                    setStatus(message(response.body, 'Bu gezilecek yer aramasını görüntüleme yetkiniz bulunmuyor.'), 'danger');
+                    refreshButton.hidden = true;
+                    searchButton.disabled = true;
+
+                    return;
+                }
+                setStatus(message(response.body, 'Arama durumu alınamadı. Mevcut aramayı yeniden kontrol edebilirsiniz.'), 'danger');
+                if (response.status === 404) {
+                    storage.remove(storageKey);
+                    refreshButton.hidden = true;
+                    searchButton.disabled = false;
+                } else {
+                    refreshButton.hidden = false;
+                    searchButton.disabled = true;
+                }
 
                 return;
             }
@@ -351,8 +375,9 @@
                 pollTimer = setTimeout(() => poll(searchId), pollInterval);
             }
         } catch {
-            setStatus('Arama durumu alınamadı. Bağlantınızı kontrol edin.', 'danger');
-            searchButton.disabled = false;
+            setStatus('Arama durumu alınamadı. Bağlantınızı kontrol edip mevcut aramayı yeniden kontrol edin.', 'danger');
+            refreshButton.hidden = false;
+            searchButton.disabled = true;
         }
     };
 
@@ -361,7 +386,9 @@
         searchButton.disabled = true;
         results.replaceChildren();
         setStatus('Gezilecek yer araması başlatılıyor…');
-        const key = newKey();
+        const pending = storage.read(storageKey);
+        const key = pending?.searchId ? newKey() : (pending?.key ?? newKey());
+        storage.write(storageKey, { key, searchId: null });
         try {
             const response = await request(root.dataset.startUrl, {
                 method: 'POST',
@@ -369,6 +396,7 @@
                 body: JSON.stringify({ trip_request_id: root.dataset.tripRequestId }),
             });
             if (response.status !== 202 || !response.body?.search_id) {
+                storage.remove(storageKey);
                 setStatus(message(response.body, 'Gezilecek yer araması başlatılamadı.'), 'danger');
                 searchButton.disabled = false;
 
@@ -393,5 +421,8 @@
     const resume = storage.read(storageKey);
     if (resume?.searchId) {
         poll(resume.searchId);
+    } else if (resume?.key) {
+        // Reuse the durable idempotency key when the start response was lost before search_id reached the browser.
+        start();
     }
 })();

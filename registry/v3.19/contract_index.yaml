@@ -1,0 +1,12 @@
+version: 3.19.0
+inherits: ../v3.18/contract_index.yaml
+contracts:
+  - {id: SCH-ContextualGuide, path: contracts/v3.19/schemas/ContextualGuide.schema.json, status: ACTIVE, audience: PUBLIC}
+  - {id: SCH-InstructionBlock, path: contracts/v3.19/schemas/InstructionBlock.schema.json, status: ACTIVE, audience: PUBLIC}
+  - {id: SCH-OperationIdempotencyRecord, path: contracts/v3.19/schemas/OperationIdempotencyRecord.schema.json, status: ACTIVE, audience: INTERNAL}
+  - {id: OP-getTripPlanItemGuide, path: contracts/v3.19/openapi/m1a.openapi.yaml, status: ACTIVE, decision_ref: OD-HOW-001}
+  - {id: OP-refreshTripPlanItemGuide, path: contracts/v3.19/openapi/m1a.openapi.yaml, status: ACTIVE, decision_ref: OD-HOW-004}
+  - {id: RC-HOW-CONTEXT-UNSUPPORTED, path: contracts/v3.19/registries/reason_error.yaml, status: ACTIVE}
+  - {id: RC-HOW-REVERIFY-UNAVAILABLE, path: contracts/v3.19/registries/reason_error.yaml, status: ACTIVE}
+  - {id: RC-CONFLICT-IDEMPOTENCY-IN-PROGRESS, path: contracts/v3.19/registries/reason_error.yaml, status: ACTIVE}
+note: HOW-001 v3.19 yalnız CURRENT PlanRevision içindeki POI öğesi için aktiftir; Story'nin diğer bağlamları tamamlanmış sayılmaz.

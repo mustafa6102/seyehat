@@ -1,0 +1,362 @@
+{
+  "proposal_version": "backend-eight-draft-1",
+  "status": "PROPOSED_NON_NORMATIVE",
+  "base_contract": "3.21.0",
+  "target_contract_version": "UNASSIGNED_UNTIL_APPROVAL",
+  "created_at": "2026-10-28",
+  "active_contract_changes": [],
+  "files": [
+    "README.md",
+    "schemas.json",
+    "openapi.json",
+    "records.md",
+    "persistence.md",
+    "decisions.md",
+    "traceability.json"
+  ],
+  "activation_rule": "Per-slice named approvals plus complete configuration/provider/evidence/persistence gates. Package acceptance alone does not resolve OD/ADR. P8 identifiers are local proposal identifiers; allocate canonical IDs at activation.",
+  "operations": [
+    {
+      "id": "listTripTravelers",
+      "method": "get",
+      "path": "/trips/{tripId}/travelers",
+      "request": null,
+      "response": "TravelerList",
+      "gate": "P8-TRV",
+      "mutation": false,
+      "plan": false
+    },
+    {
+      "id": "createTripTraveler",
+      "method": "post",
+      "path": "/trips/{tripId}/travelers",
+      "request": "TravelerInput",
+      "response": "TravelerProfile",
+      "gate": "P8-TRV",
+      "mutation": true,
+      "plan": false
+    },
+    {
+      "id": "getTraveler",
+      "method": "get",
+      "path": "/travelers/{travelerId}",
+      "request": null,
+      "response": "TravelerProfile",
+      "gate": "P8-TRV",
+      "mutation": false,
+      "plan": false
+    },
+    {
+      "id": "updateTraveler",
+      "method": "put",
+      "path": "/travelers/{travelerId}",
+      "request": "TravelerInput",
+      "response": "TravelerProfile",
+      "gate": "P8-TRV",
+      "mutation": true,
+      "plan": false
+    },
+    {
+      "id": "getTravelerReadiness",
+      "method": "get",
+      "path": "/travelers/{travelerId}/readiness",
+      "request": null,
+      "response": "TravelerReadiness",
+      "gate": "P8-TRV-READINESS",
+      "mutation": false,
+      "plan": false
+    },
+    {
+      "id": "createTravelerInvitation",
+      "method": "post",
+      "path": "/trips/{tripId}/traveler-invitations",
+      "request": "InviteCreate",
+      "response": "InviteResult",
+      "gate": "P8-TRV",
+      "mutation": true,
+      "plan": false
+    },
+    {
+      "id": "acceptTravelerInvitation",
+      "method": "post",
+      "path": "/traveler-invitations/accept",
+      "request": "InviteAccept",
+      "response": "TravelerBinding",
+      "gate": "P8-TRV",
+      "mutation": true,
+      "plan": false
+    },
+    {
+      "id": "grantTravelerAccess",
+      "method": "post",
+      "path": "/travelers/{travelerId}/grants",
+      "request": "GrantInput",
+      "response": "Grant",
+      "gate": "P8-TRV",
+      "mutation": true,
+      "plan": false
+    },
+    {
+      "id": "revokeTravelerAccess",
+      "method": "delete",
+      "path": "/travelers/{travelerId}/grants/{grantId}",
+      "request": null,
+      "response": "Grant",
+      "gate": "P8-TRV",
+      "mutation": true,
+      "plan": false
+    },
+    {
+      "id": "startRouteCandidateSearch",
+      "method": "post",
+      "path": "/route-candidate-jobs",
+      "request": "JobInput",
+      "response": "JobAccepted",
+      "gate": "P8-RCG",
+      "mutation": true,
+      "plan": false
+    },
+    {
+      "id": "pollRouteCandidateSearch",
+      "method": "get",
+      "path": "/route-candidate-jobs/{jobId}",
+      "request": null,
+      "response": "CandidateResult",
+      "gate": "P8-RCG",
+      "mutation": false,
+      "plan": false
+    },
+    {
+      "id": "getCandidateRisks",
+      "method": "get",
+      "path": "/route-candidate-jobs/{jobId}/candidates/{candidateId}/risks",
+      "request": null,
+      "response": "RiskAssessment",
+      "gate": "P8-STF",
+      "mutation": false,
+      "plan": false
+    },
+    {
+      "id": "getCandidateTransfer",
+      "method": "get",
+      "path": "/route-candidate-jobs/{jobId}/candidates/{candidateId}/transfer",
+      "request": null,
+      "response": "TransferAssessment",
+      "gate": "P8-TRF",
+      "mutation": false,
+      "plan": false
+    },
+    {
+      "id": "getTripRequestPriceHistoryEvaluation",
+      "method": "get",
+      "path": "/trip-requests/{tripRequestId}/price-history/{productType}/{offerId}",
+      "request": null,
+      "response": "PriceEvaluation",
+      "gate": "P8-PRC",
+      "mutation": false,
+      "plan": false
+    },
+    {
+      "id": "createOpportunityWatch",
+      "method": "post",
+      "path": "/opportunity-watches",
+      "request": "WatchInput",
+      "response": "Watch",
+      "gate": "P8-NOT",
+      "mutation": true,
+      "plan": false
+    },
+    {
+      "id": "getOpportunityWatch",
+      "method": "get",
+      "path": "/opportunity-watches/{watchId}",
+      "request": null,
+      "response": "Watch",
+      "gate": "P8-NOT",
+      "mutation": false,
+      "plan": false
+    },
+    {
+      "id": "updateOpportunityWatch",
+      "method": "put",
+      "path": "/opportunity-watches/{watchId}",
+      "request": "WatchUpdate",
+      "response": "Watch",
+      "gate": "P8-NOT",
+      "mutation": true,
+      "plan": false
+    },
+    {
+      "id": "listOpportunityNotifications",
+      "method": "get",
+      "path": "/opportunity-watches/{watchId}/notifications",
+      "request": null,
+      "response": "NotificationList",
+      "gate": "P8-NOT",
+      "mutation": false,
+      "plan": false
+    },
+    {
+      "id": "acknowledgeOpportunityNotification",
+      "method": "post",
+      "path": "/opportunity-watches/{watchId}/notifications/{notificationId}/acknowledgement",
+      "request": "Empty",
+      "response": "Notification",
+      "gate": "P8-NOT",
+      "mutation": true,
+      "plan": false
+    },
+    {
+      "id": "startFoodDiscovery",
+      "method": "post",
+      "path": "/food-discovery-jobs",
+      "request": "FoodSearchInput",
+      "response": "JobAccepted",
+      "gate": "P8-FOOD",
+      "mutation": true,
+      "plan": false
+    },
+    {
+      "id": "pollFoodDiscovery",
+      "method": "get",
+      "path": "/food-discovery-jobs/{jobId}",
+      "request": null,
+      "response": "FoodResult",
+      "gate": "P8-FOOD",
+      "mutation": false,
+      "plan": false
+    },
+    {
+      "id": "getFoodWindowAssessment",
+      "method": "get",
+      "path": "/food-discovery-jobs/{jobId}/places/{foodPlaceId}/assessment",
+      "request": null,
+      "response": "FoodAssessment",
+      "gate": "P8-FOOD-WINDOW",
+      "mutation": false,
+      "plan": false
+    },
+    {
+      "id": "addTripPlanFood",
+      "method": "post",
+      "path": "/trip-requests/{tripRequestId}/plan/food-items",
+      "request": "FoodSelection",
+      "response": "TripPlan",
+      "gate": "P8-FOOD-PLAN",
+      "mutation": true,
+      "plan": true
+    },
+    {
+      "id": "startEventDiscovery",
+      "method": "post",
+      "path": "/event-discovery-jobs",
+      "request": "JobInput",
+      "response": "JobAccepted",
+      "gate": "P8-EVT",
+      "mutation": true,
+      "plan": false
+    },
+    {
+      "id": "pollEventDiscovery",
+      "method": "get",
+      "path": "/event-discovery-jobs/{jobId}",
+      "request": null,
+      "response": "EventResult",
+      "gate": "P8-EVT",
+      "mutation": false,
+      "plan": false
+    },
+    {
+      "id": "addTripPlanEvent",
+      "method": "post",
+      "path": "/trip-requests/{tripRequestId}/plan/event-items",
+      "request": "EventSelection",
+      "response": "TripPlan",
+      "gate": "P8-EVT-PLAN",
+      "mutation": true,
+      "plan": true
+    }
+  ],
+  "source_snapshot": [
+    {
+      "path": "registry/registry_snapshot.json",
+      "sha256": "780e3836cf7f120256dd07d0206a7b4cfa5a356e541ceac19f5713703d10b353",
+      "authority": "SSOT_BASELINE"
+    },
+    {
+      "path": "registry/sections_snapshot.json",
+      "sha256": "b1fd43245a5cf46c12f3a0ac4988b80991f4185577265d0dfc5251d858f3d047",
+      "authority": "SSOT_BASELINE"
+    },
+    {
+      "path": "registry/v3.21/contract_index.yaml",
+      "sha256": "46da62e130cf896d9f686d02af3fbf7df641e6c915601c3279fc2bad0eb5a6c1",
+      "authority": "SSOT_BASELINE"
+    },
+    {
+      "path": "contracts/v3.21/registries/od_impact.yaml",
+      "sha256": "25bfc65d88d9adb7990b046049ffdce21fff1607ef013570cbb3ef71418c178b",
+      "authority": "SSOT_BASELINE"
+    },
+    {
+      "path": "contracts/v3.16/registries/od_impact.yaml",
+      "sha256": "d45c3ce20e96d354556bcbdf78e628ccd3ca3ae1928f707da6b0d9c8767d8dfa",
+      "authority": "SSOT_BASELINE"
+    },
+    {
+      "path": "contracts/registries/permissions.yaml",
+      "sha256": "89128ce7e975a03b769e4544a9db2bf7826020a2d11ce8626032698f2bbd81e4",
+      "authority": "SSOT_BASELINE"
+    },
+    {
+      "path": "contracts/registries/reason_error.yaml",
+      "sha256": "2b2fcca01da7244976fb20704c46eb3b88da80e436d86a047c4a14be051a1e7a",
+      "authority": "SSOT_BASELINE"
+    },
+    {
+      "path": "contracts/registries/config.yaml",
+      "sha256": "5a729ff147ad2bbfbf6677c28b4fe58adf6f63746bd2cef55b238e89865937c8",
+      "authority": "SSOT_BASELINE"
+    },
+    {
+      "path": "contracts/registries/lifecycle.yaml",
+      "sha256": "a30650e1d6fba6291ca2811ccdeac682bf1cd0305c7d8eb9a1c206347c8707df",
+      "authority": "SSOT_BASELINE"
+    },
+    {
+      "path": "docs/proposals/prc-004/draft-1/contract-delta.yaml",
+      "sha256": "1add24dba6a8c857b1cbd450594aa708e60ea7840639ed3e258e940e9445a61d",
+      "authority": "NON_NORMATIVE_PROPOSAL"
+    },
+    {
+      "path": "app/Modules/Traveler/Infrastructure/Http/TravelerController.php",
+      "sha256": "4f2f3a2a0fc7ff53de18b0b340f790a94272c176384253f48745ca2c28d40224",
+      "authority": "IMPLEMENTATION_EVIDENCE_NOT_APPROVAL"
+    },
+    {
+      "path": "app/Modules/Traveler/Infrastructure/Persistence/DatabaseTravelerRepository.php",
+      "sha256": "5588be9141812c66ab1c8d332f4377664a79a235b9700aaff72d40329e7c8b32",
+      "authority": "IMPLEMENTATION_EVIDENCE_NOT_APPROVAL"
+    },
+    {
+      "path": "app/Modules/CandidateGenerator/Application/BoundedCandidateGenerator.php",
+      "sha256": "7fdca218da313f8c0c21a747df04e1b68899699b98aa300390be5f544e280936",
+      "authority": "IMPLEMENTATION_EVIDENCE_NOT_APPROVAL"
+    },
+    {
+      "path": "app/Modules/CandidateGenerator/Application/SearchBudgetLedger.php",
+      "sha256": "a5a28c94bec9e5b16ecb9860526435877c83c2adb7041448425ace8028272fec",
+      "authority": "IMPLEMENTATION_EVIDENCE_NOT_APPROVAL"
+    },
+    {
+      "path": "app/Modules/CandidateGenerator/Infrastructure/ConfigSearchBudgetPolicy.php",
+      "sha256": "3ddb447e2cd0c343089f3c71d93f2c58847719ed0318d4c54907138a93c91bc5",
+      "authority": "IMPLEMENTATION_EVIDENCE_NOT_APPROVAL"
+    },
+    {
+      "path": "routes/api.php",
+      "sha256": "d1074bf3995a43c8f493c1d386c633f5c795fa78b44d1fbda1efa9c4292a0a73",
+      "authority": "IMPLEMENTATION_EVIDENCE_NOT_APPROVAL"
+    }
+  ]
+}

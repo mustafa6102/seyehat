@@ -1,0 +1,204 @@
+---
+version: 3.23.0-proposal
+status: PROPOSED_NON_NORMATIVE
+base: 3.22.0
+inherits: registry/v3.22 (active_contract.json)
+decision_basis: OD-022
+recorded_at: 2026-10-29
+active_contract_changes: []        # bu paket contracts/ veya registry/ zincirini değiştirmez
+od_status_change: none             # OD-022 PARTIALLY_RESOLVED kalır; ROUND_TRIP alt konusu OPEN
+development: BLOCKED               # onaylı karar ve aktif delta olmadan uygulama kodu yazılmaz
+approval_document: docs/proposals/od-022-round-trip/approval-document.md
+
+# --- Karar sınıflandırması (tümü PROPOSED) -----------------------------------------------------
+decision_set:
+  on_approval: "OD-022 remaining_open 'ROUND_TRIP - FlightOffer'da slice/yon yapisi yok' -> resolved; OD-022 status stays PARTIALLY_RESOLVED"
+  requires_approval:
+    D1: {from: RT-01, decision: "journey_type + segment direction; segments stays one contiguous ordered array"}
+    D2: {from: RT-07, decision: "v3.4 stored snapshots normalized on read to ONE_WAY/OUTBOUND; no SQL", evidence: "DuffelFlightProviderAdapter::parseOffer rejects count(slices) != 1 since aab07ad (search and retrieveOffer)"}
+    D3: {from: RT-06, decision: "reprice segment/direction mismatch -> UNVERIFIED + RC-EVIDENCE-REPRICE-UNVERIFIED; applies to all offers"}
+    D4: {from: RT-12, decision: "proposed_requirements records + drop offers with mismatching slice count/order/endpoints"}
+  determined_by_approved_contract:
+    A1: {from: RT-02, refs: [SCH-FlightOffer.provider_offer_id, SCH-TripRequestFlightSelection.provider_offer_id, OP-repriceOffer, RULE-FLT-002-01]}
+    A2: {from: RT-03, refs: [FR-FLT-002-02, FR-FLT-002-03, SCH-FlightSearchJob.trip_request_id]}
+    A3: {from: RT-04, refs: [SCH-FlightOffer.price, SCH-TripRequestFlightSelection.verified_price, RULE-FLT-REPRICE-001-07, RULE-FLT-005-02]}
+    A4: {from: RT-05, refs: [SCH-FlightOffer.baggage, SCH-BaggageAllowance, RULE-FLT-005-01, RULE-FLT-005-02, AC-FLT-005-01, AC-FLT-005-02]}
+    A5: {from: RT-08, refs: [OD-021, SCH-ItineraryItem, OD-034]}
+    A6: {from: RT-09, refs: [RULE-PRV-001-01, FR-PRV-001-01, SCH-ProviderCapability.operation]}
+    A7: {from: RT-10, refs: [OD-017, RULE-FLT-002-03, AC-FLT-002-02]}
+    A8: {from: RT-11, refs: [OD-022, GAP-FLT-CRITERIA-001, RULE-TRIP-001-05]}
+
+# --- Kaynak durum (onaylı / aktif) -------------------------------------------------------------
+current_state:
+  od_022:
+    source: contracts/v3.11/registries/od_impact.yaml#OD-022
+    status: PARTIALLY_RESOLVED
+    remaining_open_relevant: "ROUND_TRIP - FlightOffer'da slice/yon yapisi yok"
+    blocks_development: [round-trip and flexible-date provider search]
+    also_listed_open_in: registry/v3.21/decisions.yaml#open_decisions
+    inconsistency_in_active_v3_22: "contracts/v3.22/registries/od_impact.json blocked_features.RCG-001 says 'OD-022 cabin/flexible/passenger remaining_open' (omits ROUND_TRIP); registry/v3.22/decisions.json does not list OD-022. Not edited here; fix in activation delta."
+  approved_inputs:
+    - RULE-TRIP-001-04, RULE-TRIP-001-05, FR-TRIP-001-03 (registry/v3.9/story_overrides.yaml) — ROUND_TRIP talep modeli zaten onaylı
+    - SCH-FlightSearchCriteria v3.12 (contracts/v3.12/schemas/FlightSearchCriteria.schema.json) — journey_type/return_date zaten taşınıyor; değişiklik yok
+  blocked_surface:
+    - SCH-FlightOffer v3.4 (contracts/v3.4/schemas/FlightOffer.schema.json) — additionalProperties:false, yön/slice alanı yok
+    - app/Modules/FlightSearch/Contracts/FlightSearchCriteria.php::journeyBlockerTr — ROUND_TRIP engeli (doğru, korunur)
+    - DuffelFlightProviderAdapter — yalnız ONE_WAY+EXACT tek slice gönderir; 1'den farklı slice'lı teklifi atar
+
+# --- Önerilen şema değişiklikleri -------------------------------------------------------------
+schema_changes:
+  - id: SCH-FlightOffer
+    from: contracts/v3.4/schemas/FlightOffer.schema.json (3.4)
+    to: docs/proposals/od-022-round-trip/schemas/FlightOffer.schema.json (3.23-proposal)
+    decision_ref: D1
+    add:
+      - path: /journey_type
+        type: enum [ONE_WAY, ROUND_TRIP]
+        required: true
+        derivation: provider offer slice count (1 -> ONE_WAY, 2 -> ROUND_TRIP); never inferred from dates
+      - path: /segments/*/direction
+        type: enum [OUTBOUND, INBOUND]
+        required: true
+        derivation: provider slice index (0 -> OUTBOUND, 1 -> INBOUND)
+    invariants:
+      schema_enforced:
+        - ONE_WAY => every segment direction = OUTBOUND
+        - ROUND_TRIP => segments[0].direction = OUTBOUND, >= 1 INBOUND, minItems 2
+      domain_enforced:
+        - ROUND_TRIP segment order is contiguous: all OUTBOUND then all INBOUND (not expressible in JSON Schema)
+        - price, expires_at, baggage, sources are offer-level and cover all directions and passengers
+    unchanged: [provider_offer_id, state, price, expires_at, baggage, bookable, sources, segment_time, offer_source]
+  - id: SCH-OfferSnapshot / SCH-RepriceResult (v3.4) / SCH-TripRequestFlightSelection (v3.13)
+    change: $ref target only -> proposed SCH-FlightOffer; semantics unchanged
+  - id: SCH-OfferChangeSet (v3.3)
+    change: none (D3 maps itinerary mismatch to UNVERIFIED)
+  - id: SCH-FlightSearchCriteria (v3.12), SCH-TripRequest (v3.9), SCH-TripPlan/ItineraryItem (v3.16), SCH-OpportunityResult (v3.22)
+    change: none
+
+# --- OpenAPI ----------------------------------------------------------------------------------
+openapi_changes:
+  new_operations: []
+  changed_response_refs:   # yalnız FlightOffer referansı yeni sürüme geçer
+    - OP-pollFlightSearch      (contracts/openapi/m1a.openapi.yaml, FlightSearchResult.offers[])
+    - OP-getOffer              (contracts/openapi/m1a.openapi.yaml)
+    - OP-repriceOffer          (contracts/openapi/m1a.openapi.yaml; RepriceResult.previous/current.offer)
+    - OP-getTripRequestFlightSelection, OP-selectTripRequestFlight, OP-reconfirmTripRequestFlight (contracts/v3.13/openapi/m1a.openapi.yaml)
+  unchanged:
+    - OP-startFlightSearch (body {trip_request_id}; journey TripRequest'ten okunur)
+    - OP-getSelectedFlightOpportunity (v3.22; yalnız fiyat okur)
+  web_channel: OD-028 kuralı aynen (web-api/v1 aynı işleyiciler)
+
+# --- Hata / reason semantiği (yeni kod yok) ----------------------------------------------------
+error_semantics:
+  - case: FLEXIBLE outbound veya return tarihi
+    result: arama sağlayıcıya gitmeden engellenir (mevcut journeyBlockerTr); GAP-FLT-CRITERIA-001 açık kalır
+  - case: Sağlayıcı teklifinde slice sayısı/sırası/uç noktası talep ile uyuşmuyor
+    result: teklif atılır (mevcut "eksik teklif tamamlanmaz" kuralı); kullanıcıya gösterilmez
+  - case: Seçimde offer.journey_type != TripRequest.journey_type veya teklif bu talebin aramasından değil
+    result: 409 RC-DECISION-OFFER-NOT-SELECTABLE (v3.13 mevcut kod)
+  - case: Reprice sonucunda segment/yön listesi farklı
+    result: "UNVERIFIED + RC-EVIDENCE-REPRICE-UNVERIFIED; seçim değişmez (D3)"
+  - case: Süresi dolmuş gidiş-dönüş teklif
+    result: mevcut TRN-OFFER-02 / RC-EVIDENCE-OFFER-EXPIRED; seçilemez (RULE-FLT-REPRICE-001-04)
+  - case: Sağlayıcı zaman aşımı / 4xx / 5xx
+    result: mevcut PLT-REL-001 ve RC-PROVIDER-TIMEOUT davranışı; yeni kod yok
+
+# --- Duffel eşlemesi (ProviderAcl içi; dışarı sızmaz, RULE-FLT-002-01) -------------------------
+provider_mapping:
+  provider_id: duffel_flights
+  request: "POST /air/offer_requests slices=[{origin,destination,departure_date=outbound.date},{origin=destination,destination=origin,departure_date=return.date}], passengers = mevcut ALL_ADULT politikası"
+  one_request_only: true          # iki ayrı tek yön istek yapılmaz
+  offer_mapping:
+    offer.id: provider_offer_id (tek kimlik, tüm yönler)
+    offer.slices[0].segments[*]: segments[*] direction=OUTBOUND (sağlayıcı sırası korunur)
+    offer.slices[1].segments[*]: segments[*] direction=INBOUND (sağlayıcı sırası korunur)
+    offer.total_amount/total_currency: price (tüm yönler + yolcular; yöne bölünmez)
+    offer.expires_at: expires_at
+    segment.passengers[*].baggages: baggage (A4; yalnız tüm segmentlerde aynı hak bilinen değer olur)
+  drop_offer_when:
+    - slice sayısı istekteki slice sayısına eşit değil
+    - herhangi bir slice'ta segment yok veya segment zaman/kimlik alanı eksik
+    - slice uç noktası istek ile uyuşmuyor (IATA_AIRPORT -> havalimanı kodu; IATA_CITY -> havalimanının şehir kodu; D4)
+  never:
+    - iki tek yön teklifi birleştirip ROUND_TRIP üretmek
+    - eksik dönüşü tahmin etmek veya tamamlamak
+    - Duffel tek teklifini korumalı (protected) bilet olarak etiketlemek (OD-017: kanıt yoksa UNKNOWN)
+  reprice: "GET /air/offers/{provider_offer_id} aynı teklif kimliğiyle; aynı eşleme uygulanır"
+  verification_note: "Duffel'in çok slice'lı teklifi tek bilet/PNR olarak düzenleyeceği bu depoda kanıtlanmamıştır; koruma iddiası yapılmaz."
+
+# --- Uyumluluk ---------------------------------------------------------------------------------
+compatibility:
+  version: 3.23.0 (depo her delta için yeni 3.x.0 baseline açar)
+  classification: "patch-level addition (contracts/VERSIONING.md 'alan ekleme'; precedent contracts/v3.4/CHANGELOG.md FlightOffer bookable/sources/segments eklemesi kırıcı sayılmadı; contracts/v3.13/VERSIONING.md). PRE-RELEASE istisnası veya ADR gerekmez."
+  strict_v3_4_validators: "v3.4 additionalProperties:false; aktif sözleşmede v3.4 FlightOffer'ı yanıt doğrulaması için kullanan birinci taraf dışı tüketici yok. docs/proposals/prc-004/v3.20 taslağı v3.4 flight_segment'e başvurur ve v3.4 değişmediği için geçerli kalır."
+  producers: ONE_WAY yanıtları journey_type=ONE_WAY ve tüm segmentlerde direction=OUTBOUND taşır.
+  stored_snapshots: "flight_selections.offer ve teklif önbelleği (v3.4 biçimi) okuma anında D2 ile normalize edilir; fixture legacy_v3_4_one_way_normalized_by_D2"
+  browser: public/assets/flight.js yön bilinmiyorsa (eski yanıt) bugünkü tek liste görünümüne düşer
+  one_way_behavior: değişmez (arama, tekilleştirme, sıralama, seçim, reprice, UNKNOWN anlamı, search-only bookable=false)
+
+# --- Önerilen gereksinim kayıtları (PROPOSED; aktif registry'ye eklenmedi) -------------------
+proposed_requirements:
+  FLT-002:
+    RULE-FLT-002-07: "Gidiş-dönüş teklif tek sağlayıcı teklifinin tüm yönlerini tek kimlik, tek toplam fiyat ve tek geçerlilikle taşır; bağımsız tek yön teklifler birleştirilerek gidiş-dönüş teklif üretilmez."
+    RULE-FLT-002-08: "Segment yönü sağlayıcının slice sırasından türetilir; yön, tarih veya segment sayısından tahmin edilmez. Slice yapısı talep ile uyuşmayan teklif atılır."
+    FR-FLT-002-04: "FlightOffer journey_type ve her segment için direction taşır; segmentler önce gidiş, sonra dönüş olmak üzere sağlayıcı sırasıyla dizilir."
+    AC-FLT-002-07: "Given kesin tarihli ROUND_TRIP talep When arama yapılır Then sağlayıcıya iki slice içeren tek istek gönderilir ve her teklif gidiş ve dönüş segmentlerini yönleriyle taşır."
+    AC-FLT-002-08: "Given iki ayrı tek yön teklif When sonuçlar birleştirilir Then gidiş-dönüş teklif oluşturulmaz."
+    AC-FLT-002-09: "Given sağlayıcı teklifinin slice sayısı veya sırası talep ile uyuşmaz When normalize edilir Then teklif gösterilmez."
+    TS-FLT-002-08: ["Kesin tarihli gidiş-dönüş arama", [7]]
+    TS-FLT-002-09: ["Bağımsız tek yönlerin birleştirilmemesi", [8]]
+    TS-FLT-002-10: ["Eksik/ters slice'lı sağlayıcı teklifi", [9]]
+    TS-FLT-002-11: ["Gidiş ve dönüşte farklı DST durumu", [6]]
+  FLT-005:
+    AC-FLT-005-04: "Given bagaj hakkı gidiş ve dönüşte farklı When gidiş-dönüş teklif gösterilir Then ortak olmayan hak dahil gösterilmez ve bilinmeyen olarak belirtilir."   # A4
+    TS-FLT-005-04: ["Yöne göre farklı bagaj", [4]]
+  FLT-REPRICE-001:
+    RULE-FLT-REPRICE-001-08: "Seçilen teklifin journey_type değeri TripRequest journey_type ile aynı olmalıdır; aksi halde seçim reddedilir."
+    AC-FLT-REPRICE-001-14: "Given gidiş-dönüş teklif When reprice yapılır Then teklif tüm yönleriyle tek kimlikle doğrulanır; yön başına kısmi doğrulama CURRENT sayılmaz."
+    AC-FLT-REPRICE-001-15: "Given ONE_WAY talep When ROUND_TRIP teklif (veya tersi) seçilmek istenir Then 409 RC-DECISION-OFFER-NOT-SELECTABLE döner ve seçim değişmez."
+    AC-FLT-REPRICE-001-16: "Given reprice sonucu segment/yön listesi saklı görüntüden farklı When sonuç işlenir Then OfferState=UNVERIFIED olur ve seçim değişmez (D3)."
+    TS-FLT-REPRICE-001-14: ["Gidiş-dönüş reprice", [14]]
+    TS-FLT-REPRICE-001-15: ["Yolculuk tipi uyumsuz seçim", [15]]
+    TS-FLT-REPRICE-001-16: ["Reprice'ta değişen güzergâh", [16]]
+  TRIP-001: no change
+  PRV-001: no change (A6)
+
+# --- Regresyon test planı (onaydan sonra; bugün yazılmadı) ------------------------------------
+regression_tests:
+  keep_green_unchanged_one_way:
+    - tests/Feature/DuffelFlightSearchTest.php
+    - tests/Feature/FlightOfferNormalizationTest.php
+    - tests/Feature/FlightOfferBaggageTest.php
+    - tests/Feature/FlightOfferEndpointTest.php
+    - tests/Feature/FlightRepriceTest.php
+    - tests/Feature/FlightRepriceEndpointTest.php
+    - tests/Feature/DuffelFlightRepriceTest.php
+    - tests/Feature/M1aSmokeFlowTest.php
+    - tests/Feature/ProviderCapabilityMatrixTest.php
+    - tests/Unit/FlightSearchCriteriaTest.php
+    - tests/js/flight-ui.test.mjs
+  must_be_updated_on_activation:
+    - tests/Feature/DuffelFlightSearchTest.php — ROUND_TRIP'in HTTP'siz reddi yerine iki slice'lı tek istek (FLEXIBLE reddi kalır)
+    - tests/Feature/RealFlightListingFlowTest.php — "Gidiş-dönüş uçuş araması henüz yapılamıyor" metni yalnız FLEXIBLE için kalır
+  new:
+    - TS-FLT-002-08..11, TS-FLT-005-04, TS-FLT-REPRICE-001-14..16
+    - Şema: ONE_WAY yanıtı journey_type/direction taşır; v3.4 saklı görüntü D2 ile normalize okunur
+    - Reprice: tek yön ve gidiş-dönüşte aynı kimlikle farklı segment listesi -> UNVERIFIED (D3)
+    - Sağlayıcı hatası: ROUND_TRIP isteğinde 4xx/5xx/timeout mevcut PLT-REL-001 sonuçlarını üretir
+    - Arayüz: Gidiş/Dönüş blokları Türkçe; yön başına fiyat gösterilmez; "korumalı" ifadesi kullanılmaz
+  known_unrelated_failure: "tests/Feature/FlightOfferEndpointTest.php sabit expires_at 2026-10-27 fixture'ı nedeniyle 2026-10-29'da başarısız"
+  validation_fixtures: docs/proposals/od-022-round-trip/examples/fixtures.json
+
+# --- Engeller ---------------------------------------------------------------------------------
+blocked_by:
+  - proje sahibinin approval-document.md paketini (D1-D4) onaylaması
+  - aktif v3.23 delta (contracts/v3.23 + registry/v3.23 + active_contract.json) onaydan sonra ayrıca hazırlanmalı
+remains_open_unrelated_to_round_trip:
+  - FLEXIBLE tarihli sağlayıcı araması (OD-022, GAP-FLT-CRITERIA-001)
+  - kabin sınıfı (OD-022)
+  - segment havalimanı/LocationRef (OD-022)
+  - OD-020 yolcu tipi/yaş dağılımı
+  - OD-017 lisanslı koruma kanıtı ve risk eşikleri
+  - OD-034 uçuş/konaklama plan çapaları
+  - OD-001 / OD-011 / OD-015 sağlayıcı ve booking/yönlendirme
+  - OD-013 saklı görüntü saklama süresi

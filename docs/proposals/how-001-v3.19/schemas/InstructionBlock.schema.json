@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:proposal:v3.19:InstructionBlock",
+  "title": "InstructionBlock (PROPOSED)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "block_id": {"type": "string", "minLength": 1},
+    "kind": {"type": "string", "enum": ["GENERAL", "OPERATIONAL"]},
+    "text_tr": {"type": "string", "minLength": 1},
+    "critical": {"type": "boolean"},
+    "evidence_slots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "slot": {"type": "string", "enum": ["TIME", "FEE", "TERMINAL", "PLATFORM", "LINK", "ENTRY_RULE"]},
+          "display_value": {"type": ["string", "null"]},
+          "source_reference": {"type": ["string", "null"], "format": "uri"},
+          "verification_status": {"type": "string", "enum": ["FRESH", "STALE", "EXPIRED", "UNVERIFIED"]},
+          "verified_at": {"type": ["string", "null"], "format": "date-time"},
+          "expires_at": {"type": ["string", "null"], "format": "date-time"},
+          "active_cta": {"type": "boolean"}
+        },
+        "required": ["slot", "display_value", "source_reference", "verification_status", "verified_at", "expires_at", "active_cta"]
+      }
+    }
+  },
+  "required": ["block_id", "kind", "text_tr", "critical", "evidence_slots"],
+  "x-status": "PROPOSED",
+  "x-open-decisions": ["OD-HOW-002", "OD-HOW-003", "OD-HOW-004", "OD-HOW-011"],
+  "x-requirement-refs": ["HOW-001", "RULE-HOW-001-01", "RULE-HOW-001-02", "RULE-HOW-001-03", "FR-HOW-001-01", "FR-HOW-001-02", "NFR-LOC-001", "NFR-AI-GRD-001"]
+}

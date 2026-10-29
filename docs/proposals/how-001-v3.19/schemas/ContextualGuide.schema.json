@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:proposal:v3.19:ContextualGuide",
+  "title": "ContextualGuide (PROPOSED)",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trip_request_id": {"type": "string", "minLength": 1},
+    "plan_revision_version": {"type": "integer", "minimum": 1},
+    "item_id": {"type": "string", "minLength": 1},
+    "locale": {"type": "string", "const": "tr-TR"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "blocks": {
+      "type": "array",
+      "items": {"$ref": "InstructionBlock.schema.json"}
+    },
+    "has_stale_critical_evidence": {"type": "boolean"}
+  },
+  "required": ["trip_request_id", "plan_revision_version", "item_id", "locale", "generated_at", "blocks", "has_stale_critical_evidence"],
+  "x-status": "PROPOSED",
+  "x-open-decisions": ["OD-HOW-001", "OD-HOW-005", "OD-HOW-006", "OD-HOW-008"],
+  "x-requirement-refs": ["HOW-001", "FR-HOW-001-01", "FR-HOW-001-02", "AC-HOW-001-01", "AC-HOW-001-02", "AC-HOW-001-03"]
+}

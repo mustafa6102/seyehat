@@ -1,0 +1,125 @@
+{
+    "note": "Temsili varış fotoğrafları: Wikimedia Commons, özgür lisans (CC BY / CC BY-SA). Her kullanımda yazar ve lisans gösterilir.",
+    "photos": {
+        "amsterdam": {
+            "file": "amsterdam.webp",
+            "height": 1012,
+            "title": "Amsterdam Canals - July 2006",
+            "artist": "Diliff",
+            "license": "CC BY 2.5",
+            "license_url": "https://creativecommons.org/licenses/by/2.5",
+            "source": "https://commons.wikimedia.org/wiki/File:Amsterdam_Canals_-_July_2006.jpg"
+        },
+        "athens": {
+            "file": "athens.webp",
+            "height": 1200,
+            "title": "Attica 06-13 Athens 50 View from Philopappos - Acropolis Hill",
+            "artist": "A.Savin",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+            "source": "https://commons.wikimedia.org/wiki/File:Attica_06-13_Athens_50_View_from_Philopappos_-_Acropolis_Hill.jpg"
+        },
+        "berlin": {
+            "file": "berlin.webp",
+            "height": 1200,
+            "title": "Berlin Mitte June 2023 01",
+            "artist": "ArildV",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source": "https://commons.wikimedia.org/wiki/File:Berlin_Mitte_June_2023_01.jpg"
+        },
+        "budapest": {
+            "file": "budapest.webp",
+            "height": 1080,
+            "title": "HUN-2015-Budapest-Hungarian Parliament (Budapest) 2015-02",
+            "artist": "Godot13",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source": "https://commons.wikimedia.org/wiki/File:HUN-2015-Budapest-Hungarian_Parliament_(Budapest)_2015-02.jpg"
+        },
+        "istanbul": {
+            "file": "istanbul.webp",
+            "height": 1253,
+            "title": "Exterior of Sultan Ahmed I Mosque in Istanbul, Turkey 002",
+            "artist": "Moonik",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+            "source": "https://commons.wikimedia.org/wiki/File:Exterior_of_Sultan_Ahmed_I_Mosque_in_Istanbul,_Turkey_002.jpg"
+        },
+        "london": {
+            "file": "london.webp",
+            "height": 1080,
+            "title": "Canary Wharf from Limehouse London June 2016 HDR",
+            "artist": "King of Hearts",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source": "https://commons.wikimedia.org/wiki/File:Canary_Wharf_from_Limehouse_London_June_2016_HDR.jpg"
+        },
+        "munich": {
+            "file": "munich.webp",
+            "height": 889,
+            "title": "Frauenkirche Munich, March 2018",
+            "artist": "Martin Falbisoner",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source": "https://commons.wikimedia.org/wiki/File:Frauenkirche_Munich,_March_2018.jpg"
+        },
+        "paris": {
+            "file": "paris.webp",
+            "height": 1280,
+            "title": "Arc de triomphe du carrousel in Paris France",
+            "artist": "Tim Adams",
+            "license": "CC BY 3.0",
+            "license_url": "https://creativecommons.org/licenses/by/3.0",
+            "source": "https://commons.wikimedia.org/wiki/File:Arc_de_triomphe_du_carrousel_in_Paris_France.jpg"
+        },
+        "prague": {
+            "file": "prague.webp",
+            "height": 1080,
+            "title": "North view of Charles Bridge from Mánesův most, Prague 20160808 1",
+            "artist": "DXR",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source": "https://commons.wikimedia.org/wiki/File:North_view_of_Charles_Bridge_from_M%C3%A1nes%C5%AFv_most,_Prague_20160808_1.jpg"
+        },
+        "rome": {
+            "file": "rome.webp",
+            "height": 1127,
+            "title": "Colosseum in Rome-April 2007-1- copie 2B",
+            "artist": "Diliff",
+            "license": "CC BY-SA 2.5",
+            "license_url": "https://creativecommons.org/licenses/by-sa/2.5",
+            "source": "https://commons.wikimedia.org/wiki/File:Colosseum_in_Rome-April_2007-1-_copie_2B.jpg"
+        }
+    },
+    "codes": {
+        "IST": "istanbul",
+        "SAW": "istanbul",
+        "AMS": "amsterdam",
+        "LON": "london",
+        "LHR": "london",
+        "LGW": "london",
+        "STN": "london",
+        "LTN": "london",
+        "LCY": "london",
+        "PAR": "paris",
+        "CDG": "paris",
+        "ORY": "paris",
+        "ROM": "rome",
+        "FCO": "rome",
+        "CIA": "rome",
+        "BER": "berlin",
+        "MUC": "munich",
+        "PRG": "prague",
+        "BUD": "budapest",
+        "ATH": "athens"
+    },
+    "aliases": {
+        "londra": "london",
+        "roma": "rome",
+        "munih": "munich",
+        "prag": "prague",
+        "budapeste": "budapest",
+        "atina": "athens"
+    }
+}

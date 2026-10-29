@@ -19,7 +19,7 @@ final class BrowserScriptTest extends TestCase
         $result = Process::path(base_path())->timeout(120)->run(['node', '--test', 'tests/js/flight-ui.test.mjs']);
 
         self::assertTrue($result->successful(), $result->output().$result->errorOutput());
-        self::assertMatchesRegularExpression('/ℹ pass 21\b/u', $result->output());
+        self::assertMatchesRegularExpression('/ℹ pass 22\b/u', $result->output());
         self::assertMatchesRegularExpression('/ℹ fail 0\b/u', $result->output());
     }
 
@@ -34,6 +34,48 @@ final class BrowserScriptTest extends TestCase
 
         self::assertTrue($result->successful(), $result->output().$result->errorOutput());
         self::assertMatchesRegularExpression('/ℹ pass 6\b/u', $result->output());
+        self::assertMatchesRegularExpression('/ℹ fail 0\b/u', $result->output());
+    }
+
+    #[Test]
+    public function day_plan_behaviour_suite_passes(): void
+    {
+        if (! Process::run(['node', '--version'])->successful()) {
+            self::markTestSkipped('Node.js is not available.');
+        }
+
+        $result = Process::path(base_path())->timeout(120)->run(['node', '--test', 'tests/js/plan-days.test.mjs']);
+
+        self::assertTrue($result->successful(), $result->output().$result->errorOutput());
+        self::assertMatchesRegularExpression('/ℹ pass 6\b/u', $result->output());
+        self::assertMatchesRegularExpression('/ℹ fail 0\b/u', $result->output());
+    }
+
+    #[Test]
+    public function contextual_how_to_guide_suite_passes(): void
+    {
+        if (! Process::run(['node', '--version'])->successful()) {
+            self::markTestSkipped('Node.js is not available.');
+        }
+
+        $result = Process::path(base_path())->timeout(120)->run(['node', '--test', 'tests/js/how-guide.test.mjs']);
+
+        self::assertTrue($result->successful(), $result->output().$result->errorOutput());
+        self::assertMatchesRegularExpression('/ℹ pass 4\b/u', $result->output());
+        self::assertMatchesRegularExpression('/ℹ fail 0\b/u', $result->output());
+    }
+
+    #[Test]
+    public function poi_closed_place_recommendation_suite_passes(): void
+    {
+        if (! Process::run(['node', '--version'])->successful()) {
+            self::markTestSkipped('Node.js is not available.');
+        }
+
+        $result = Process::path(base_path())->timeout(120)->run(['node', '--test', 'tests/js/poi-ui.test.mjs']);
+
+        self::assertTrue($result->successful(), $result->output().$result->errorOutput());
+        self::assertMatchesRegularExpression('/ℹ pass 2\b/u', $result->output());
         self::assertMatchesRegularExpression('/ℹ fail 0\b/u', $result->output());
     }
 

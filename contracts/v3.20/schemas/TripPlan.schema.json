@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.20:TripPlan",
+  "title": "TripPlan",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trip_request_id": {"type": "string", "minLength": 1},
+    "trip": {"oneOf": [{"$ref": "../../v3.16/schemas/Trip.schema.json"}, {"type": "null"}]},
+    "revision": {"oneOf": [{"$ref": "./PlanRevision.schema.json"}, {"type": "null"}]},
+    "day_frame": {"$ref": "../../v3.18/schemas/TripPlan.schema.json#/$defs/DayFrame"}
+  },
+  "required": ["trip_request_id", "trip", "revision", "day_frame"],
+  "x-contract-id": "SCH-TripPlan",
+  "x-version": "3.20",
+  "x-status": "ACTIVE",
+  "x-replaces": "urn:ai-seyahat:v3.18:TripPlan",
+  "x-requirement-refs": ["TRIP-BLD-001", "DAY-001", "RULE-DAY-001-01", "AC-DAY-001-01"],
+  "x-open-decisions": ["ADR-010", "OD-031", "OD-032", "OD-033", "OD-034", "OD-035"]
+}

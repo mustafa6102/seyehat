@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.20:ItineraryItem",
+  "title": "ItineraryItem",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "item_id": {"type": "string", "minLength": 1, "readOnly": true},
+    "item_type": {"type": "string", "enum": ["POI"]},
+    "constraint_type": {"type": "string", "enum": ["FLEXIBLE"]},
+    "poi_snapshot": {"$ref": "../../v3.15/schemas/Poi.schema.json", "description": "Immutable provider-independent POI snapshot; planning_duration never changes this evidence."},
+    "day_assignment": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "date": {"type": "string", "format": "date"},
+            "position": {"type": "integer", "minimum": 1},
+            "feasibility_status": {"type": "string", "enum": ["NOT_EVALUATED"]}
+          },
+          "required": ["date", "position", "feasibility_status"]
+        }
+      ]
+    },
+    "planning_duration": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "minutes": {"type": "integer", "minimum": 1},
+            "source": {"type": "string", "enum": ["USER_PROVIDED"]},
+            "verification_status": {"type": "string", "enum": ["UNVERIFIED"]}
+          },
+          "required": ["minutes", "source", "verification_status"]
+        }
+      ],
+      "description": "OD-030 A. User input only; no provider/opening-hours evidence and no feasibility claim. Older revisions are read as null."
+    }
+  },
+  "required": ["item_id", "item_type", "constraint_type", "poi_snapshot", "day_assignment", "planning_duration"],
+  "x-contract-id": "SCH-ItineraryItem",
+  "x-version": "3.20",
+  "x-status": "ACTIVE",
+  "x-replaces": "urn:ai-seyahat:v3.18:ItineraryItem",
+  "x-requirement-refs": ["DAY-001", "RULE-DAY-001-01", "AC-DAY-001-01", "TRIP-BLD-001", "FR-TRIP-BLD-001-02"],
+  "x-open-decisions": ["OD-013", "OD-031", "OD-032", "OD-033", "OD-034", "OD-035"]
+}

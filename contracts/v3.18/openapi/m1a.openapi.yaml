@@ -1,0 +1,75 @@
+openapi: 3.1.0
+info:
+  title: AI Travel Planner M1A API
+  version: 3.18.0
+  description: >-
+    v3.17.0'ı devralan versioned contract delta (OD-029 RESOLVED, Seçenek A). Plan öğesinin elle bir güne atanması, gün içi
+    sıralanması ve atamanın kaldırılması eklenir. Saat, süre, ulaşım süresi, tampon, tempo ve uygulanabilirlik tanımlanmadı
+    (DAY-001 OD-030..035 OPEN). Plan operasyonlarının yanıtları v3.18 SCH-TripPlan'dır (day_frame + day_assignment).
+servers: []
+x-inherits: ../../v3.16/openapi/m1a.openapi.yaml
+x-operation-changes:
+  - operation: OP-getTripRequestPlan
+    semantics_changed: false
+    note: 200 yanıtı v3.18 SCH-TripPlan; day_frame her okumada TripRequest'ten türetilir (RULE-DAY-001-04). Trip yoksa da day_frame döner.
+  - operation: OP-addTripPlanPoiItem
+    semantics_changed: false
+    note: 201 yanıtı v3.18 SCH-TripPlan. Yeni öğe day_assignment=null (güne atanmamış) olarak eklenir; change.moved_item_ids boştur.
+  - operation: OP-removeTripPlanItem
+    semantics_changed: false
+    note: >-
+      200 yanıtı v3.18 SCH-TripPlan. Güne atanmış öğe çıkarılırsa aynı gündeki sonraki öğelerin position değeri bir azalır (gün içi
+      sıra 1..n kesintisiz kalır, göreli sıra değişmez); change.moved_item_ids boştur.
+paths:
+  /trip-requests/{tripRequestId}/plan/items/{itemId}/day-assignment:
+    put:
+      operationId: assignTripPlanItemDay
+      security:
+        - bearerAuth: []
+      x-contract-id: OP-assignTripPlanItemDay
+      x-status: ACTIVE
+      x-requirement-refs: [DAY-001, RULE-DAY-001-04, RULE-DAY-001-05, FR-DAY-001-03, AC-DAY-001-05, AC-DAY-001-06, AC-DAY-001-07, AC-DAY-001-08, TRIP-BLD-001, FR-TRIP-BLD-001-01, FR-TRIP-BLD-001-02, PLT-CONC-001]
+      x-open-decisions: [ADR-010, OD-030, OD-031, OD-032, OD-033, OD-034, OD-035]
+      x-permission-refs: [AUTH-TS-007, AUTH-TS-008, AUTH-TS-103, AUTH-TS-104]
+      x-authorization: v3.16 x-authorization ile aynı kontrol sırası (401 -> 404 -> 403, gövde/ön koşul/idempotency değerlendirmesinden önce).
+      description: >-
+        CURRENT revision'daki öğeyi day_frame günlerinden birine atar, aynı gün içinde yeniden sıralar veya (date=null) atamasını
+        kaldırır; yeni PlanRevision oluşturur (TRN-PLANREVISION-01). Hedef günde öğe position'a yerleştirilir ve o gündeki position
+        >= değerindeki diğer öğeler bir kayar; position verilmezse günün sonuna eklenir. Öğenin eski günündeki sonraki öğeler bir
+        azalır. Gün içi sıra 1..n kesintisizdir. poi_snapshot, constraint_type ve diğer öğelerin günü değişmez. Değişiklik olmasa da
+        (aynı gün ve sıra) yeni revision oluşur. Atama uygulanabilirlik iddiası taşımaz (feasibility_status=NOT_EVALUATED).
+      parameters:
+        - {name: tripRequestId, in: path, required: true, schema: {type: string}}
+        - {name: itemId, in: path, required: true, schema: {type: string, minLength: 1, maxLength: 255}}
+        - {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1, maxLength: 255}}
+        - {name: If-Match, in: header, required: true, schema: {type: string}, description: '"<version>" (OD-027). If-None-Match kabul edilmez.'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                date: {type: ['string', 'null'], format: date, description: 'day_frame.days içinden yerel takvim günü; null = atamayı kaldır.'}
+                position: {type: integer, minimum: 1, description: 'Yalnız date null değilken; 1..(hedef günde öğe dışındaki öğe sayısı + 1). Verilmezse günün sonu.'}
+              required: [date]
+      responses:
+        '200':
+          description: Yeni CURRENT revision oluşturuldu (aynı anahtarla tekrar istekte ilk sonuç).
+          headers:
+            ETag: {description: 'Yeni revision sürümü.', schema: {type: string}}
+          content:
+            application/json:
+              schema: {$ref: ../schemas/TripPlan.schema.json}
+        '400': {description: 'Eksik Idempotency-Key, eksik/geçersiz If-Match, If-None-Match, tanımsız alan, geçersiz takvim tarihi, date=null ile position veya tam sayı olmayan position. RC-VALIDATION-SCHEMA.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '401': {description: 'RC-AUTHN-REQUIRED.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '403': {description: 'RC-AUTHZ-DENIED.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '404': {description: 'TripRequest, Trip veya CURRENT revision içinde öğe yok. RC-RESOURCE-NOT-FOUND.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '409': {description: 'RC-CONFLICT-REVISION-STALE veya RC-CONFLICT-IDEMPOTENCY-KEY.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+        '422': {description: 'day_frame UNAVAILABLE iken gün ataması (RC-VALIDATION-DAY-FRAME-UNAVAILABLE) veya date day_frame dışında / position aralık dışında (RC-VALIDATION-DAY-ASSIGNMENT-INVALID). Hiçbir kalıcı durum yazılmaz.', content: {application/json: {schema: {$ref: ../../schemas/ErrorEnvelope.schema.json}}}}
+x-web-channel:
+  decision: OD-028 (v3.17, Seçenek A)
+  operation: OP-assignTripPlanItemDay
+  web: 'PUT /web-api/v1/trip-requests/{tripRequestId}/plan/items/{itemId}/day-assignment'
+  note: Aynı yol, metot, şema ve işleyici; principal oturumdan, durum değiştiren istek CSRF (X-CSRF-TOKEN) ile. /api/v1 Bearer-only kalır.

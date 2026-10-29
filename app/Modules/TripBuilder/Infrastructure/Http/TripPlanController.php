@@ -13,7 +13,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * OP-getTripRequestPlan, OP-addTripPlanPoiItem, OP-removeTripPlanItem (v3.16). Check order (x-authorization): bearer
+ * OP-getTripRequestPlan, OP-addTripPlanPoiItem, OP-removeTripPlanItem (v3.16), OP-assignTripPlanItemDay (v3.18) and
+ * OP-setTripPlanItemDuration (v3.20). Check order (x-authorization): bearer
  * authentication (middleware) -> TripRequest exists (404) -> owner (403) -> request validation -> OD-027 processing.
  */
 final readonly class TripPlanController
@@ -56,6 +57,28 @@ final readonly class TripPlanController
         return $this->mutate(fn (): array => $this->plans->addPoi($tripRequestId, $key, $precondition, $poiId), 201);
     }
 
+    /** OP-addTripPlanEventItem (EVT-001 v3.22). Body is exactly {event_id}; snapshot, day/time, duration are never accepted. */
+    public function storeEvent(Request $request, string $tripRequestId): JsonResponse
+    {
+        $denied = $this->authorize($request, $tripRequestId);
+        if ($denied !== null) {
+            return $denied;
+        }
+        $key = $request->header('Idempotency-Key');
+        $body = $request->json()->all();
+        $eventId = $body['event_id'] ?? null;
+        $precondition = PlanPrecondition::fromHeaders($request->header('If-Match'), $request->header('If-None-Match'));
+        if (! $this->validKey($key) || array_keys($body) !== ['event_id'] || ! is_string($eventId) || $eventId === '' || strlen($eventId) > 255
+            || $precondition === null) {
+            return $this->error('SCHEMA_VALIDATION_FAILED', 'İstek sözleşme doğrulamasından geçemedi.', 400);
+        }
+        if (! $this->isSearchable($tripRequestId)) {
+            return $this->error('TRIP_REQUEST_INCOMPLETE', 'Seyahat talebinin zorunlu alanları eksik.', 422);
+        }
+
+        return $this->mutate(fn (): array => $this->plans->addEvent($tripRequestId, $key, $precondition, $eventId), 201);
+    }
+
     public function destroy(Request $request, string $tripRequestId, string $itemId): JsonResponse
     {
         $denied = $this->authorize($request, $tripRequestId);
@@ -70,6 +93,52 @@ final readonly class TripPlanController
         }
 
         return $this->mutate(fn (): array => $this->plans->removeItem($tripRequestId, $key, $precondition, $itemId), 200);
+    }
+
+    /**
+     * OP-assignTripPlanItemDay (v3.18, OD-029 A). Body is exactly {date} or {date, position}: date null removes the
+     * assignment (no position then); a time, duration, feasibility or snapshot field is never accepted.
+     */
+    public function assignDay(Request $request, string $tripRequestId, string $itemId): JsonResponse
+    {
+        $denied = $this->authorize($request, $tripRequestId);
+        if ($denied !== null) {
+            return $denied;
+        }
+        $key = $request->header('Idempotency-Key');
+        $body = $request->json()->all();
+        $precondition = PlanPrecondition::fromHeaders($request->header('If-Match'), $request->header('If-None-Match'));
+        $date = $body['date'] ?? null;
+        $position = $body['position'] ?? null;
+        $keys = array_keys($body);
+        sort($keys);
+        $validDate = $date === null || (is_string($date) && preg_match('/^([0-9]{4})-([0-9]{2})-([0-9]{2})$/', $date, $m) === 1 && checkdate((int) $m[2], (int) $m[3], (int) $m[1]));
+        if (! $this->validKey($key) || $precondition === null || $precondition->ifNoneMatchAny || $itemId === '' || strlen($itemId) > 255
+            || ! in_array($keys, [['date'], ['date', 'position']], true) || ! $validDate
+            || ($keys === ['date', 'position'] && ($date === null || ! is_int($position) || $position < 1))) {
+            return $this->error('SCHEMA_VALIDATION_FAILED', 'İstek sözleşme doğrulamasından geçemedi.', 400);
+        }
+
+        return $this->mutate(fn (): array => $this->plans->assignDay($tripRequestId, $key, $precondition, $itemId, $date, $position), 200);
+    }
+
+    /** OP-setTripPlanItemDuration (OD-030 A). Body is exactly {minutes}; source/status are server constants. */
+    public function setDuration(Request $request, string $tripRequestId, string $itemId): JsonResponse
+    {
+        $denied = $this->authorize($request, $tripRequestId);
+        if ($denied !== null) {
+            return $denied;
+        }
+        $key = $request->header('Idempotency-Key');
+        $body = $request->json()->all();
+        $minutes = $body['minutes'] ?? null;
+        $precondition = PlanPrecondition::fromHeaders($request->header('If-Match'), $request->header('If-None-Match'));
+        if (! $this->validKey($key) || $precondition === null || $precondition->ifNoneMatchAny || $itemId === '' || strlen($itemId) > 255
+            || array_keys($body) !== ['minutes'] || ! is_int($minutes) || $minutes < 1) {
+            return $this->error('SCHEMA_VALIDATION_FAILED', 'İstek sözleşme doğrulamasından geçemedi.', 400);
+        }
+
+        return $this->mutate(fn (): array => $this->plans->setDuration($tripRequestId, $key, $precondition, $itemId, $minutes), 200);
     }
 
     /** 404 for an unknown TripRequest, 403 for another principal or an ownerless legacy TripRequest (never claimed). */

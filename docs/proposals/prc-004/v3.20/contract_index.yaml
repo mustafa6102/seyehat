@@ -1,0 +1,12 @@
+version: 3.20.0-proposal
+status: PROPOSED
+inherits: ../../../../registry/v3.19/contract_index.yaml
+contracts:
+  - {id: SCH-PriceSnapshot-PROPOSED, path: docs/proposals/prc-004/v3.20/schemas/PriceSnapshot.schema.json, status: PROPOSED}
+  - {id: SCH-PriceHistoryEvaluation-PROPOSED, path: docs/proposals/prc-004/v3.20/schemas/PriceHistoryEvaluation.schema.json, status: PROPOSED}
+  - {id: OP-getTripRequestPriceHistoryEvaluation-PROPOSED, path: docs/proposals/prc-004/v3.20/openapi/m1a.openapi.yaml, status: PROPOSED}
+  - {id: PRC-PRICE-HISTORY-OWNER-PROPOSED, path: docs/proposals/prc-004/v3.20/registries/permissions.yaml, status: PROPOSED}
+  - {id: PRC-PRICE-SNAPSHOT-LIFECYCLE-PROPOSED, path: docs/proposals/prc-004/v3.20/registries/lifecycle.yaml, status: PROPOSED}
+  - {id: CFG-PRC-SUFFICIENCY-PROPOSED, path: docs/proposals/prc-004/v3.20/registries/config.yaml, status: PROPOSED}
+  - {id: CFG-PRC-OUTLIER-PROPOSED, path: docs/proposals/prc-004/v3.20/registries/config.yaml, status: PROPOSED}
+note: Non-normative; active v3.19 contract and registry remain unchanged.

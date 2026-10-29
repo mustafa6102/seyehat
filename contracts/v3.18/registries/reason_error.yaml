@@ -1,0 +1,49 @@
+version: 3.18.0
+inherits: ../../v3.16/registries/reason_error.yaml
+new_records:
+  - id: RC-VALIDATION-DAY-FRAME-UNAVAILABLE
+    kind: ERROR
+    category: VALIDATION
+    machine_code: DAY_FRAME_UNAVAILABLE
+    http_status: 422
+    audit_reason_code: DAY_FRAME_UNAVAILABLE
+    message_key_tr: error.day_frame_unavailable
+    default_message_tr: Bu seyahat talebinin tarihlerinden plan günleri oluşturulamıyor; yer bir güne atanamaz.
+    retryable: false
+    user_actionable: true
+    severity: WARN
+    fallback: Öğe güne atanmamış kalır; plan değişmez.
+    pii_safe_logging: true
+    refs: [DAY-001, RULE-DAY-001-04, AC-DAY-001-05, OP-assignTripPlanItemDay, OD-029]
+  - id: RC-VALIDATION-DAY-ASSIGNMENT-INVALID
+    kind: ERROR
+    category: VALIDATION
+    machine_code: DAY_ASSIGNMENT_INVALID
+    http_status: 422
+    audit_reason_code: DAY_ASSIGNMENT_INVALID
+    message_key_tr: error.day_assignment_invalid
+    default_message_tr: Seçilen gün seyahat tarihleri içinde değil veya sıra geçersiz.
+    retryable: false
+    user_actionable: true
+    severity: WARN
+    fallback: Plan değişmez; kullanıcı güncel planı yeniden yükler.
+    pii_safe_logging: true
+    refs: [DAY-001, RULE-DAY-001-05, AC-DAY-001-06, OP-assignTripPlanItemDay]
+reused_records:
+  - id: RC-VALIDATION-SCHEMA
+    applies_to: [OP-assignTripPlanItemDay]
+    note: Eksik Idempotency-Key, eksik/geçersiz If-Match, If-None-Match, tanımsız alan, geçersiz tarih biçimi, date=null ile position.
+  - id: RC-RESOURCE-NOT-FOUND
+    applies_to: [OP-assignTripPlanItemDay]
+  - id: RC-CONFLICT-REVISION-STALE
+    applies_to: [OP-assignTripPlanItemDay]
+  - id: RC-CONFLICT-IDEMPOTENCY-KEY
+    applies_to: [OP-assignTripPlanItemDay]
+  - id: RC-AUTHN-REQUIRED
+    applies_to: [OP-assignTripPlanItemDay]
+  - id: RC-AUTHZ-DENIED
+    applies_to: [OP-assignTripPlanItemDay]
+  - id: RC-DECISION-TRANSITION-APPLIED
+    applies_to: [OP-assignTripPlanItemDay, SCH-PlanRevision.change.reason_code]
+    note: Kullanıcının gün ataması/sıralaması/atama kaldırması.
+contract_gaps: []

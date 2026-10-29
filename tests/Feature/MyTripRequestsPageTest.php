@@ -31,7 +31,7 @@ final class MyTripRequestsPageTest extends TestCase
             ->assertSee('href="'.url('/').'"', false)
             ->assertDontSee('data-request-card', false)
             ->getContent();
-        self::assertMatchesRegularExpression('#href="'.preg_quote(url('/taleplerim'), '#').'"\s+aria-current="page"\s*>Taleplerim</a>#', $page);
+        self::assertMatchesRegularExpression('#href="'.preg_quote(url('/taleplerim'), '#').'"\s+aria-current="page"\s*>Seyahatlerim</a>#', $page);
 
         $this->get('/')->assertOk()->assertSee('href="'.url('/taleplerim').'"', false);
     }

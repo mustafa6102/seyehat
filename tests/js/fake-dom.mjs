@@ -169,8 +169,9 @@ export class FakeElement {
  * @param {(url: string, options: object) => {status: number, body?: unknown}} route
  * @param {Record<string, string>} initialStorage sessionStorage entries present before the script runs
  * @param {FakeElement|null} page optional element tree queried by document.querySelector(All)
+ * @param {object} windowOverrides extra or replaced window members (e.g. location, crypto)
  */
-export const loadScript = (path, elements, route, initialStorage = {}, page = null) => {
+export const loadScript = (path, elements, route, initialStorage = {}, page = null, windowOverrides = {}) => {
     const requests = [];
     const storage = new Map(Object.entries(initialStorage));
     const lookup = (selector) => elements[selector] ?? null;
@@ -195,6 +196,7 @@ export const loadScript = (path, elements, route, initialStorage = {}, page = nu
         },
         crypto: { randomUUID: () => '00000000-0000-4000-8000-000000000001' },
         history: { back() {} },
+        ...windowOverrides,
     };
     const fetch = async (url, options = {}) => {
         requests.push({ url, method: options.method ?? 'GET', headers: options.headers ?? {}, body: options.body ?? null });
@@ -213,7 +215,7 @@ export const loadScript = (path, elements, route, initialStorage = {}, page = nu
         };
     };
 
-    vm.runInNewContext(readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8'), { document, window, fetch, setTimeout, clearTimeout, console, URLSearchParams });
+    vm.runInNewContext(readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8'), { document, window, fetch, setTimeout, clearTimeout, console, URL, URLSearchParams });
 
     return { requests, storage };
 };

@@ -1,0 +1,169 @@
+{
+  "version": "3.22.0",
+  "inherits": "../v3.21/contract_index.yaml",
+  "contracts": [
+    {
+      "id": "SCH-Fact-3.22",
+      "path": "contracts/v3.22/schemas/DecisionSupport.schema.json#/$defs/Fact",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "SCH-BooleanFact-3.22",
+      "path": "contracts/v3.22/schemas/DecisionSupport.schema.json#/$defs/BooleanFact",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "SCH-InstantFact-3.22",
+      "path": "contracts/v3.22/schemas/DecisionSupport.schema.json#/$defs/InstantFact",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "SCH-DurationFact-3.22",
+      "path": "contracts/v3.22/schemas/DecisionSupport.schema.json#/$defs/DurationFact",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "SCH-TextFact-3.22",
+      "path": "contracts/v3.22/schemas/DecisionSupport.schema.json#/$defs/TextFact",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "SCH-MoneyFact-3.22",
+      "path": "contracts/v3.22/schemas/DecisionSupport.schema.json#/$defs/MoneyFact",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "SCH-ProtectionInput-3.22",
+      "path": "contracts/v3.22/schemas/DecisionSupport.schema.json#/$defs/ProtectionInput",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "SCH-ProtectionResult-3.22",
+      "path": "contracts/v3.22/schemas/DecisionSupport.schema.json#/$defs/ProtectionResult",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "SCH-TransferComponent-3.22",
+      "path": "contracts/v3.22/schemas/DecisionSupport.schema.json#/$defs/TransferComponent",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "SCH-TransferInput-3.22",
+      "path": "contracts/v3.22/schemas/DecisionSupport.schema.json#/$defs/TransferInput",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "SCH-TransferResult-3.22",
+      "path": "contracts/v3.22/schemas/DecisionSupport.schema.json#/$defs/TransferResult",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "SCH-FoodInput-3.22",
+      "path": "contracts/v3.22/schemas/DecisionSupport.schema.json#/$defs/FoodInput",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "SCH-FoodResult-3.22",
+      "path": "contracts/v3.22/schemas/DecisionSupport.schema.json#/$defs/FoodResult",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "SCH-EventInput-3.22",
+      "path": "contracts/v3.22/schemas/DecisionSupport.schema.json#/$defs/EventInput",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "SCH-EventResult-3.22",
+      "path": "contracts/v3.22/schemas/DecisionSupport.schema.json#/$defs/EventResult",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "SCH-OpportunityResult-3.22",
+      "path": "contracts/v3.22/schemas/DecisionSupport.schema.json#/$defs/OpportunityResult",
+      "status": "ACTIVE",
+      "audience": "PUBLIC"
+    },
+    {
+      "id": "OP-getSelectedFlightOpportunity",
+      "path": "contracts/v3.22/openapi/m1a.openapi.json",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "REG-od_impact-3.22",
+      "path": "contracts/v3.22/registries/od_impact.json",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "REG-permissions-3.22",
+      "path": "contracts/v3.22/registries/permissions.json",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "REG-lifecycle-3.22",
+      "path": "contracts/v3.22/registries/lifecycle.json",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "REG-config-3.22",
+      "path": "contracts/v3.22/registries/config.json",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "REG-reason_error-3.22",
+      "path": "contracts/v3.22/registries/reason_error.json",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "REG-service_operations-3.22",
+      "path": "contracts/v3.22/registries/service_operations.json",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "REG-traceability-3.22",
+      "path": "contracts/v3.22/registries/traceability.json",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "INT-evaluateConnectionProtection",
+      "path": "contracts/v3.22/registries/service_operations.json",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "INT-evaluateTransfer",
+      "path": "contracts/v3.22/registries/service_operations.json",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "INT-projectFoodEvidence",
+      "path": "contracts/v3.22/registries/service_operations.json",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    },
+    {
+      "id": "INT-projectEventEvidence",
+      "path": "contracts/v3.22/registries/service_operations.json",
+      "status": "ACTIVE",
+      "audience": "INTERNAL"
+    }
+  ],
+  "decisions": "decisions.json",
+  "stories": "story_overrides.json",
+  "note": "New active delta. Proposal backend-eight-draft-1 and day-001-v3.22 remain NON_NORMATIVE."
+}

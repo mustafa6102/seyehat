@@ -1,0 +1,61 @@
+version: 3.18.0
+inherits: ../v3.16/story_overrides.yaml
+overrides:
+  - id: DAY-001
+    phase: M3
+    semantics_changed: false
+    reason: OD-029 (Seçenek A) ile gün çerçevesi ve elle gün ataması/sıralaması (v3.18). Mevcut RULE/FR/AC/TS kimlikleri ve anlamları korunur; uygulanabilirlik kapsam dışıdır.
+    preserved_refs:
+      rules: [RULE-DAY-001-01, RULE-DAY-001-02, RULE-DAY-001-03]
+      functional_requirements: [FR-DAY-001-01, FR-DAY-001-02]
+      acceptance_criteria: [AC-DAY-001-01, AC-DAY-001-02, AC-DAY-001-03, AC-DAY-001-04]
+      test_scenarios: [TS-DAY-001-01, TS-DAY-001-02, TS-DAY-001-03, TS-DAY-001-04]
+    clarified_refs:
+      RULE-DAY-001-02: 'v3.18: Elle gün ataması kullanıcı kararıdır ve "uygulanabilir pencereye atama" değildir; FIXED-önce yerleştirme ve otomatik atama OD-030..035 kararına kadar uygulanmaz.'
+      RULE-DAY-001-03: 'v3.18: Güne atanmış öğe de Domain Feasibility Gate''ten geçmemiştir ve uygulanabilir sayılmaz (feasibility_status=NOT_EVALUATED). Gate girdileri OD-030..035 OPEN.'
+    added_refs:
+      rules:
+        RULE-DAY-001-04: >-
+          Plan günleri yalnız TripRequest'in EXACT gidiş ve dönüş tarihlerinden (ROUND_TRIP, iki uç dahil) türetilir ve varış noktasının
+          IANA saat dilimindeki yerel takvim günleridir. ONE_WAY, FLEXIBLE tarih, eski tarih modeli, eksik talep veya geçersiz/bilinmeyen
+          saat diliminde gün türetilmez; tarih seçilmez veya uydurulmaz. Gün çerçevesi saklanmaz, her okumada türetilir.
+        RULE-DAY-001-05: >-
+          Kullanıcı planlanmamış veya atanmış FLEXIBLE POI öğesini gün çerçevesindeki bir güne elle atayabilir, gün içinde sıralayabilir
+          veya atamayı kaldırabilir. Atama saat, süre, ulaşım veya uygulanabilirlik taşımaz ve POI olgularını (UNKNOWN/UNVERIFIED dahil)
+          değiştirmez. Gün içi sıra 1..n kesintisizdir.
+      functional_requirements:
+        FR-DAY-001-03: >-
+          Plan okuması türetilmiş gün çerçevesini döndürür. Öğenin günü/sırası OP-assignTripPlanItemDay ile If-Match ve Idempotency-Key
+          kullanılarak değiştirilir; her değişiklik yeni immutable PlanRevision oluşturur ve change.moved_item_ids hedef öğeyi listeler.
+      acceptance_criteria:
+        AC-DAY-001-05: >-
+          Given ROUND_TRIP ve EXACT gidiş/dönüş tarihli, varış saat dilimi geçerli TripRequest When plan okunur Then day_frame AVAILABLE ve
+          günler gidiş ile dönüş arasındaki (dahil) her takvim günüdür; Given ONE_WAY, FLEXIBLE tarih veya bilinmeyen saat dilimi Then
+          day_frame UNAVAILABLE ve gerekçe döner, gün ataması 422 RC-VALIDATION-DAY-FRAME-UNAVAILABLE ile reddedilir ve plan değişmez.
+        AC-DAY-001-06: >-
+          Given CURRENT revision'da planlanmamış öğe When güncel If-Match ile çerçevedeki bir güne atanır Then yeni revision oluşur, öğe
+          {date, position, feasibility_status=NOT_EVALUATED} taşır, poi_snapshot değişmez, moved_item_ids öğeyi içerir ve önceki revision
+          değişmeden kalır; Given çerçeve dışı tarih veya aralık dışı sıra Then 422 RC-VALIDATION-DAY-ASSIGNMENT-INVALID ve yeni revision yok.
+        AC-DAY-001-07: >-
+          Given aynı günde birden çok öğe When öğe yeni sıraya taşınır, başka güne atanır, ataması kaldırılır veya plandan çıkarılır Then
+          etkilenen günlerde sıra 1..n kesintisiz kalır ve diğer öğelerin göreli sırası korunur.
+        AC-DAY-001-08: >-
+          Given eski sürüm If-Match When gün ataması gönderilir Then 409 RC-CONFLICT-REVISION-STALE; Given aynı Idempotency-Key ve aynı
+          istek Then ilk sonuç döner ve yeni revision oluşmaz; farklı istekte 409 RC-CONFLICT-IDEMPOTENCY-KEY; Given oturum/token yok Then
+          401, owner değil Then 403 ve hiçbir kalıcı durum yazılmaz.
+      test_scenarios:
+        TS-DAY-001-05: [Gün çerçevesi türetme ve kullanılamayan çerçeve, [5]]
+        TS-DAY-001-06: [Elle gün ataması ve çerçeve/sıra doğrulaması, [6]]
+        TS-DAY-001-07: [Gün içi sıralama, taşıma, atama kaldırma ve çıkarmada kesintisiz sıra, [7]]
+        TS-DAY-001-08: [Stale revision, idempotency ve yetkilendirme, [8]]
+    dependencies: [OD-029, OD-027, OD-028, ADR-010, TRIP-BLD-001, OD-030, OD-031, OD-032, OD-033, OD-034, OD-035]
+  - id: TRIP-BLD-001
+    phase: M3
+    semantics_changed: false
+    reason: v3.18 gün ataması ile ItineraryItem/PlanRevision açıklamaları.
+    preserved_refs:
+      rules: [RULE-TRIP-BLD-001-05]
+      functional_requirements: [FR-TRIP-BLD-001-02]
+    clarified_refs:
+      RULE-TRIP-BLD-001-05: 'v3.18: Planlanmamış öğe day_assignment=null taşır. Elle güne atanmış öğe yalnız tarih ve gün içi sıra taşır; saat ve süre taşımaz ve uygulanabilir işaretlenmez (RULE-DAY-001-05).'
+      FR-TRIP-BLD-001-02: 'v3.18: diff = change{base_version, added_item_ids, removed_item_ids, moved_item_ids}; reason_code = RC-DECISION-TRANSITION-APPLIED.'

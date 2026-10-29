@@ -1,0 +1,4 @@
+version: 3.21.0
+inherits: ../v3.20/contract_index.yaml
+contracts: []
+note: OD-031 politika düzeyinde RESOLVED; yeni feasibility schema/operation ACTIVE değildir ve gate uygulanmaz.

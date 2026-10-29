@@ -1,0 +1,14 @@
+version: 3.20.0
+inherits: ../../v3.19/registries/od_impact.yaml
+decisions:
+  - id: OD-030
+    title: Plan öğesi saati ve ziyaret süresi kaynağı
+    status: RESOLVED
+    choice: A
+    approved_by: user
+    approved_at: 2026-10-23
+    affects: [RULE-DAY-001-01, AC-DAY-001-01, SCH-ItineraryItem, SCH-PlanRevision, OP-setTripPlanItemDuration]
+    decision: >-
+      Kullanıcı POI plan öğesi için pozitif tam sayı dakika girer. Değer USER_PROVIDED ve UNVERIFIED olarak saklanır;
+      provider kanıtı, çalışma saati doğrulaması, başlangıç/bitiş zamanı veya feasibility sonucu değildir.
+    not_decided: Ulaşım, çalışma saati, tampon/tempo, uçuş/konaklama sınırları ve feasibility sonucu (OD-031..035).

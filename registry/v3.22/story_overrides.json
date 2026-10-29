@@ -1,0 +1,63 @@
+{
+  "version": "3.22.0",
+  "inherits": "../v3.21/story_overrides.yaml",
+  "new_stories": [
+    {
+      "id": "NTF-001",
+      "epic": [
+        "EPIC-11"
+      ],
+      "feat": "FEAT-NOTIFICATION",
+      "status": "ACTIVE",
+      "source_proposal": "P8-NOT-001",
+      "scope": "Opportunity evaluation now; persisted watch/inbox later, not delivered",
+      "rules": {
+        "1": "Same owner TripRequest and same currency; verified complete price only.",
+        "2": "Durable notification dedupe watch/observation and atomic outbox remain required when activated.",
+        "3": "Pause/cancel, owner isolation and expiry remain mandatory."
+      },
+      "ac": {
+        "1": "ACTIVE watch matching fresh complete observation creates exactly one inbox and outbox atomically (BLOCKED).",
+        "2": "Repeated observation creates no duplicate notification/outbox (BLOCKED).",
+        "3": "PAUSED/CANCELLED or partial/stale/different currency observation creates no notification (BLOCKED).",
+        "4": "Other owner denied; repeated acknowledgement preserves read_at (BLOCKED except owner infrastructure).",
+        "5": "Given existing selected flight and user Money threshold When owner evaluates Then fresh verified same-currency price is MATCH iff <= threshold; otherwise NO_MATCH, NOT_VERIFIED or CURRENCY_MISMATCH; no notification or price guarantee."
+      },
+      "implementation_scope": "PARTIAL",
+      "phase": "M2",
+      "bus": [
+        "BUS-001",
+        "BUS-004"
+      ],
+      "nfr": [
+        "NFR-AUTH-001",
+        "NFR-IDEM-001"
+      ],
+      "title": "Fiyat e?i?i ve f?rsat bildirimi",
+      "story": "Kullan?c? olarak kendi seyahatimde do?rulanm?? fiyat?n belirledi?im e?i?e uyup uymad???n? g?rmek ve onayl? bildirim dilimi a??ld???nda takip etmek istiyorum.",
+      "fr": {
+        "1": "Owner watch olu?turur, okur, duraklat?r veya iptal eder; durable activation ayr? kap?d?r.",
+        "2": "E?le?en g?zlem kal?c? inbox ve atomik outbox olu?turur; durable activation ayr? kap?d?r.",
+        "3": "Mevcut u?u? se?imi kullan?c? e?i?ine kar?? owner-only, sa?lay?c? ?a?r?s?z de?erlendirilir."
+      }
+    }
+  ],
+  "feature_changes": [
+    {
+      "id": "FEAT-NOTIFICATION",
+      "from": "DEFERRED",
+      "to": "ACTIVE",
+      "scope": "NTF-001 AC-05 on-demand evaluation only; durable notifications still blocked"
+    }
+  ],
+  "preserved_story_requirements": [
+    "TRV-001",
+    "RCG-001",
+    "STF-003",
+    "TRF-001",
+    "PRC-004",
+    "FOOD-001",
+    "EVT-001"
+  ],
+  "note": "Existing AC texts not weakened; backend-only projections do not complete UI or persistence ACs."
+}

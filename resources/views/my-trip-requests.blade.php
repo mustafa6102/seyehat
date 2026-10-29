@@ -52,6 +52,7 @@
                                 <a class="btn btn-primary" href="{{ route('flights.search', ['tripRequestId' => $card['id']]) }}" data-request-action>Uçuş ara</a>
                             @endif
                             <a class="btn btn-secondary" href="{{ route('trip-plan.show', ['tripRequestId' => $card['id']]) }}">Seyahat Planım</a>
+                            <a class="btn btn-secondary" href="{{ route('ground-connections.show', ['tripRequestId' => $card['id']]) }}">Kara bağlantıları</a>
                             <a class="btn btn-link" href="{{ route('trip-planner.show', ['tripRequestId' => $card['id']]) }}">Talep özeti</a>
                         </div>
                     </article>

@@ -1,0 +1,12 @@
+version: 3.20.0
+inherits: ../../v3.19/registries/traceability.yaml
+traceability:
+  - requirement: RULE-DAY-001-01
+    artifacts: [schema:ItineraryItem.schema.json, openapi:OP-setTripPlanItemDuration]
+    tests: [TS-DAY-001-01]
+    note: OD-030 A yalnız kullanıcı kaynaklı UNVERIFIED ziyaret süresini açar; zamanlama ve feasibility hâlâ kapsam dışıdır.
+  - requirement: AC-DAY-001-01
+    artifacts: [schema:ItineraryItem.schema.json, schema:PlanRevision.schema.json, openapi:OP-setTripPlanItemDuration]
+    tests: [TS-DAY-001-01]
+    open_decisions: [OD-031, OD-032, OD-033, OD-034, OD-035]
+    note: Süre girişi bağımsız olarak uygulanmıştır; AC'nin tam feasibility sonucu açık kararlar nedeniyle PARTIAL kalır.

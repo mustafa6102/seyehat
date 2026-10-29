@@ -156,36 +156,110 @@ final class RealFlightListingFlowTest extends TestCase
         Http::assertNothingSent();
     }
 
+    /**
+     * TS-FLT-002-08 (AC-FLT-002-07), TS-FLT-002-10 (AC-FLT-002-09), TS-FLT-002-11 (AC-FLT-002-06): an EXACT/EXACT
+     * IST-AMS round trip is one two-slice provider request; each listed offer carries both directions in order with
+     * UTC-based durations across the 2026-10-25 EU DST change; offers with a missing, reversed or foreign slice are dropped.
+     */
     #[Test]
-    public function an_ist_ams_round_trip_shows_the_truthful_blocker_and_never_reaches_the_provider(): void
+    public function an_ist_ams_round_trip_is_one_two_slice_search_listing_ordered_outbound_and_inbound_segments(): void
+    {
+        Http::fake(['api.duffel.com/air/offer_requests*' => Http::response($this->body([
+            $this->roundTripOffer('off_rt'),
+            $this->roundTripOffer('off_one_slice', slices: 1),
+            $this->roundTripOffer('off_reversed', reversed: true),
+            $this->roundTripOffer('off_elsewhere', inboundDestination: 'SAW'),
+        ]))]);
+        $tripId = $this->createRoundTrip(['type' => 'exact', 'outbound' => '2026-10-24', 'return' => '2026-10-31']);
+
+        $this->get('/planlar/'.$tripId.'/ucuslar')->assertOk()
+            ->assertSee('data-search-start', false)
+            ->assertDontSee('data-journey-blocker', false);
+
+        $id = $this->postJson('/api/v1/flight-search-jobs', ['trip_request_id' => $tripId], ['Idempotency-Key' => 'listing-5'])->assertAccepted()->json('search_id');
+        $poll = $this->getJson('/api/v1/flight-search-jobs/'.$id)->assertOk();
+
+        self::assertSame('COMPLETED', $poll->json('status'));
+        self::assertSame(['off_rt'], array_column($poll->json('result.offers'), 'provider_offer_id'));
+        $offer = $poll->json('result.offers.0');
+        self::assertSame('ROUND_TRIP', $offer['journey_type']);
+        self::assertSame(['OUTBOUND', 'INBOUND'], array_column($offer['segments'], 'direction'));
+        self::assertSame(['TK1951', 'TK1952'], array_map(fn (array $s): string => $s['operating_carrier'].$s['operating_flight_number'], $offer['segments']));
+        // Local clock and zone kept; duration from UTC instants (CEST outbound, CET inbound).
+        self::assertSame(['2026-10-24T10:05:00', 'Europe/Amsterdam', '2026-10-24T08:05:00+00:00'], array_values($offer['segments'][0]['arrival']));
+        self::assertSame([215, 205], array_column($offer['segments'], 'duration_minutes'));
+        // One total for the whole journey; nothing per direction.
+        self::assertSame(['minor_units' => 41000, 'currency' => 'EUR'], $offer['price']['value']);
+
+        Http::assertSentCount(1);
+        Http::assertSent(fn (Request $request): bool => $request->data()['data']['slices'] === [
+            ['origin' => 'IST', 'destination' => 'AMS', 'departure_date' => '2026-10-24'],
+            ['origin' => 'AMS', 'destination' => 'IST', 'departure_date' => '2026-10-31'],
+        ]);
+        $this->getJson('/api/v1/offers/off_rt')->assertOk()->assertJsonPath('journey_type', 'ROUND_TRIP')->assertJsonPath('segments.1.direction', 'INBOUND');
+    }
+
+    #[Test]
+    public function a_flexible_round_trip_shows_the_truthful_blocker_and_never_reaches_the_provider(): void
     {
         Http::fake();
-        $selection = $this->app->make(AviationLocationSelection::class);
-        $response = $this->post('/planla', [
-            'origin_selection' => $selection->issue(new LocationOption('duffel:arp_ist', 'airport', 'Istanbul Airport', 'TR', 'Europe/Istanbul', null, null, AviationIdentity::of('IATA_AIRPORT', 'IST'))),
-            'destination_selection' => $selection->issue(new LocationOption('duffel:arp_ams', 'airport', 'Amsterdam Schiphol Airport', 'NL', 'Europe/Amsterdam', null, null, AviationIdentity::of('IATA_AIRPORT', 'AMS'))),
-            'journey_type' => 'ROUND_TRIP',
-            'outbound_date_mode' => 'exact', 'outbound_exact_date' => '2026-10-09',
-            'return_date_mode' => 'exact', 'return_exact_date' => '2026-10-16',
-            'traveler_count' => '1', 'adults' => '1', 'children' => '0', 'infants' => '0',
-        ])->assertRedirect();
-        $tripId = basename((string) $response->headers->get('Location'));
+        $tripId = $this->createRoundTrip(['type' => 'flexible', 'outbound' => '2026-10-24', 'return' => '2026-10-31']);
 
-        // OD-022 stays OPEN: the page explains the limitation in Turkish and offers no search start.
+        // OD-022 FLEXIBLE stays OPEN: the page explains the limitation in Turkish and offers no search start.
         $this->get('/planlar/'.$tripId.'/ucuslar')->assertOk()
             ->assertSee('data-journey-blocker', false)
             ->assertSee('data-flight-search-blocked', false)
-            ->assertSee('Gidiş-dönüş uçuş araması henüz yapılamıyor')
+            ->assertSee('Esnek tarih aralığıyla uçuş araması henüz yapılamıyor')
             ->assertSee('Talep iki ayrı tek yön aramaya bölünmez.')
             ->assertDontSee('data-search-start', false)
-            ->assertDontSee('Esnek tarih aralığıyla');
+            ->assertDontSee('Gidiş-dönüş uçuş araması henüz yapılamıyor');
 
         // A direct API start is not split into one-way searches and never sends provider HTTP.
-        $id = $this->postJson('/api/v1/flight-search-jobs', ['trip_request_id' => $tripId], ['Idempotency-Key' => 'listing-5'])->assertAccepted()->json('search_id');
+        $id = $this->postJson('/api/v1/flight-search-jobs', ['trip_request_id' => $tripId], ['Idempotency-Key' => 'listing-6'])->assertAccepted()->json('search_id');
         $poll = $this->getJson('/api/v1/flight-search-jobs/'.$id)->assertOk();
         self::assertSame('FAILED', $poll->json('status'));
         self::assertNull($poll->json('result'));
         Http::assertNothingSent();
+    }
+
+    /** @param array{type: string, outbound: string, return: string} $dates */
+    private function createRoundTrip(array $dates): string
+    {
+        $selection = $this->app->make(AviationLocationSelection::class);
+        $date = fn (string $prefix, string $value): array => $dates['type'] === 'exact'
+            ? [$prefix.'_date_mode' => 'exact', $prefix.'_exact_date' => $value]
+            : [$prefix.'_date_mode' => 'flexible', $prefix.'_start_date' => $value, $prefix.'_end_date' => (new DateTimeImmutable($value))->modify('+2 days')->format('Y-m-d')];
+        $response = $this->post('/planla', [
+            'origin_selection' => $selection->issue(new LocationOption('duffel:arp_ist', 'airport', 'Istanbul Airport', 'TR', 'Europe/Istanbul', null, null, AviationIdentity::of('IATA_AIRPORT', 'IST'))),
+            'destination_selection' => $selection->issue(new LocationOption('duffel:arp_ams', 'airport', 'Amsterdam Schiphol Airport', 'NL', 'Europe/Amsterdam', null, null, AviationIdentity::of('IATA_AIRPORT', 'AMS'))),
+            'journey_type' => 'ROUND_TRIP',
+            'traveler_count' => '1', 'adults' => '1', 'children' => '0', 'infants' => '0',
+        ] + $date('outbound', $dates['outbound']) + $date('return', $dates['return']))->assertRedirect();
+
+        return basename((string) $response->headers->get('Location'));
+    }
+
+    /** A Duffel two-slice offer IST->AMS (2026-10-24, CEST) and AMS->IST (2026-10-31, CET). */
+    private function roundTripOffer(string $id, int $slices = 2, bool $reversed = false, string $inboundDestination = 'IST'): array
+    {
+        $segment = fn (string $number, string $from, string $fromTz, string $dep, string $to, string $toTz, string $arr): array => [
+            'id' => 'seg_'.$id.$number,
+            'marketing_carrier' => ['iata_code' => 'TK'], 'marketing_carrier_flight_number' => $number,
+            'operating_carrier' => ['iata_code' => 'TK'], 'operating_carrier_flight_number' => $number,
+            'departing_at' => $dep, 'arriving_at' => $arr,
+            'origin' => ['iata_code' => $from, 'iata_city_code' => $from, 'time_zone' => $fromTz],
+            'destination' => ['iata_code' => $to, 'iata_city_code' => $to, 'time_zone' => $toTz],
+            'passengers' => [['passenger_id' => 'pas_1', 'baggages' => [['type' => 'checked', 'quantity' => 1]]]],
+        ];
+        $outbound = ['segments' => [$segment('1951', 'IST', 'Europe/Istanbul', '2026-10-24T07:30:00', 'AMS', 'Europe/Amsterdam', '2026-10-24T10:05:00')]];
+        $inbound = ['segments' => [$segment('1952', 'AMS', 'Europe/Amsterdam', '2026-10-31T11:20:00', $inboundDestination, 'Europe/Istanbul', '2026-10-31T16:45:00')]];
+        $all = $reversed ? [$inbound, $outbound] : [$outbound, $inbound];
+
+        return [
+            'id' => $id, 'total_amount' => '410.00', 'total_currency' => 'EUR', 'expires_at' => '2026-12-01T10:00:00Z',
+            'owner' => ['iata_code' => 'TK', 'name' => 'Turkish Airlines'],
+            'slices' => array_slice($all, 0, $slices),
+        ];
     }
 
     private function useCapability(bool $searchSupported): void

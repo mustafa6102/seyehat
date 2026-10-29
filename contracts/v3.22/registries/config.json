@@ -1,0 +1,44 @@
+{
+  "version": "3.22.0",
+  "inherits": "../../registries/config.yaml",
+  "records": [
+    {
+      "id": "CFG-CONNECTION-CALCULATION",
+      "status": "ACTIVE",
+      "version": "transfer-seconds-3.22",
+      "unit": "SECOND",
+      "rounding": "DURATIONS_INTEGER_SECONDS; AVAILABLE_WINDOW_FLOOR",
+      "fallback_enabled": false,
+      "buffer_default": null,
+      "source": "OD-004 v3.22 scoped decision"
+    },
+    {
+      "id": "CFG-OPPORTUNITY-THRESHOLD",
+      "status": "ACTIVE",
+      "version": "selected-flight-threshold-3.22",
+      "comparison": "<=",
+      "currency_policy": "EXACT_SAME_CURRENCY_NO_FX",
+      "threshold_source": "user request, ephemeral, no default"
+    },
+    {
+      "id": "CFG-INVENTORY-CTA",
+      "status": "ACTIVE",
+      "version": "inventory-3.22",
+      "protocol": "https",
+      "host_matching": "EXACT_LOWERCASE",
+      "default_hosts": [],
+      "host_activation": "Requires provider authority evidence; technical activation is not provider approval."
+    },
+    {
+      "id": "CFG-RCG-PRODUCT-CAP",
+      "status": "ACTIVE",
+      "version": "rcg-product-cap-3.22",
+      "value": 4,
+      "unit": "initial_candidate_leg_request",
+      "scope": "provider/operation/generation",
+      "effective_limit": "min(explicit provider configuration, product cap)",
+      "provider_entry_required": true,
+      "note": "No production leg adapter is activated. An HTTP adapter must account retries before provider integration can be approved."
+    }
+  ]
+}

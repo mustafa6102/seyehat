@@ -11,10 +11,13 @@ final class SearchBudgetLedger
 
     public function __construct(private readonly SearchBudgetLimit $limit) {}
 
-    /** Reserves all requests of a candidate at once so a candidate is never half searched. */
+    /** Reserves all requests of a candidate without allowing invalid counts to refund the budget. */
     public function tryReserve(int $requests): bool
     {
-        if ($this->used + $requests > $this->limit->maxRequests) {
+        if ($requests < 1 || $this->limit->maxRequests < 1 || trim($this->limit->version) === '') {
+            return false;
+        }
+        if ($requests > $this->limit->maxRequests - $this->used) {
             return false;
         }
 

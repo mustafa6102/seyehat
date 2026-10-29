@@ -1,0 +1,10 @@
+version: 3.21.0
+inherits: ../v3.20/decisions.yaml
+decisions:
+  - id: OD-031
+    status: RESOLVED
+    note: >-
+      APPROVED (user, 2026-10-23) - Eksik, UNVERIFIED, STALE veya EXPIRED opening-hours/availability kanıtı FEASIBLE
+      üretemez. Eksik timezone/özel-gün kanıtı tahmin edilmez. Yetersiz kanıt UNKNOWN / NOT_VERIFIED'dır; sırf kanıt
+      yetersizliği IMPOSSIBLE değildir. Sonuç şeması, operasyon, lifecycle, persistence ve reason kodları onaylanmamıştır.
+open_decisions: [OD-001, OD-008, OD-011, OD-012, OD-013, OD-014, OD-015, OD-016, OD-020, OD-022, OD-026, OD-032, OD-033, OD-034, OD-035, ADR-006, ADR-007, ADR-010]

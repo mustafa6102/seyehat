@@ -1,0 +1,120 @@
+{
+  "version": "3.23.0",
+  "inherits": "../v3.22/story_overrides.json",
+  "overrides": [
+    {
+      "id": "FLT-002",
+      "phase": "M1A",
+      "semantics_changed": false,
+      "reason": "OD-022 ROUND_TRIP alt kararı (D1-D4), proje sahibi onayı 2026-10-29. Mevcut kayıtların anlamı değişmez; yalnız kayıt eklenir.",
+      "added_refs": {
+        "rules": {
+          "RULE-FLT-002-07": "Gidiş-dönüş teklif tek sağlayıcı teklifinin tüm yönlerini tek kimlik, tek toplam fiyat ve tek geçerlilikle taşır; bağımsız tek yön teklifler birleştirilerek gidiş-dönüş teklif üretilmez.",
+          "RULE-FLT-002-08": "Segment yönü sağlayıcının slice sırasından türetilir; yön, tarih veya segment sayısından tahmin edilmez. Slice yapısı talep ile uyuşmayan teklif atılır."
+        },
+        "functional_requirements": {
+          "FR-FLT-002-04": "FlightOffer journey_type ve her segment için direction taşır; segmentler önce gidiş, sonra dönüş olmak üzere sağlayıcı sırasıyla dizilir."
+        },
+        "acceptance_criteria": {
+          "AC-FLT-002-07": "Given kesin tarihli ROUND_TRIP talep When arama yapılır Then sağlayıcıya iki slice içeren tek istek gönderilir ve her teklif gidiş ve dönüş segmentlerini yönleriyle taşır.",
+          "AC-FLT-002-08": "Given iki ayrı tek yön teklif When sonuçlar birleştirilir Then gidiş-dönüş teklif oluşturulmaz.",
+          "AC-FLT-002-09": "Given sağlayıcı teklifinin slice sayısı veya sırası talep ile uyuşmaz When normalize edilir Then teklif gösterilmez."
+        },
+        "test_scenarios": {
+          "TS-FLT-002-08": [
+            "Kesin tarihli gidiş-dönüş arama",
+            [
+              7
+            ]
+          ],
+          "TS-FLT-002-09": [
+            "Bağımsız tek yönlerin birleştirilmemesi",
+            [
+              8
+            ]
+          ],
+          "TS-FLT-002-10": [
+            "Eksik/ters slice'lı sağlayıcı teklifi",
+            [
+              9
+            ]
+          ],
+          "TS-FLT-002-11": [
+            "Gidiş ve dönüşte farklı DST durumu",
+            [
+              6
+            ]
+          ]
+        }
+      },
+      "dependencies": [
+        "OD-022"
+      ]
+    },
+    {
+      "id": "FLT-005",
+      "phase": "M1A",
+      "semantics_changed": false,
+      "reason": "OD-022 ROUND_TRIP alt kararı (D1-D4), proje sahibi onayı 2026-10-29. Mevcut kayıtların anlamı değişmez; yalnız kayıt eklenir.",
+      "added_refs": {
+        "acceptance_criteria": {
+          "AC-FLT-005-04": "Given bagaj hakkı gidiş ve dönüşte farklı When gidiş-dönüş teklif gösterilir Then ortak olmayan hak dahil gösterilmez ve bilinmeyen olarak belirtilir."
+        },
+        "test_scenarios": {
+          "TS-FLT-005-04": [
+            "Yöne göre farklı bagaj",
+            [
+              4
+            ]
+          ]
+        }
+      },
+      "dependencies": [
+        "OD-022",
+        "OD-008"
+      ]
+    },
+    {
+      "id": "FLT-REPRICE-001",
+      "phase": "M1A",
+      "semantics_changed": false,
+      "reason": "OD-022 ROUND_TRIP alt kararı (D1-D4), proje sahibi onayı 2026-10-29. Mevcut kayıtların anlamı değişmez; yalnız kayıt eklenir.",
+      "added_refs": {
+        "rules": {
+          "RULE-FLT-REPRICE-001-08": "Seçilen teklifin journey_type değeri TripRequest journey_type ile aynı olmalıdır; aksi halde seçim reddedilir."
+        },
+        "acceptance_criteria": {
+          "AC-FLT-REPRICE-001-14": "Given gidiş-dönüş teklif When reprice yapılır Then teklif tüm yönleriyle tek kimlikle doğrulanır; yön başına kısmi doğrulama CURRENT sayılmaz.",
+          "AC-FLT-REPRICE-001-15": "Given ONE_WAY talep When ROUND_TRIP teklif (veya tersi) seçilmek istenir Then 409 RC-DECISION-OFFER-NOT-SELECTABLE döner ve seçim değişmez.",
+          "AC-FLT-REPRICE-001-16": "Given reprice sonucu segment/yön listesi saklı görüntüden farklı When sonuç işlenir Then OfferState=UNVERIFIED olur ve seçim değişmez (D3)."
+        },
+        "test_scenarios": {
+          "TS-FLT-REPRICE-001-14": [
+            "Gidiş-dönüş reprice",
+            [
+              14
+            ]
+          ],
+          "TS-FLT-REPRICE-001-15": [
+            "Yolculuk tipi uyumsuz seçim",
+            [
+              15
+            ]
+          ],
+          "TS-FLT-REPRICE-001-16": [
+            "Reprice'ta değişen güzergâh",
+            [
+              16
+            ]
+          ]
+        }
+      },
+      "dependencies": [
+        "OD-022",
+        "OD-011",
+        "OD-015"
+      ]
+    }
+  ],
+  "note": "TRIP-001 and PRV-001 unchanged. No existing RULE/FR/AC/TS text is modified."
+}

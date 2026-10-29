@@ -1,0 +1,22 @@
+version: 3.19.0
+inherits: ../../v3.18/registries/traceability.yaml
+requirement_to_contract:
+  - requirement: FR-HOW-001-01
+    artifacts: [openapi:OP-getTripPlanItemGuide, schema:ContextualGuide.schema.json, schema:InstructionBlock.schema.json]
+    tests: [TS-HOW-001-01, TS-HOW-001-02]
+    scope: CURRENT PlanRevision POI item only
+  - requirement: FR-HOW-001-02
+    artifacts: [openapi:OP-refreshTripPlanItemGuide, lifecycle:TRN-HOW-EVIDENCE-01, schema:OperationIdempotencyRecord.schema.json]
+    tests: [TS-HOW-001-03]
+    open_decisions: [ADR-006, OD-013]
+  - requirement: RULE-HOW-001-01
+    artifacts: [schema:InstructionBlock.schema.json, reason_error:RC-HOW-REVERIFY-UNAVAILABLE]
+    refs: [NFR-AI-GRD-001, RULE-M3-001, RULE-M3-002, RULE-M3-006]
+  - requirement: RULE-HOW-001-02
+    artifacts: [schema:InstructionBlock.schema.json]
+  - requirement: RULE-HOW-001-03
+    artifacts: [schema:ContextualGuide.schema.json, schema:InstructionBlock.schema.json]
+    refs: [NFR-LOC-001]
+  - requirement: PLT-AUTH-001
+    artifacts: [openapi:OP-getTripPlanItemGuide, openapi:OP-refreshTripPlanItemGuide, permissions:HOW-GUIDE-OWNER]
+    open_decisions: [ADR-010]

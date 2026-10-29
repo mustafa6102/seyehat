@@ -59,6 +59,9 @@ final readonly class BoundedCandidateGenerator implements CandidateGenerator
         $candidates = $this->candidates($originId, $destinationId, $blockers);
         $coverage = $this->coverage($providerId);
         $limit = $this->budgets->limit($providerId, self::OPERATION);
+        if ($limit !== null && ($limit->maxRequests < 1 || trim($limit->version) === '')) {
+            $limit = null;
+        }
         $ledger = $limit === null ? null : new SearchBudgetLedger($limit);
         $exhausted = false;
         $evaluations = [];
@@ -167,14 +170,17 @@ final readonly class BoundedCandidateGenerator implements CandidateGenerator
         }, $applicable);
     }
 
-    /** Evidence is taken as supplied; a verdict for another check or without a reference stays UNKNOWN. */
+    /** Evidence for another check is never applied; absent references cannot support PASS or FAIL. */
     private function supplied(RouteCandidate $candidate, PruningCheck $check): CheckResult
     {
         $result = $this->evidence->assess($candidate, $check);
+        if ($result->check !== $check) {
+            return CheckResult::unknown($check, self::GAP_EVIDENCE_REF);
+        }
         if ($result->verdict === CheckVerdict::UNKNOWN) {
             return $result;
         }
-        if ($result->check !== $check || $result->evidenceRef === null || $result->evidenceRef === '') {
+        if ($result->evidenceRef === null || trim($result->evidenceRef) === '') {
             return CheckResult::unknown($check, self::GAP_EVIDENCE_REF);
         }
 
@@ -185,7 +191,7 @@ final readonly class BoundedCandidateGenerator implements CandidateGenerator
     private function coverage(string $providerId): CheckResult
     {
         $capability = $this->capabilities->productionCapability($providerId, self::OPERATION);
-        if ($capability->status !== 'FRESH' || $capability->evidence === null || $capability->evidence === '') {
+        if ($capability->status !== 'FRESH' || $capability->evidence === null || trim($capability->evidence) === '') {
             return CheckResult::unknown(PruningCheck::PROVIDER_COVERAGE, 'OD-008');
         }
 

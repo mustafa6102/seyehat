@@ -1,0 +1,81 @@
+{
+  "version": "3.23.0",
+  "inherits": "../v3.22/contract_index.json",
+  "contracts": [
+    {
+      "id": "SCH-FlightOffer",
+      "path": "contracts/v3.23/schemas/FlightOffer.schema.json",
+      "status": "ACTIVE",
+      "replaces": "urn:ai-seyahat:v3.4:FlightOffer"
+    },
+    {
+      "id": "SCH-FlightSearchResult",
+      "path": "contracts/v3.23/schemas/FlightSearchResult.schema.json",
+      "status": "ACTIVE",
+      "replaces": "urn:ai-seyahat:v3.4:FlightSearchResult"
+    },
+    {
+      "id": "SCH-FlightSearchJob",
+      "path": "contracts/v3.23/schemas/FlightSearchJob.schema.json",
+      "status": "ACTIVE",
+      "replaces": "urn:ai-seyahat:v3.4:FlightSearchJob"
+    },
+    {
+      "id": "SCH-OfferSnapshot",
+      "path": "contracts/v3.23/schemas/OfferSnapshot.schema.json",
+      "status": "ACTIVE",
+      "replaces": "urn:ai-seyahat:v3.4:OfferSnapshot"
+    },
+    {
+      "id": "SCH-RepriceResult",
+      "path": "contracts/v3.23/schemas/RepriceResult.schema.json",
+      "status": "ACTIVE",
+      "replaces": "urn:ai-seyahat:v3.4:RepriceResult"
+    },
+    {
+      "id": "SCH-TripRequestFlightSelection",
+      "path": "contracts/v3.23/schemas/TripRequestFlightSelection.schema.json",
+      "status": "ACTIVE",
+      "replaces": "urn:ai-seyahat:v3.13:TripRequestFlightSelection"
+    },
+    {
+      "id": "OP-pollFlightSearch",
+      "path": "contracts/v3.23/openapi/m1a.openapi.json",
+      "status": "ACTIVE",
+      "decision_ref": "OD-022"
+    },
+    {
+      "id": "OP-getOffer",
+      "path": "contracts/v3.23/openapi/m1a.openapi.json",
+      "status": "ACTIVE",
+      "decision_ref": "OD-022"
+    },
+    {
+      "id": "OP-repriceOffer",
+      "path": "contracts/v3.23/openapi/m1a.openapi.json",
+      "status": "ACTIVE",
+      "decision_ref": "OD-022"
+    },
+    {
+      "id": "OP-getTripRequestFlightSelection",
+      "path": "contracts/v3.23/openapi/m1a.openapi.json",
+      "status": "ACTIVE",
+      "decision_ref": "OD-022"
+    },
+    {
+      "id": "OP-selectTripRequestFlight",
+      "path": "contracts/v3.23/openapi/m1a.openapi.json",
+      "status": "ACTIVE",
+      "decision_ref": "OD-022"
+    },
+    {
+      "id": "OP-reconfirmTripRequestFlight",
+      "path": "contracts/v3.23/openapi/m1a.openapi.json",
+      "status": "ACTIVE",
+      "decision_ref": "OD-022"
+    }
+  ],
+  "decisions": "decisions.json",
+  "stories": "story_overrides.json",
+  "note": "OD-022 ROUND_TRIP delta (D1-D4). Proposal docs/proposals/od-022-round-trip is the approved source; it remains a record, not a normative artifact."
+}

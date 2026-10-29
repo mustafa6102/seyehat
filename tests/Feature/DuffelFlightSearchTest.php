@@ -218,19 +218,77 @@ final class DuffelFlightSearchTest extends TestCase
         }
 
         foreach ([
-            $this->criteria(journey: 'ROUND_TRIP'),
+            $this->criteria(journey: 'ROUND_TRIP', returnDate: ['type' => 'FLEXIBLE', 'start_date' => '2026-12-20', 'end_date' => '2026-12-22']),
             $this->criteria(outbound: ['type' => 'FLEXIBLE', 'start_date' => '2026-12-15', 'end_date' => '2026-12-18']),
             $this->criteria(travelers: 10),
         ] as $criteria) {
             $outcome = $executor->execute($criteria, fn () => null);
             self::assertSame([ProviderFailureKind::UNSUPPORTED_CRITERIA], $outcome->failures);
             self::assertStringContainsString('ölçütleri şu anda desteklenmiyor', $outcome->failedMessageTr());
-            self::assertStringContainsString('gidiş-dönüş, esnek tarih, 9 kişiden fazla yolcu ve çocuk ya da bebek yolcu', $outcome->failedMessageTr());
+            self::assertStringContainsString('esnek tarih, 9 kişiden fazla yolcu ve çocuk ya da bebek yolcu', $outcome->failedMessageTr());
+            self::assertStringNotContainsString('gidiş-dönüş', $outcome->failedMessageTr());
             // A deterministic rejection is not presented as a transient failure.
             self::assertStringNotContainsString('daha sonra yeniden deneyin', $outcome->failedMessageTr());
             self::assertSame([], $outcome->offers);
         }
         Http::assertNothingSent();
+    }
+
+    /**
+     * AC-FLT-002-07..09, AC-FLT-005-04: a city-coded round trip accepts only two-slice offers whose slices start and end
+     * in the requested cities, in order; one-slice offers are never paired into a round trip; a bag listed on only one
+     * direction stays unknown for the whole offer.
+     */
+    #[Test]
+    public function round_trip_offers_keep_both_directions_and_mismatching_slices_are_dropped(): void
+    {
+        $slice = fn (string $number, string $from, string $to, ?array $bags = null): array => ['segments' => [[
+            'id' => 'seg_'.$number,
+            'marketing_carrier' => ['iata_code' => 'BA'], 'marketing_carrier_flight_number' => $number,
+            'operating_carrier' => ['iata_code' => 'BA'], 'operating_carrier_flight_number' => $number,
+            'departing_at' => $from === 'LHR' ? '2026-12-15T08:30:00' : '2026-12-20T09:00:00',
+            'arriving_at' => $from === 'LHR' ? '2026-12-15T11:30:00' : '2026-12-20T21:00:00',
+            'origin' => ['iata_code' => $from, 'iata_city_code' => $from === 'LHR' ? 'LON' : 'NYC', 'time_zone' => $from === 'LHR' ? 'Europe/London' : 'America/New_York'],
+            'destination' => ['iata_code' => $to, 'iata_city_code' => $to === 'LHR' ? 'LON' : 'NYC', 'time_zone' => $to === 'LHR' ? 'Europe/London' : 'America/New_York'],
+            'passengers' => [['passenger_id' => 'pas_1', 'baggages' => $bags ?? [['type' => 'checked', 'quantity' => 1], ['type' => 'carry_on', 'quantity' => 1]]]],
+        ]]];
+        $offer = fn (string $id, array $slices): array => ['id' => $id, 'total_amount' => '900.00', 'total_currency' => 'GBP', 'expires_at' => '2026-12-01T10:00:00Z', 'slices' => $slices];
+        Http::fake(['api.duffel.com/*' => Http::response($this->body([
+            $offer('off_rt', [$slice('1', 'LHR', 'JFK'), $slice('2', 'JFK', 'LHR', [['type' => 'carry_on', 'quantity' => 1]])]),
+            $offer('off_out_only', [$slice('3', 'LHR', 'JFK')]),
+            $offer('off_in_only', [$slice('4', 'JFK', 'LHR')]),
+            $offer('off_swapped', [$slice('5', 'JFK', 'LHR'), $slice('6', 'LHR', 'JFK')]),
+            $offer('off_three', [$slice('7', 'LHR', 'JFK'), $slice('8', 'JFK', 'LHR'), $slice('9', 'LHR', 'JFK')]),
+        ]))]);
+
+        $outcome = $this->executor()->execute($this->criteria(origin: ['city', 'IATA_CITY', 'LON'], destination: ['city', 'IATA_CITY', 'NYC'], journey: 'ROUND_TRIP'), fn () => null);
+
+        self::assertSame(['off_rt'], array_map(fn ($o): string => $o->providerOfferId, $outcome->offers));
+        $contract = $outcome->offers[0]->toContract();
+        self::assertSame('ROUND_TRIP', $contract['journey_type']);
+        self::assertSame(['OUTBOUND', 'INBOUND'], array_column($contract['segments'], 'direction'));
+        self::assertTrue($contract['baggage']['cabin_baggage']['value']);
+        self::assertSame('UNKNOWN', $contract['baggage']['checked_baggage']['certainty']);
+        self::assertNull($contract['baggage']['checked_baggage']['value']);
+        Http::assertSent(fn (Request $request): bool => $request->data()['data']['slices'] === [
+            ['origin' => 'LON', 'destination' => 'NYC', 'departure_date' => '2026-12-15'],
+            ['origin' => 'NYC', 'destination' => 'LON', 'departure_date' => '2026-12-20'],
+        ]);
+        Http::assertSentCount(1);
+    }
+
+    #[Test]
+    public function a_one_way_search_drops_multi_slice_offers_and_keeps_its_one_way_shape(): void
+    {
+        $twoSlice = $this->offer('off_two');
+        $twoSlice['slices'][] = $twoSlice['slices'][0];
+        Http::fake(['api.duffel.com/*' => Http::response($this->body([$this->offer('off_one'), $twoSlice]))]);
+
+        $offers = $this->executor()->execute($this->criteria(), fn () => null)->offers;
+
+        self::assertSame(['off_one'], array_map(fn ($o): string => $o->providerOfferId, $offers));
+        self::assertSame('ONE_WAY', $offers[0]->toContract()['journey_type']);
+        self::assertSame(['OUTBOUND'], array_column($offers[0]->toContract()['segments'], 'direction'));
     }
 
     #[Test]
@@ -240,7 +298,7 @@ final class DuffelFlightSearchTest extends TestCase
         $executor = $this->executor();
 
         for ($i = 0; $i < 10; $i++) {
-            $executor->execute($this->criteria(journey: 'ROUND_TRIP'), fn () => null);
+            $executor->execute($this->criteria(travelers: 10), fn () => null);
         }
         $valid = $executor->execute($this->criteria(), fn () => null);
 
@@ -498,7 +556,7 @@ final class DuffelFlightSearchTest extends TestCase
      * @param  array{0: string, 1: string, 2: ?string}  $destination
      * @param  array<string, string>|null  $outbound
      */
-    private function tripView(array $origin = ['airport', 'IATA_AIRPORT', 'IST'], array $destination = ['airport', 'IATA_AIRPORT', 'LHR'], string $journey = 'ONE_WAY', ?array $outbound = null, int $travelers = 1, ?array $passengerComposition = null): TripRequestView
+    private function tripView(array $origin = ['airport', 'IATA_AIRPORT', 'IST'], array $destination = ['airport', 'IATA_AIRPORT', 'LHR'], string $journey = 'ONE_WAY', ?array $outbound = null, int $travelers = 1, ?array $passengerComposition = null, ?array $returnDate = null): TripRequestView
     {
         $place = fn (array $spec, string $tz): array => ['kind' => $spec[0], 'value' => 'duffel:x_'.strtolower($spec[2] ?? 'none'), 'iana_timezone' => $tz]
             + ($spec[2] === null ? [] : ['aviation_identity' => ['type' => $spec[1], 'code' => $spec[2]]]);
@@ -512,7 +570,7 @@ final class DuffelFlightSearchTest extends TestCase
             preferences: null,
             journeyType: $journey,
             outboundDate: $outbound ?? ['type' => 'EXACT', 'date' => '2026-12-15'],
-            returnDate: $journey === 'ROUND_TRIP' ? ['type' => 'EXACT', 'date' => '2026-12-20'] : null,
+            returnDate: $journey === 'ROUND_TRIP' ? ($returnDate ?? ['type' => 'EXACT', 'date' => '2026-12-20']) : null,
             passengerComposition: $passengerComposition,
         );
     }
@@ -522,9 +580,9 @@ final class DuffelFlightSearchTest extends TestCase
      * @param  array{0: string, 1: string, 2: ?string}  $destination
      * @param  array<string, string>|null  $outbound
      */
-    private function criteria(array $origin = ['airport', 'IATA_AIRPORT', 'IST'], array $destination = ['airport', 'IATA_AIRPORT', 'LHR'], string $journey = 'ONE_WAY', ?array $outbound = null, int $travelers = 1): FlightSearchCriteria
+    private function criteria(array $origin = ['airport', 'IATA_AIRPORT', 'IST'], array $destination = ['airport', 'IATA_AIRPORT', 'LHR'], string $journey = 'ONE_WAY', ?array $outbound = null, int $travelers = 1, ?array $returnDate = null): FlightSearchCriteria
     {
-        return FlightSearchCriteria::fromSearchableTripRequest('trip-duffel', $this->tripView($origin, $destination, $journey, $outbound, $travelers));
+        return FlightSearchCriteria::fromSearchableTripRequest('trip-duffel', $this->tripView($origin, $destination, $journey, $outbound, $travelers, returnDate: $returnDate));
     }
 
     /**

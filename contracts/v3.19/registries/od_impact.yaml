@@ -1,0 +1,31 @@
+version: 3.19.0
+inherits: ../../v3.18/registries/od_impact.yaml
+new_decisions:
+  - {id: OD-HOW-001, status: RESOLVED, choice: A, decision_owner: 'user (2026-10-23)', impact_status: PARTIALLY_UNBLOCKED, note: 'Yalnız CURRENT POI plan öğesi; HOW-001 DONE değildir.'}
+  - {id: OD-HOW-002, status: RESOLVED, choice: A, decision_owner: 'user (2026-10-23)', impact_status: UNBLOCKED, note: 'Deterministik renderer + evidence slot.'}
+  - {id: OD-HOW-003, status: RESOLVED, choice: A, decision_owner: 'user (2026-10-23)', impact_status: UNBLOCKED, note: 'Kanonik snapshot + onaylı source reverify.'}
+  - {id: OD-HOW-004, status: RESOLVED, choice: A, detail_choice: A, decision_owner: 'user (2026-10-23)', impact_status: PARTIALLY_UNBLOCKED, note: 'Kaynak freshness/profil mirası; 503 fail-closed.'}
+  - {id: OD-HOW-005, status: RESOLVED, choice: B, decision_owner: 'user (2026-10-23)', impact_status: UNBLOCKED, note: 'GET + ayrı refresh POST.'}
+  - {id: OD-HOW-006, status: RESOLVED, choice: A, decision_owner: 'user (2026-10-23)', impact_status: UNBLOCKED, note: 'Hesaplanan HOW read model.'}
+  - {id: OD-HOW-007, status: RESOLVED, choice: A, decision_owner: 'user (2026-10-23)', impact_status: UNBLOCKED, note: 'Owner-only.'}
+  - {id: OD-HOW-008, status: RESOLVED, choice: A, decision_owner: 'user (2026-10-23)', impact_status: UNBLOCKED, note: 'CURRENT revision + If-Match.'}
+  - {id: OD-HOW-009, status: RESOLVED, choice: A, detail_choice: A, retention_choice: A, decision_owner: 'user (2026-10-23)', impact_status: PARTIALLY_UNBLOCKED, note: 'Kalıcı operation replay; PlanRevision/outbox yok; OD-013 korunur.'}
+  - {id: OD-HOW-010, status: RESOLVED, choice: A, decision_owner: 'user (2026-10-23)', impact_status: UNBLOCKED, note: 'OD-028 web kanalı.'}
+  - {id: OD-HOW-011, status: RESOLVED, choice: A, decision_owner: 'user (2026-10-23)', impact_status: UNBLOCKED, note: 'Kritik slot ve gösterim matrisi.'}
+contract_surface: [SCH-ContextualGuide, SCH-InstructionBlock, SCH-OperationIdempotencyRecord, OP-getTripPlanItemGuide, OP-refreshTripPlanItemGuide]
+preserved_open_dependencies:
+  - id: ADR-006
+    status: OPEN
+    note: HOW yeni profil tanımlamaz; yalnız source operation için onaylı profil/capability varsa çağırır, aksi halde 503 fail-closed.
+  - id: OD-013
+    status: OPEN
+    note: Idempotency kaydı TripRequest yaşam döngüsüne bağlıdır; genel retention/deletion politikası açık kalır.
+  - id: ADR-010
+    status: PARTIALLY_RESOLVED
+    note: Mevcut OIDC owner sınırı kullanılır; diğer güvenlik başlıkları genişletilmez.
+  - {id: OD-030, status: OPEN, note: 'HOW saat veya ziyaret süresi üretmez.'}
+  - {id: OD-031, status: OPEN, note: 'HOW çalışma saati feasibility değerlendirmesi yapmaz.'}
+  - {id: OD-032, status: OPEN, note: 'HOW ulaşım süresi üretmez.'}
+  - {id: OD-033, status: OPEN, note: 'HOW tampon, tempo veya gün penceresi üretmez.'}
+  - {id: OD-034, status: OPEN, note: 'HOW uçuş/konaklama gün sınırı üretmez.'}
+  - {id: OD-035, status: OPEN, note: 'HOW feasibility sonucu üretmez veya saklamaz.'}

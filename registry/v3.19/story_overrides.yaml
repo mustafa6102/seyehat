@@ -1,0 +1,17 @@
+version: 3.19.0
+inherits: ../v3.18/story_overrides.yaml
+overrides:
+  - id: HOW-001
+    phase: M3
+    implementation_scope: PARTIAL_POI_ONLY
+    semantics_changed: false
+    preserved_refs:
+      rules: [RULE-HOW-001-01, RULE-HOW-001-02, RULE-HOW-001-03]
+      functional_requirements: [FR-HOW-001-01, FR-HOW-001-02]
+      acceptance_criteria: [AC-HOW-001-01, AC-HOW-001-02, AC-HOW-001-03]
+      test_scenarios: [TS-HOW-001-01, TS-HOW-001-02, TS-HOW-001-03]
+      nfr: [NFR-LOC-001, NFR-AI-GRD-001]
+    clarification: >-
+      v3.19 yalnız CURRENT PlanRevision içindeki kanonik POI öğesini destekler. Ulaşım, uçuş/konaklama check-in, etkinlik ve diğer
+      rezervasyon bağlamları kapsam dışıdır; RC-HOW-CONTEXT-UNSUPPORTED ile reddedilir ve HOW-001 tamamlanmış sayılmaz.
+    dependencies: [OD-HOW-001, OD-HOW-002, OD-HOW-003, OD-HOW-004, OD-HOW-005, OD-HOW-006, OD-HOW-007, OD-HOW-008, OD-HOW-009, OD-HOW-010, OD-HOW-011, OD-025, OD-027, OD-028, OD-029, ADR-006, ADR-010, OD-013]

@@ -204,12 +204,61 @@ final class FlightRepriceTest extends TestCase
         self::assertSame('Teklif sağlayıcıdan doğrulanamadı; güncel olarak gösterilmez.', $result->messageTr);
     }
 
+    /** TS-FLT-REPRICE-001-14 (AC-14): a round trip is verified as one offer with both directions intact. */
+    #[Test]
+    public function ts_flt_reprice_001_14_a_round_trip_is_verified_whole_under_one_offer_id(): void
+    {
+        $roundTrip = $this->offer(directions: ['OUTBOUND', 'INBOUND']);
+
+        $result = $this->service($roundTrip, true, repriced: $this->offer(directions: ['OUTBOUND', 'INBOUND']))->reprice('offer-1', $this->now);
+
+        self::assertSame('CURRENT', $result->snapshot->offer->state($this->now));
+        self::assertSame('ROUND_TRIP', $result->toContract()['current']['offer']['journey_type']);
+        self::assertSame(['OUTBOUND', 'INBOUND'], array_column($result->toContract()['current']['offer']['segments'], 'direction'));
+        self::assertTrue($result->previousApprovalValid);
+    }
+
+    /**
+     * TS-FLT-REPRICE-001-16 (AC-16, OD-022 D3): the provider returning another itinerary under the same offer id - a
+     * dropped return, a changed flight or a lost direction - is UNVERIFIED; the stored offer keeps its itinerary.
+     */
+    #[Test]
+    public function ts_flt_reprice_001_16_a_changed_route_or_direction_is_unverified_and_keeps_the_stored_offer(): void
+    {
+        $roundTrip = $this->offer(directions: ['OUTBOUND', 'INBOUND']);
+        foreach ([
+            'return dropped' => $this->offer(directions: ['OUTBOUND']),
+            'flight changed' => $this->offer(directions: ['OUTBOUND', 'INBOUND'], firstFlight: 'TK9'),
+            'direction lost' => $this->offer(directions: ['OUTBOUND', 'OUTBOUND']),
+        ] as $case => $repriced) {
+            $offers = new InMemoryFlightOfferRepository([$roundTrip]);
+            $result = $this->service($roundTrip, true, repriced: $repriced, offers: $offers)->reprice('offer-1', $this->now);
+
+            self::assertSame('UNVERIFIED', $result->snapshot->offer->state($this->now), $case);
+            self::assertSame([RepriceReason::REPRICE_UNVERIFIED], $result->reasonCodes, $case);
+            self::assertFalse($result->continuationAllowed, $case);
+            self::assertFalse($result->toContract()['changes']['critical_change'], $case);
+            self::assertSame('Sağlayıcı bu teklif için farklı bir uçuş güzergâhı döndürdü; teklif doğrulanamadı ve seçiminiz değiştirilmedi.', $result->messageTr, $case);
+            self::assertSame($roundTrip->itinerarySignature(), $offers->find('offer-1')->itinerarySignature(), $case);
+        }
+    }
+
+    #[Test]
+    public function a_one_way_route_change_under_the_same_offer_id_is_unverified_too(): void
+    {
+        $result = $this->service($this->offer(), true, repriced: $this->offer(firstFlight: 'TK2'))->reprice('offer-1', $this->now);
+
+        self::assertSame('UNVERIFIED', $result->snapshot->offer->state($this->now));
+        self::assertSame([RepriceReason::REPRICE_UNVERIFIED], $result->reasonCodes);
+    }
+
     private function service(
         FlightOffer $previous,
         bool $supported,
         ?FlightOffer $repriced = null,
         bool $timesOut = false,
         bool $fails = false,
+        ?InMemoryFlightOfferRepository $offers = null,
     ): FlightRepriceService {
         $capabilities = new InMemoryProviderCapabilityRepository;
         if ($supported) {
@@ -225,7 +274,7 @@ final class FlightRepriceTest extends TestCase
         }
 
         return new FlightRepriceService(
-            new InMemoryFlightOfferRepository([$previous]),
+            $offers ?? new InMemoryFlightOfferRepository([$previous]),
             new ProviderCapabilityMatrixService($capabilities),
             new FakeFlightRepriceGateway($repriced, $timesOut, $fails),
         );
@@ -237,10 +286,20 @@ final class FlightRepriceTest extends TestCase
         string $expiresAt = '2026-09-27T11:00:00+00:00',
         ?FareConditionSnapshot $fareConditions = null,
         ?DateTimeImmutable $readAt = null,
+        array $directions = ['OUTBOUND'],
+        string $firstFlight = 'TK1',
     ): FlightOffer {
         $readAt ??= $this->now;
         $departure = new SegmentTime('2026-10-01T12:00:00', 'Europe/Istanbul', new DateTimeImmutable('2026-10-01T09:00:00+00:00'));
         $arrival = new SegmentTime('2026-10-01T14:00:00', 'Europe/Berlin', new DateTimeImmutable('2026-10-01T12:00:00+00:00'));
+        $returnDeparture = new SegmentTime('2026-10-08T15:00:00', 'Europe/Berlin', new DateTimeImmutable('2026-10-08T13:00:00+00:00'));
+        $returnArrival = new SegmentTime('2026-10-08T19:00:00', 'Europe/Istanbul', new DateTimeImmutable('2026-10-08T16:00:00+00:00'));
+        $segments = [];
+        foreach ($directions as $i => $direction) {
+            $segments[] = $i === 0
+                ? new FlightSegment('TK', $firstFlight, [$firstFlight], 'UNKNOWN', $departure, $arrival, $direction)
+                : new FlightSegment('TK', 'TK'.(1 + $i), [], 'UNKNOWN', $returnDeparture, $returnArrival, $direction);
+        }
 
         return new FlightOffer(
             providerOfferId: 'offer-1',
@@ -267,7 +326,7 @@ final class FlightRepriceTest extends TestCase
                 verifiedAt: $readAt,
                 expiresAt: new DateTimeImmutable($expiresAt),
             )],
-            segments: [new FlightSegment('TK', 'TK1', ['TK1'], 'UNKNOWN', $departure, $arrival)],
+            segments: $segments,
             bookable: true,
             fareConditions: $fareConditions,
         );

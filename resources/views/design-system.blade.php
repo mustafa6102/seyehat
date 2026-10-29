@@ -11,7 +11,7 @@
 
 @php
     $colors = [
-        'Marka' => ['primary' => 'Ana renk', 'primary-hover' => 'Ana renk, üzerinde', 'primary-subtle' => 'Ana renk, yumuşak', 'secondary' => 'İkincil', 'accent' => 'Vurgu', 'accent-subtle' => 'Vurgu, yumuşak'],
+        'Marka' => ['primary' => 'Okyanus (ana renk)', 'primary-hover' => 'Okyanus, üzerinde', 'primary-subtle' => 'Okyanus, yumuşak', 'secondary' => 'Turkuaz (ikincil)', 'secondary-text' => 'Turkuaz metin', 'secondary-subtle' => 'Turkuaz, yumuşak', 'accent' => 'Mercan (vurgu)', 'accent-subtle' => 'Mercan, yumuşak', 'ink' => 'Mürekkep'],
         'Nötr' => ['background' => 'Zemin', 'surface' => 'Yüzey', 'surface-sunken' => 'Girintili yüzey', 'border' => 'Çerçeve', 'border-strong' => 'Güçlü çerçeve', 'text-primary' => 'Ana metin', 'text-secondary' => 'İkincil metin', 'text-muted' => 'Soluk metin'],
         'Anlamsal' => ['success' => 'Başarı', 'warning' => 'Uyarı', 'error' => 'Hata', 'info' => 'Bilgi', 'focus' => 'Odak'],
     ];
@@ -135,6 +135,16 @@
                 <x-ui.badge variant="error">Süresi doldu</x-ui.badge>
                 <x-ui.badge variant="info">Yeni</x-ui.badge>
                 <x-ui.badge variant="accent">En uygun</x-ui.badge>
+            </div>
+            <div>
+                <h3 class="swatch-group">Bilgi güvenilirliği: renk, işaret ve çerçeve birlikte</h3>
+                <div class="cluster">
+                    <x-ui.badge variant="success">Doğrulandı</x-ui.badge>
+                    <x-ui.badge variant="estimated">Tahmini</x-ui.badge>
+                    <x-ui.badge variant="warning">Güncelliğini yitirmiş</x-ui.badge>
+                    <x-ui.badge variant="unavailable">Kullanılamıyor</x-ui.badge>
+                    <x-ui.badge variant="unverified">Doğrulanmamış</x-ui.badge>
+                </div>
             </div>
             <div class="cluster">
                 <x-ui.chip :pressed="true">Aktarmasız</x-ui.chip>

@@ -1,0 +1,130 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AI Travel Planner delegated backend slices",
+    "version": "3.22.0"
+  },
+  "x-inherits": "../../v3.20/openapi/m1a.openapi.yaml",
+  "x-policy-inherits": "../../v3.21/registries/od_impact.yaml",
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "paths": {
+    "/trip-requests/{tripRequestId}/flight-opportunity": {
+      "get": {
+        "operationId": "getSelectedFlightOpportunity",
+        "x-contract-id": "OP-getSelectedFlightOpportunity",
+        "x-status": "ACTIVE",
+        "x-requirement-refs": [
+          "NTF-001",
+          "AC-NTF-001-05"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tripRequestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            }
+          },
+          {
+            "name": "max_minor_units",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]*)$"
+            },
+            "description": "Integer Money minor units in [0, PHP_INT_MAX], no exponent/float."
+          },
+          {
+            "name": "currency",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Owner-scoped evaluation of the persisted current selection, not a watch, booking, notification or future-price guarantee.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../schemas/DecisionSupport.schema.json#/$defs/OpportunityResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid threshold/currency or unknown query fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/ErrorEnvelope.schema.json"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/ErrorEnvelope.schema.json"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Owner authorization denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/ErrorEnvelope.schema.json"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "TripRequest or selection absent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/ErrorEnvelope.schema.json"
+                }
+              }
+            }
+          }
+        },
+        "x-web-channel": "GET /web-api/v1/trip-requests/{tripRequestId}/flight-opportunity; auth.web-session, identical handler, OD-028",
+        "x-side-effects": "Only existing FlightSelectionReader lazy CURRENT->EXPIRED transition inherited from v3.13; no new persisted state, price capture, provider call, subscription, revision or outbox.",
+        "x-error-codes": [
+          "RC-VALIDATION-SCHEMA",
+          "RC-AUTHN-REQUIRED",
+          "RC-AUTHZ-DENIED",
+          "RC-RESOURCE-NOT-FOUND"
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}

@@ -71,6 +71,16 @@ return [
         'redirect_uri' => env('OIDC_REDIRECT_URI'),
     ],
 
+    // EVT-001 / OD-EVT-001-TM (v3.22): Ticketmaster Discovery API v2. API key is server-side only; never logged or exposed.
+    // approved_hosts drives InventoryDecision::event CTA validation; no default host (CFG-INVENTORY-CTA, OD-P8-002).
+    'ticketmaster' => [
+        'api_key' => env('TICKETMASTER_API_KEY'),
+        'base_url' => env('TICKETMASTER_BASE_URL', 'https://app.ticketmaster.com/discovery/v2'),
+        'approved_hosts' => array_filter(array_map('trim', explode(',', (string) env('TICKETMASTER_APPROVED_HOSTS', 'www.ticketmaster.com,ticketmaster.com')))),
+        'max_results' => (int) env('TICKETMASTER_MAX_RESULTS', 20),
+        'freshness_seconds' => (int) env('TICKETMASTER_FRESHNESS_SECONDS', 86400),
+    ],
+
     // osm_overpass (OD-025, v3.15): CFG-POI-OVERPASS-ENDPOINT comes from the environment only; there is no default. The
     // public overpass-api.de instance is accepted only outside production (development only).
     'osm_overpass' => [

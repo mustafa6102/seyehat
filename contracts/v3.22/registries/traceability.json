@@ -1,0 +1,171 @@
+{
+  "version": "3.22.0",
+  "inherits": "../../v3.21/registries/traceability.yaml",
+  "requirement_to_contract": [
+    {
+      "requirement": "RULE-STF-003-01",
+      "operations": [
+        "INT-evaluateConnectionProtection"
+      ],
+      "production_files": [
+        "app/Modules/FeasibilityCompliance/Application/ConnectionProtection.php"
+      ],
+      "coverage": "protection and UNKNOWN risk cap",
+      "completion": "BACKEND_SLICE_ONLY_NOT_FULL_AC"
+    },
+    {
+      "requirement": "FR-STF-003-01",
+      "operations": [
+        "INT-evaluateConnectionProtection"
+      ],
+      "production_files": [
+        "app/Modules/FeasibilityCompliance/Application/ConnectionProtection.php"
+      ],
+      "coverage": "evidenced timeline projection only",
+      "completion": "BACKEND_SLICE_ONLY_NOT_FULL_AC"
+    },
+    {
+      "requirement": "RULE-TRF-001-01",
+      "operations": [
+        "INT-evaluateTransfer"
+      ],
+      "production_files": [
+        "app/Modules/FeasibilityCompliance/Application/TransferFeasibility.php"
+      ],
+      "coverage": "conditional component sum, no MCT double counting",
+      "completion": "BACKEND_SLICE_ONLY_NOT_FULL_AC"
+    },
+    {
+      "requirement": "AC-TRF-001-03",
+      "operations": [
+        "INT-evaluateTransfer"
+      ],
+      "production_files": [
+        "app/Modules/FeasibilityCompliance/Application/TransferFeasibility.php"
+      ],
+      "coverage": "internal known cutoff rejection",
+      "completion": "BACKEND_SLICE_ONLY_NOT_FULL_AC"
+    },
+    {
+      "requirement": "AC-TRF-001-04",
+      "operations": [
+        "INT-evaluateTransfer"
+      ],
+      "production_files": [
+        "app/Modules/FeasibilityCompliance/Application/TransferFeasibility.php"
+      ],
+      "coverage": "internal insufficient connection rejection",
+      "completion": "BACKEND_SLICE_ONLY_NOT_FULL_AC"
+    },
+    {
+      "requirement": "AC-TRF-001-05",
+      "operations": [
+        "INT-evaluateTransfer"
+      ],
+      "production_files": [
+        "app/Modules/FeasibilityCompliance/Application/TransferFeasibility.php"
+      ],
+      "coverage": "internal MCT coverage exclusion",
+      "completion": "BACKEND_SLICE_ONLY_NOT_FULL_AC"
+    },
+    {
+      "requirement": "AC-TRF-001-06",
+      "operations": [
+        "INT-evaluateTransfer"
+      ],
+      "production_files": [
+        "app/Modules/FeasibilityCompliance/Application/TransferFeasibility.php"
+      ],
+      "coverage": "internal conditional reclaim/landside exclusion",
+      "completion": "BACKEND_SLICE_ONLY_NOT_FULL_AC"
+    },
+    {
+      "requirement": "AC-FOOD-001-02",
+      "operations": [
+        "INT-projectFoodEvidence"
+      ],
+      "production_files": [
+        "app/Modules/Discovery/Application/InventoryDecision.php"
+      ],
+      "coverage": "price-level distinct from Money",
+      "completion": "BACKEND_SLICE_ONLY_NOT_FULL_AC"
+    },
+    {
+      "requirement": "AC-FOOD-001-03",
+      "operations": [
+        "INT-projectFoodEvidence"
+      ],
+      "production_files": [
+        "app/Modules/Discovery/Application/InventoryDecision.php"
+      ],
+      "coverage": "reservation evidence projection",
+      "completion": "BACKEND_SLICE_ONLY_NOT_FULL_AC"
+    },
+    {
+      "requirement": "AC-EVT-001-01",
+      "operations": [
+        "INT-projectEventEvidence"
+      ],
+      "production_files": [
+        "app/Modules/Discovery/Application/InventoryDecision.php"
+      ],
+      "coverage": "cancelled/sold-out projection",
+      "completion": "BACKEND_SLICE_ONLY_NOT_FULL_AC"
+    },
+    {
+      "requirement": "AC-EVT-001-02",
+      "operations": [
+        "INT-projectEventEvidence"
+      ],
+      "production_files": [
+        "app/Modules/Discovery/Application/InventoryDecision.php"
+      ],
+      "coverage": "fixed constraint projection only; plan persistence not active",
+      "completion": "BACKEND_SLICE_ONLY_NOT_FULL_AC"
+    },
+    {
+      "requirement": "AC-EVT-001-03",
+      "operations": [
+        "INT-projectEventEvidence"
+      ],
+      "production_files": [
+        "app/Modules/Discovery/Application/InventoryDecision.php"
+      ],
+      "coverage": "stale link CTA suppression",
+      "completion": "BACKEND_SLICE_ONLY_NOT_FULL_AC"
+    },
+    {
+      "requirement": "AC-NTF-001-05",
+      "operations": [
+        "OP-getSelectedFlightOpportunity"
+      ],
+      "production_files": [
+        "app/Modules/Opportunity/Application/SelectedFlightOpportunity.php",
+        "app/Modules/Opportunity/Infrastructure/Http/FlightOpportunityController.php"
+      ],
+      "coverage": "owner API uses persisted canonical selection",
+      "completion": "IMPLEMENTED_NOT_TESTED"
+    },
+    {
+      "requirement": "RULE-RCG-001-03",
+      "operations": [],
+      "artifacts": [
+        "CFG-RCG-PRODUCT-CAP"
+      ],
+      "production_files": [
+        "config/search_budget.php",
+        "app/Modules/CandidateGenerator/Infrastructure/ConfigSearchBudgetPolicy.php"
+      ],
+      "coverage": "Product cap plus explicit provider cap; no provider or candidate HTTP integration",
+      "completion": "BACKEND_SLICE_ONLY_NOT_FULL_AC"
+    }
+  ],
+  "blocked_unchanged": [
+    "TRV-001",
+    "RCG-001 production integration",
+    "PRC-004",
+    "NTF-001 AC-01..04",
+    "FOOD-001 AC-01/04",
+    "EVT-001 plan persistence"
+  ]
+}

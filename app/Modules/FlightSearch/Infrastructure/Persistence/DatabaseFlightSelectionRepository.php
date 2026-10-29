@@ -30,7 +30,8 @@ final readonly class DatabaseFlightSelectionRepository
         return [
             'trip_request_id' => (string) $row->trip_request_id,
             'status' => $row->status,
-            'offer' => json_decode($row->offer_snapshot, true, flags: JSON_THROW_ON_ERROR),
+            // OD-022 D2: snapshots stored before v3.23 read as ONE_WAY/OUTBOUND; no data migration.
+            'offer' => FlightOffer::normalizeLegacyContract(json_decode($row->offer_snapshot, true, flags: JSON_THROW_ON_ERROR)),
             'provider_id' => $row->provider_id,
             'provider_offer_id' => $row->provider_offer_id,
             'verified_price' => $row->verified_price_minor_units === null || $row->verified_price_currency === null

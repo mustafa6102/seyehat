@@ -8,7 +8,10 @@ use App\Modules\FlightSearch\Infrastructure\Http\FlightOfferController;
 use App\Modules\FlightSearch\Infrastructure\Http\FlightRepriceController;
 use App\Modules\FlightSearch\Infrastructure\Http\FlightSearchController;
 use App\Modules\FlightSearch\Infrastructure\Http\FlightSelectionController;
+use App\Modules\HowTo\Infrastructure\Http\HowGuideController;
+use App\Modules\Opportunity\Infrastructure\Http\FlightOpportunityController;
 use App\Modules\Poi\Infrastructure\Http\PoiController;
+use App\Modules\Event\Infrastructure\Http\EventDiscoveryController;
 use App\Modules\Poi\Infrastructure\Http\PoiDiscoveryController;
 use App\Modules\Traveler\Infrastructure\Http\TravelerController;
 use App\Modules\TripBuilder\Infrastructure\Http\TripPlanController;
@@ -16,6 +19,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
     Route::get('/health', fn () => response()->noContent());
+    Route::get('/trip-requests/{tripRequestId}/flight-opportunity', [FlightOpportunityController::class, 'show'])
+        ->whereNumber('tripRequestId')->middleware('auth.bearer')->name('trip-requests.flight-opportunity');
     // v3.16 bearerAuth: OP-createTripRequest binds the authenticated principal as owner (RULE-PLT-AUTH-001-04).
     Route::post('/trip-requests', [TripRequestController::class, 'store'])->middleware('auth.bearer');
     // v3.16 PLT-AUTH-001 retrofit (od_impact ADR-010 blocked_pending_auth_task): every TripRequest-owned operation below
@@ -69,7 +74,24 @@ Route::prefix('v1')->group(function (): void {
         ->middleware('auth.bearer')->name('trip-requests.plan.items.store');
     Route::delete('/trip-requests/{tripRequestId}/plan/items/{itemId}', [TripPlanController::class, 'destroy'])
         ->middleware('auth.bearer')->name('trip-requests.plan.items.destroy');
-    Route::post('/travelers', [TravelerController::class, 'store']);
+    // v3.18 DAY-001 (OD-029 A): manual day assignment / in-day order of a plan item; no time, duration or feasibility.
+    Route::put('/trip-requests/{tripRequestId}/plan/items/{itemId}/day-assignment', [TripPlanController::class, 'assignDay'])
+        ->middleware('auth.bearer')->name('trip-requests.plan.items.day-assignment');
+    Route::put('/trip-requests/{tripRequestId}/plan/items/{itemId}/duration', [TripPlanController::class, 'setDuration'])
+        ->middleware('auth.bearer')->name('trip-requests.plan.items.duration');
+    // v3.22 EVT-001 event discovery (Ticketmaster, OD-EVT-001-TM) and EVENT/FIXED plan add.
+    Route::post('/event-discovery-jobs', [EventDiscoveryController::class, 'store'])
+        ->middleware('auth.bearer')->name('event-discovery-jobs.store');
+    Route::get('/event-discovery-jobs/{searchId}', [EventDiscoveryController::class, 'show'])
+        ->middleware('auth.bearer')->name('event-discovery-jobs.show');
+    Route::post('/trip-requests/{tripRequestId}/plan/events', [TripPlanController::class, 'storeEvent'])
+        ->middleware('auth.bearer')->name('trip-requests.plan.events.store');
+    // v3.19 HOW-001: owner-only deterministic POI guide; GET is side-effect free, refresh reuses the source verifier.
+    Route::get('/trip-requests/{tripRequestId}/plan/items/{itemId}/guide', [HowGuideController::class, 'show'])
+        ->middleware('auth.bearer')->name('trip-requests.plan.items.guide.show');
+    Route::post('/trip-requests/{tripRequestId}/plan/items/{itemId}/guide/refresh', [HowGuideController::class, 'refresh'])
+        ->middleware('auth.bearer')->name('trip-requests.plan.items.guide.refresh');
+    Route::post('/travelers', [TravelerController::class, 'store'])->middleware('auth.bearer');
     Route::get('/travelers/{travelerId}', [TravelerController::class, 'show'])
-        ->name('travelers.show');
+        ->middleware('auth.bearer')->name('travelers.show');
 });

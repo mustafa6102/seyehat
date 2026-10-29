@@ -1,0 +1,10 @@
+version: 3.18.0
+inherits: ../v3.17/contract_index.yaml
+contracts:
+  - {id: SCH-ItineraryItem, path: contracts/v3.18/schemas/ItineraryItem.schema.json, status: ACTIVE, audience: PUBLIC, replaces: contracts/v3.16/schemas/ItineraryItem.schema.json}
+  - {id: SCH-PlanRevision, path: contracts/v3.18/schemas/PlanRevision.schema.json, status: ACTIVE, audience: PUBLIC, replaces: contracts/v3.16/schemas/PlanRevision.schema.json}
+  - {id: SCH-TripPlan, path: contracts/v3.18/schemas/TripPlan.schema.json, status: ACTIVE, audience: PUBLIC, replaces: contracts/v3.16/schemas/TripPlan.schema.json}
+  - {id: OP-assignTripPlanItemDay, path: contracts/v3.18/openapi/m1a.openapi.yaml, status: ACTIVE, decision_ref: OD-029}
+  - {id: RC-VALIDATION-DAY-FRAME-UNAVAILABLE, path: contracts/v3.18/registries/reason_error.yaml, status: ACTIVE}
+  - {id: RC-VALIDATION-DAY-ASSIGNMENT-INVALID, path: contracts/v3.18/registries/reason_error.yaml, status: ACTIVE}
+note: OD-029 RESOLVED (Seçenek A). OP-getTripRequestPlan / OP-addTripPlanPoiItem / OP-removeTripPlanItem v3.18 SCH-TripPlan döndürür. OD-030..035 OPEN; saat/süre/uygulanabilirlik kapsam dışı.

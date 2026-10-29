@@ -1,0 +1,172 @@
+{
+  "version": "3.23.0",
+  "inherits": "../../v3.22/registries/traceability.json",
+  "requirement_to_contract": [
+    {
+      "requirement": "RULE-FLT-002-07",
+      "operations": [
+        "OP-pollFlightSearch",
+        "OP-getOffer"
+      ],
+      "schemas": [
+        "contracts/v3.23/schemas/FlightOffer.schema.json"
+      ],
+      "test_scenarios": [],
+      "production_files": [],
+      "completion": "CONTRACT_ACTIVE_IMPLEMENTATION_PENDING"
+    },
+    {
+      "requirement": "RULE-FLT-002-08",
+      "operations": [
+        "OP-pollFlightSearch",
+        "OP-getOffer"
+      ],
+      "schemas": [
+        "contracts/v3.23/schemas/FlightOffer.schema.json"
+      ],
+      "test_scenarios": [],
+      "production_files": [],
+      "completion": "CONTRACT_ACTIVE_IMPLEMENTATION_PENDING"
+    },
+    {
+      "requirement": "FR-FLT-002-04",
+      "operations": [
+        "OP-pollFlightSearch",
+        "OP-getOffer"
+      ],
+      "schemas": [
+        "contracts/v3.23/schemas/FlightOffer.schema.json"
+      ],
+      "test_scenarios": [],
+      "production_files": [],
+      "completion": "CONTRACT_ACTIVE_IMPLEMENTATION_PENDING"
+    },
+    {
+      "requirement": "AC-FLT-002-07",
+      "operations": [
+        "OP-pollFlightSearch",
+        "OP-getOffer"
+      ],
+      "schemas": [
+        "contracts/v3.23/schemas/FlightOffer.schema.json"
+      ],
+      "test_scenarios": [
+        "TS-FLT-002-08"
+      ],
+      "production_files": [],
+      "completion": "CONTRACT_ACTIVE_IMPLEMENTATION_PENDING"
+    },
+    {
+      "requirement": "AC-FLT-002-08",
+      "operations": [
+        "OP-pollFlightSearch",
+        "OP-getOffer"
+      ],
+      "schemas": [
+        "contracts/v3.23/schemas/FlightOffer.schema.json"
+      ],
+      "test_scenarios": [
+        "TS-FLT-002-09"
+      ],
+      "production_files": [],
+      "completion": "CONTRACT_ACTIVE_IMPLEMENTATION_PENDING"
+    },
+    {
+      "requirement": "AC-FLT-002-09",
+      "operations": [
+        "OP-pollFlightSearch",
+        "OP-getOffer"
+      ],
+      "schemas": [
+        "contracts/v3.23/schemas/FlightOffer.schema.json"
+      ],
+      "test_scenarios": [
+        "TS-FLT-002-10"
+      ],
+      "production_files": [],
+      "completion": "CONTRACT_ACTIVE_IMPLEMENTATION_PENDING"
+    },
+    {
+      "requirement": "AC-FLT-005-04",
+      "operations": [
+        "OP-pollFlightSearch",
+        "OP-getOffer"
+      ],
+      "schemas": [
+        "contracts/v3.23/schemas/FlightOffer.schema.json"
+      ],
+      "test_scenarios": [
+        "TS-FLT-005-04"
+      ],
+      "production_files": [],
+      "completion": "CONTRACT_ACTIVE_IMPLEMENTATION_PENDING"
+    },
+    {
+      "requirement": "RULE-FLT-REPRICE-001-08",
+      "operations": [
+        "OP-repriceOffer",
+        "OP-selectTripRequestFlight",
+        "OP-reconfirmTripRequestFlight"
+      ],
+      "schemas": [
+        "contracts/v3.23/schemas/FlightOffer.schema.json",
+        "contracts/v3.23/schemas/TripRequestFlightSelection.schema.json"
+      ],
+      "test_scenarios": [],
+      "production_files": [],
+      "completion": "CONTRACT_ACTIVE_IMPLEMENTATION_PENDING"
+    },
+    {
+      "requirement": "AC-FLT-REPRICE-001-14",
+      "operations": [
+        "OP-repriceOffer",
+        "OP-selectTripRequestFlight",
+        "OP-reconfirmTripRequestFlight"
+      ],
+      "schemas": [
+        "contracts/v3.23/schemas/FlightOffer.schema.json",
+        "contracts/v3.23/schemas/TripRequestFlightSelection.schema.json"
+      ],
+      "test_scenarios": [
+        "TS-FLT-REPRICE-001-14"
+      ],
+      "production_files": [],
+      "completion": "CONTRACT_ACTIVE_IMPLEMENTATION_PENDING"
+    },
+    {
+      "requirement": "AC-FLT-REPRICE-001-15",
+      "operations": [
+        "OP-repriceOffer",
+        "OP-selectTripRequestFlight",
+        "OP-reconfirmTripRequestFlight"
+      ],
+      "schemas": [
+        "contracts/v3.23/schemas/FlightOffer.schema.json",
+        "contracts/v3.23/schemas/TripRequestFlightSelection.schema.json"
+      ],
+      "test_scenarios": [
+        "TS-FLT-REPRICE-001-15"
+      ],
+      "production_files": [],
+      "completion": "CONTRACT_ACTIVE_IMPLEMENTATION_PENDING"
+    },
+    {
+      "requirement": "AC-FLT-REPRICE-001-16",
+      "operations": [
+        "OP-repriceOffer",
+        "OP-selectTripRequestFlight",
+        "OP-reconfirmTripRequestFlight"
+      ],
+      "schemas": [
+        "contracts/v3.23/schemas/FlightOffer.schema.json",
+        "contracts/v3.23/schemas/TripRequestFlightSelection.schema.json"
+      ],
+      "test_scenarios": [
+        "TS-FLT-REPRICE-001-16"
+      ],
+      "production_files": [],
+      "completion": "CONTRACT_ACTIVE_IMPLEMENTATION_PENDING"
+    }
+  ],
+  "implementation_gap": "Application code still emits v3.4-shaped FlightOffer (no journey_type/direction) and blocks ROUND_TRIP before any provider call. Until the implementation task, responses do not conform to v3.23 SCH-FlightOffer; ONE_WAY search remains functional."
+}

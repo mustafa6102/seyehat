@@ -1,0 +1,435 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.23:FlightOffer",
+  "title": "FlightOffer",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "provider_offer_id": {
+      "type": "string",
+      "x-requirement-refs": [
+        "FLT-002"
+      ]
+    },
+    "journey_type": {
+      "type": "string",
+      "enum": [
+        "ONE_WAY",
+        "ROUND_TRIP"
+      ],
+      "x-requirement-refs": [
+        "FR-FLT-002-04",
+        "RULE-FLT-002-07",
+        "RULE-TRIP-001-04"
+      ],
+      "description": "Teklifin kapsadığı yolculuk tipi; sağlayıcının tek teklifindeki slice sayısından türetilir (1 = ONE_WAY, 2 = ROUND_TRIP). Tarihlerden veya segment sayısından tahmin edilmez."
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "CURRENT",
+        "CHANGED",
+        "EXPIRED",
+        "UNVERIFIED"
+      ],
+      "x-requirement-refs": [
+        "FLT-REPRICE-001"
+      ]
+    },
+    "price": {
+      "$ref": "../../v3.3/schemas/DerivedMoney.schema.json",
+      "x-requirement-refs": [
+        "FLT-002",
+        "FLT-005"
+      ],
+      "description": "Teklifin tamamı (tüm yönler ve tüm yolcular) için tek toplam; yön başına fiyat taşınmaz ve türetilmez (RULE-FLT-002-07)."
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "x-requirement-refs": [
+        "FLT-002"
+      ],
+      "description": "Teklifin tamamı için tek geçerlilik sonu; yön başına geçerlilik yoktur (RULE-FLT-002-07)."
+    },
+    "baggage": {
+      "oneOf": [
+        {
+          "$ref": "../../v3.3/schemas/BaggageAllowance.schema.json"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "x-requirement-refs": [
+        "FLT-002",
+        "FLT-005"
+      ],
+      "description": "Teklif düzeyi hak. ROUND_TRIP teklifte bir hak yalnız tüm segmentlerde aynıysa bilinen değer taşır; aksi halde UNKNOWN (RULE-FLT-005-02, AC-FLT-005-04)."
+    },
+    "bookable": {
+      "type": "boolean",
+      "x-requirement-refs": [
+        "RULE-FLT-002-03",
+        "AC-FLT-002-02"
+      ],
+      "description": "Yalnız PRV-001 production search ve book capability kanıtı olan kaynakta true olabilir; search-only sonuç false kalır. Yönlendirme/booking akışı OD-015/OD-011 kararına bağlıdır ve bu alanla açılmaz."
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/offer_source"
+      },
+      "x-requirement-refs": [
+        "FR-FLT-002-01",
+        "AC-FLT-002-01"
+      ]
+    },
+    "segments": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/flight_segment"
+      },
+      "x-requirement-refs": [
+        "FR-FLT-002-01",
+        "FR-FLT-002-03",
+        "AC-FLT-002-03",
+        "AC-FLT-002-06",
+        "FR-FLT-002-04",
+        "RULE-FLT-002-08"
+      ],
+      "x-ordering": "Tek ve kesintisiz sıralı dizi: önce tüm OUTBOUND segmentleri sağlayıcı sırasıyla, ardından tüm INBOUND segmentleri sağlayıcı sırasıyla. Yönler iç içe geçmez (FR-FLT-002-03, FR-FLT-002-04)."
+    }
+  },
+  "required": [
+    "provider_offer_id",
+    "journey_type",
+    "state",
+    "price",
+    "expires_at",
+    "baggage",
+    "bookable",
+    "sources",
+    "segments"
+  ],
+  "$defs": {
+    "segment_time": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "local_datetime": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$",
+          "x-requirement-refs": [
+            "RULE-FLT-002-05",
+            "AC-FLT-002-06"
+          ]
+        },
+        "iana_timezone": {
+          "type": "string",
+          "minLength": 1,
+          "x-requirement-refs": [
+            "RULE-FLT-002-05",
+            "AC-FLT-002-06"
+          ]
+        },
+        "utc_instant": {
+          "type": "string",
+          "format": "date-time",
+          "x-requirement-refs": [
+            "RULE-FLT-002-05",
+            "AC-FLT-002-06"
+          ]
+        }
+      },
+      "required": [
+        "local_datetime",
+        "iana_timezone",
+        "utc_instant"
+      ],
+      "x-note": "Bölüm 6.4: IANA timezone + local datetime + UTC instant birlikte taşınır; yalnız offset taşınmaz."
+    },
+    "flight_segment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "type": "string",
+          "enum": [
+            "OUTBOUND",
+            "INBOUND"
+          ],
+          "x-requirement-refs": [
+            "FR-FLT-002-04",
+            "RULE-FLT-002-08"
+          ],
+          "description": "Sağlayıcı slice sırasından türetilir: ilk slice OUTBOUND, ikinci slice INBOUND. ONE_WAY teklifte tüm segmentler OUTBOUND'dur."
+        },
+        "operating_carrier": {
+          "type": "string",
+          "minLength": 1,
+          "x-requirement-refs": [
+            "FR-FLT-002-01",
+            "FR-FLT-002-03"
+          ]
+        },
+        "operating_flight_number": {
+          "type": "string",
+          "minLength": 1,
+          "x-requirement-refs": [
+            "FR-FLT-002-01",
+            "FR-FLT-002-03"
+          ]
+        },
+        "marketing_flight_references": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "x-requirement-refs": [
+            "FR-FLT-002-03",
+            "AC-FLT-002-03"
+          ]
+        },
+        "carrier_model": {
+          "type": "string",
+          "enum": [
+            "FULL_SERVICE",
+            "LCC",
+            "HYBRID",
+            "UNKNOWN"
+          ],
+          "x-enum-ref": "CarrierModel",
+          "x-requirement-refs": [
+            "RULE-FLT-002-04",
+            "AC-FLT-002-04"
+          ]
+        },
+        "departure": {
+          "$ref": "#/$defs/segment_time",
+          "x-requirement-refs": [
+            "RULE-FLT-002-05",
+            "AC-FLT-002-06"
+          ]
+        },
+        "arrival": {
+          "$ref": "#/$defs/segment_time",
+          "x-requirement-refs": [
+            "RULE-FLT-002-05",
+            "AC-FLT-002-06"
+          ]
+        },
+        "duration_minutes": {
+          "type": "integer",
+          "minimum": 0,
+          "x-requirement-refs": [
+            "RULE-FLT-002-05",
+            "AC-FLT-002-06"
+          ],
+          "description": "UTC instant farkından hesaplanır."
+        }
+      },
+      "required": [
+        "direction",
+        "operating_carrier",
+        "operating_flight_number",
+        "marketing_flight_references",
+        "carrier_model",
+        "departure",
+        "arrival",
+        "duration_minutes"
+      ],
+      "x-note": "Segment sırası dizi sırasıdır (FR-FLT-002-03). Segment kalkış/varış konumu (havalimanı/LocationRef) FLT-002 veri tanımında yer almadığı için bu sürümde taşınmaz; OD-022."
+    },
+    "offer_source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider_id": {
+          "type": "string",
+          "minLength": 1,
+          "x-requirement-refs": [
+            "FR-FLT-002-01",
+            "AC-FLT-002-01"
+          ]
+        },
+        "provider_offer_id": {
+          "type": "string",
+          "minLength": 1,
+          "x-requirement-refs": [
+            "AC-FLT-002-01"
+          ]
+        },
+        "provider_role": {
+          "type": "string",
+          "enum": [
+            "AGGREGATOR",
+            "GDS",
+            "DIRECT_SUPPLIER",
+            "AFFILIATE",
+            "UNKNOWN"
+          ],
+          "x-enum-ref": "ProviderRole",
+          "x-requirement-refs": [
+            "RULE-FLT-002-04",
+            "AC-FLT-002-04"
+          ]
+        },
+        "distribution_channel": {
+          "type": "string",
+          "enum": [
+            "NDC",
+            "GDS_EDIFACT",
+            "DIRECT_API",
+            "OTHER",
+            "UNKNOWN"
+          ],
+          "x-enum-ref": "DistributionChannel",
+          "x-requirement-refs": [
+            "FR-FLT-002-01",
+            "RULE-FLT-002-04",
+            "AC-FLT-002-04"
+          ]
+        },
+        "fetched_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-requirement-refs": [
+            "FR-FLT-002-01"
+          ]
+        },
+        "verified_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "x-requirement-refs": [
+            "FR-FLT-002-01"
+          ]
+        },
+        "expires_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "x-requirement-refs": [
+            "FR-FLT-002-01"
+          ]
+        },
+        "verification_status": {
+          "type": "string",
+          "enum": [
+            "FRESH",
+            "STALE",
+            "EXPIRED",
+            "UNVERIFIED"
+          ],
+          "x-requirement-refs": [
+            "FR-FLT-002-01"
+          ]
+        }
+      },
+      "required": [
+        "provider_id",
+        "provider_offer_id",
+        "provider_role",
+        "distribution_channel",
+        "fetched_at",
+        "verified_at",
+        "expires_at",
+        "verification_status"
+      ],
+      "x-note": "Ham provider payload veya provider SDK alanı taşınmaz (RULE-FLT-002-01)."
+    }
+  },
+  "x-contract-id": "SCH-FlightOffer",
+  "x-version": "3.23",
+  "x-status": "ACTIVE",
+  "x-replaces": "urn:ai-seyahat:v3.4:FlightOffer",
+  "x-requirement-refs": [
+    "FLT-002",
+    "FLT-005",
+    "FLT-REPRICE-001"
+  ],
+  "x-open-decisions": [
+    "OD-022",
+    "OD-015"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "journey_type": {
+            "const": "ONE_WAY"
+          }
+        },
+        "required": [
+          "journey_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "segments": {
+            "items": {
+              "properties": {
+                "direction": {
+                  "const": "OUTBOUND"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "journey_type": {
+            "const": "ROUND_TRIP"
+          }
+        },
+        "required": [
+          "journey_type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "segments": {
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "properties": {
+                  "direction": {
+                    "const": "OUTBOUND"
+                  }
+                }
+              }
+            ],
+            "contains": {
+              "properties": {
+                "direction": {
+                  "const": "INBOUND"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "x-domain-invariants": [
+    "ROUND_TRIP: segments kesintisizdir (tüm OUTBOUND, ardından tüm INBOUND); JSON Schema ile ifade edilemediği için domain'de uygulanır (FR-FLT-002-04).",
+    "Tek sağlayıcı teklifi tek provider_offer_id taşır; bağımsız tek yön teklifler birleştirilerek ROUND_TRIP teklif üretilmez (RULE-FLT-002-07).",
+    "Slice sayısı, sırası veya uç noktası arama ölçütüyle uyuşmayan sağlayıcı teklifi atılır; IATA_AIRPORT için havalimanı kodu, IATA_CITY için havalimanının şehir kodu eşleşmelidir (RULE-FLT-002-08, AC-FLT-002-09)."
+  ],
+  "x-legacy-read": "D2: journey_type/direction taşımayan, v3.4 biçiminde saklanmış teklif görüntüsü (teklif deposu ve TripRequestFlightSelection.offer) okuma anında journey_type=ONE_WAY ve her segmentte direction=OUTBOUND olarak normalize edilir; diğer alanlar değişmez; veri dönüşümü (SQL) yapılmaz. Gerekçe: v3.4..v3.22 arasında tek üretici yalnız tek slice'lı sağlayıcı teklifini kabul ediyordu.",
+  "x-note": "v3.23 (OD-022 ROUND_TRIP alt kararı, D1/D2): journey_type ve segment direction eklendi; diğer alanların semantiği değişmedi. Segment kalkış/varış konumu hâlâ taşınmaz (OD-022 kalan açık konu)."
+}

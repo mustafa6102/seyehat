@@ -1,79 +1,104 @@
 /* Seyahat Planlayıcısı — tasarım belirteçleri (tek kaynak).
-   Görsel yön "Lagün": derin lagün mavisi-yeşili ana renk, serin sis nötrleri, tutumlu mercan vurgu.
+   Görsel yön "Ufuk": derin okyanus mavisi kimlik ve birincil eylemler, turkuaz keşif/bilgi katmanı ve odak,
+   mercan yalnız seyahatin önemli anlarında dolgu olarak (üzerinde koyu metinle). Durum renkleri markadan ayrıdır
+   ve hiçbir zaman tek başına kullanılmaz: her durum metin ve şekil (simge, kesikli çerçeve) ile birlikte gösterilir.
    Bileşenler ve sayfalar yalnız buradaki anlamsal belirteçleri kullanır; ham renk/ölçü değeri yazılmaz.
 
+   WCAG AA kontrastı (beyaz yüzey üzerinde, #f6f8fa zemin üzerinde):
+     primary 11.6 / 10.9 · secondary-text 6.8 · accent-text 6.1 · text-primary 14.6 / 13.7 · text-secondary 7.3 / 6.9
+     text-muted 5.5 / 5.1 · success-text 6.5 · warning-text 7.1 · error-text 7.8 · info-text 7.1
+     Ham turkuaz (#087f8c) zeminde 4.46 olduğundan metinde secondary-text kullanılır; ham mercan (#e97855) beyazla 2.9
+     olduğundan yalnız on-accent (5.6) ile dolgu olur. border-strong 3.5:1 (form denetimi sınırı, 3:1 eşiği).
+
    Kırılım noktaları (CSS değişkenleri @media içinde kullanılamadığı için burada belgelenir):
-     sm 40rem (640px) · md 48rem (768px) · lg 64rem (1024px) · xl 90rem (1440px)
+     xs 20rem (320px) · sm 27rem (431px) · md 48rem (768px) · lg 64rem (1024px) · xl 90rem (1440px)
    Düzen mobil öncelikli yazılır; @media (min-width: …) ile genişler. */
 :root {
     color-scheme: light;
 
     /* ── Renk: marka ───────────────────────────────────────────── */
-    --color-primary: #0b6477;          /* marka kimliği ve birincil eylemler */
-    --color-primary-hover: #084f5e;
-    --color-primary-active: #063d49;
-    --color-primary-subtle: #e2f0f2;   /* seçili/hover yüzeyleri */
-    --color-primary-border: #9cc7cf;
+    --color-primary: #123b5d;          /* okyanus: marka kimliği ve birincil eylemler */
+    --color-primary-hover: #0d2d48;
+    --color-primary-active: #0a2238;
+    --color-primary-subtle: #e6eef5;   /* seçili/hover yüzeyleri */
+    --color-primary-border: #9fb6cb;
     --color-on-primary: #ffffff;
-    --color-secondary: #173b45;        /* koyu mürekkep yüzeyi: ters bloklar, ipucu balonu */
+    --color-secondary: #087f8c;        /* turkuaz: keşif katmanı, ilerleme, odak; dolgu olarak beyaz metinle */
+    --color-secondary-text: #06656f;   /* açık yüzeyde turkuaz metin */
+    --color-secondary-subtle: #e3f3f4;
+    --color-secondary-border: #9ccfd4;
     --color-on-secondary: #ffffff;
-    --color-accent: #f0764f;           /* mercan: yalnız seyahatle ilgili önemli vurgu, dolgu olarak */
-    --color-accent-subtle: #fdeee8;
-    --color-accent-text: #a83c1b;      /* açık yüzeyde vurgu metni */
+    --color-accent: #e97855;           /* mercan: yalnız seyahatle ilgili önemli vurgu, dolgu olarak */
+    --color-accent-subtle: #fdefe9;
+    --color-accent-text: #a8401f;      /* açık yüzeyde vurgu metni */
     --color-on-accent: #3a1508;
+    --color-ink: #172b3a;              /* ters bloklar: ipucu balonu, atlama bağlantısı, kahraman bölümü */
+    --color-on-ink: #ffffff;
+    --color-on-ink-muted: #cfdbe6;
+    --color-ink-raised: #22394b;
 
     /* ── Renk: nötrler ─────────────────────────────────────────── */
-    --color-background: #f3f6f6;
+    --color-background: #f6f8fa;
     --color-surface: #ffffff;
-    --color-surface-sunken: #e9efef;   /* girintili alanlar, iskelet, görsel yer tutucu */
+    --color-surface-warm: #faf6f0;     /* sıcak kırık beyaz: seyahat özeti şeridi (ana metin 13.5:1, sessiz metin 5.1:1) */
+    --color-surface-sunken: #eef2f6;   /* girintili alanlar, iskelet, görsel yer tutucu */
     --color-surface-elevated: #ffffff; /* açılır katmanlar; gölgeyle birlikte kullanılır */
-    --color-border: #d3ddde;           /* ayırıcılar ve sakin çerçeveler */
-    --color-border-strong: #71878b;    /* form denetimleri (3:1 kontrast) */
-    --color-text-primary: #12282e;
-    --color-text-secondary: #3d555b;
-    --color-text-muted: #586e73;
-    --color-text-disabled: #8a9c9f;
-    --color-surface-disabled: #eef2f2;
-    --color-overlay: rgba(18, 40, 46, .48);
+    --color-border: #d5dde5;           /* ayırıcılar ve sakin çerçeveler */
+    --color-border-subtle: #e3e9ef;
+    --color-border-strong: #7a8a99;    /* form denetimleri (3:1 kontrast) */
+    --color-text-primary: #172b3a;
+    --color-text-secondary: #46586a;
+    --color-text-muted: #5a6b7b;
+    --color-text-disabled: #7a8a99;
+    --color-surface-disabled: #eef2f6;
+    --color-overlay: rgba(23, 43, 58, .52);
+    --color-hero-overlay: rgba(10, 24, 36, .74);   /* varış fotoğrafı üzerindeki karartma: beyaz metin en az 4.5:1 */
+    --color-glass: rgba(10, 24, 36, .42);          /* kahramandaki özet şeridi */
+    --color-glass-border: rgba(255, 255, 255, .2);
 
-    /* ── Renk: anlamsal (yalnız anlamı için) ───────────────────── */
-    --color-success: #1b7a4b;
-    --color-success-text: #146239;
-    --color-success-subtle: #e7f5ec;
-    --color-success-border: #a7d7bc;
-    --color-warning: #b7791f;
-    --color-warning-text: #734d00;
-    --color-warning-subtle: #fff5dc;
-    --color-warning-border: #e6c987;
-    --color-error: #b42335;
+    /* ── Renk: anlamsal (yalnız anlamı için; markadan ayrı) ────── */
+    --color-success: #247a56;
+    --color-success-text: #1b6243;
+    --color-success-subtle: #e8f5ee;
+    --color-success-border: #a9d6be;
+    --color-warning: #a66312;
+    --color-warning-text: #7a4609;
+    --color-warning-subtle: #fff4df;
+    --color-warning-border: #e3c48a;
+    --color-error: #b42332;
     --color-error-text: #8f1b2a;
     --color-error-subtle: #fdecee;
     --color-error-border: #ebb4bb;
-    --color-info: #1f5fa8;
-    --color-info-text: #17508f;
+    --color-info: #1d5f9e;
+    --color-info-text: #1a5190;
     --color-info-subtle: #eaf2fb;
-    --color-info-border: #b5cdeb;
-    --color-focus: #0b6477;
+    --color-info-border: #9fbfe3;
+    --color-focus: #087f8c;
 
     /* ── Tipografi ─────────────────────────────────────────────── */
     --font-sans: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Noto Sans", system-ui, sans-serif;
     --font-display: "Segoe UI Variable Display", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Noto Sans", system-ui, sans-serif;
     --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
-    --text-xs: .75rem;
+    --text-xs: .8125rem;               /* 13px: en küçük okunur metin */
     --text-sm: .875rem;
     --text-base: 1rem;
     --text-lg: 1.125rem;
     --text-xl: 1.25rem;
     --text-2xl: 1.5rem;
     --text-3xl: 1.875rem;
-    --text-4xl: 2.375rem;
+    --text-4xl: 2.5rem;
+    --text-fluid-hero: clamp(1.875rem, 1.35rem + 2.6vw, 3rem);
+    --text-fluid-title: clamp(1.5rem, 1.2rem + 1.5vw, 2.125rem);
     --weight-regular: 400;
     --weight-medium: 600;
     --weight-bold: 700;
-    --leading-tight: 1.2;
+    --weight-heavy: 800;
+    --leading-tight: 1.18;
     --leading-snug: 1.35;
     --leading-normal: 1.55;
     --tracking-tight: -.02em;
+    --tracking-wide: .04em;
+    --measure: 42rem;                  /* rahat okuma satır uzunluğu */
 
     /* ── Boşluk (4px tabanı) ───────────────────────────────────── */
     --space-1: .25rem;
@@ -86,32 +111,39 @@
     --space-10: 2.5rem;
     --space-12: 3rem;
     --space-16: 4rem;
+    --space-section: clamp(2.5rem, 1.5rem + 4vw, 4.5rem);
 
     /* ── Düzen ─────────────────────────────────────────────────── */
     --container-narrow: 46rem;
-    --container-default: 72rem;
-    --container-wide: 86rem;
-    --gutter: clamp(1rem, 4vw, 2rem);
+    --container-default: 74rem;
+    --container-wide: 88rem;
+    --gutter: clamp(1rem, 3.5vw, 2.5rem);
     --header-height: 4rem;
+    --step-size: 1.625rem;
     --control-height: 2.75rem;      /* 44px: en küçük pratik dokunma hedefi */
-    --control-height-sm: 2.25rem;
+    --control-height-sm: 2.25rem;   /* görünür yükseklik; dokunma alanı ::after ile 44px'e genişler */
     --control-height-lg: 3.25rem;
+    --flow-step-size: 1.625rem;     /* planlama adım göstergesindeki numara dairesi */
 
     /* ── Köşe, çerçeve, gölge ──────────────────────────────────── */
-    --radius-sm: .375rem;
-    --radius-md: .625rem;
+    --radius-sm: .5rem;
+    --radius-md: .75rem;
     --radius-lg: 1rem;
+    --radius-xl: 1.375rem;
     --radius-pill: 999px;
     --border-width: 1px;
     --border-width-strong: 2px;
-    --shadow-sm: 0 1px 2px rgba(18, 40, 46, .06);
-    --shadow-md: 0 .5rem 1.5rem rgba(18, 40, 46, .10);
-    --shadow-lg: 0 1.25rem 3rem rgba(18, 40, 46, .18);
+    --shadow-sm: 0 1px 2px rgba(23, 43, 58, .06), 0 1px 1px rgba(23, 43, 58, .04);
+    --shadow-md: 0 .5rem 1.5rem rgba(23, 43, 58, .08), 0 1px 2px rgba(23, 43, 58, .05);
+    --shadow-lg: 0 1.25rem 3rem rgba(23, 43, 58, .18);
+    --shadow-bar: 0 -.25rem 1rem rgba(23, 43, 58, .10);   /* telefonda alttaki sabit eylem çubuğu */
+    --shadow-header:0 1px 0 rgba(23, 43, 58, .06), 0 .25rem 1rem rgba(23, 43, 58, .05);
 
     /* ── Simge ─────────────────────────────────────────────────── */
     --icon-sm: 1rem;
     --icon-md: 1.25rem;
     --icon-lg: 1.5rem;
+    --icon-xl: 2rem;
     --icon-stroke: 1.75;
 
     /* ── Hareket ───────────────────────────────────────────────── */

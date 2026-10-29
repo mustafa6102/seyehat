@@ -1,0 +1,907 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "v3.22 delegated independent decision slices",
+  "$defs": {
+    "Fact": {
+      "$ref": "../../schemas/Sourced.schema.json",
+      "description": "Trusted internal canonical evidence only. CurrentEvidence requires FRESH, non-UNKNOWN certainty, nonblank source_reference, valid verified_at <= now < expires_at. Missing expiry is insufficient for these new decisions; existing provider freshness semantics are unchanged.",
+      "x-contract-id": "SCH-Fact-3.22",
+      "x-status": "ACTIVE",
+      "x-audience": "INTERNAL"
+    },
+    "BooleanFact": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Fact"
+        },
+        {
+          "properties": {
+            "value": {
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "x-contract-id": "SCH-BooleanFact-3.22",
+      "x-status": "ACTIVE",
+      "x-audience": "INTERNAL"
+    },
+    "InstantFact": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Fact"
+        },
+        {
+          "properties": {
+            "value": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "x-contract-id": "SCH-InstantFact-3.22",
+      "x-status": "ACTIVE",
+      "x-audience": "INTERNAL"
+    },
+    "DurationFact": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Fact"
+        },
+        {
+          "properties": {
+            "value": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "x-contract-id": "SCH-DurationFact-3.22",
+      "x-status": "ACTIVE",
+      "x-audience": "INTERNAL"
+    },
+    "TextFact": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Fact"
+        },
+        {
+          "properties": {
+            "value": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "x-contract-id": "SCH-TextFact-3.22",
+      "x-status": "ACTIVE",
+      "x-audience": "INTERNAL"
+    },
+    "MoneyFact": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Fact"
+        },
+        {
+          "properties": {
+            "value": {
+              "oneOf": [
+                {
+                  "$ref": "../../schemas/Money.schema.json"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "x-contract-id": "SCH-MoneyFact-3.22",
+      "x-status": "ACTIVE",
+      "x-audience": "INTERNAL"
+    },
+    "ProtectionInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "separate_ticket": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BooleanFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "through_ticket": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BooleanFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "interline_protection": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BooleanFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "explicit_protection": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BooleanFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reclaim": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BooleanFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "terminal_change": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BooleanFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "airport_change": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BooleanFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [],
+      "x-contract-id": "SCH-ProtectionInput-3.22",
+      "x-status": "ACTIVE",
+      "x-audience": "INTERNAL"
+    },
+    "ProtectionResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "protection": {
+          "type": "string",
+          "enum": [
+            "PROTECTED",
+            "UNPROTECTED",
+            "UNKNOWN"
+          ]
+        },
+        "risk_level": {
+          "const": "UNKNOWN"
+        },
+        "decision_cap": {
+          "const": "SHOWN_WITH_WARNING"
+        },
+        "timeline": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "BAGGAGE_RECLAIM",
+                  "CHECK_IN",
+                  "TERMINAL_TRANSFER",
+                  "AIRPORT_TRANSFER"
+                ]
+              },
+              "required": {
+                "oneOf": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "kind",
+              "required"
+            ]
+          }
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "calculation_version": {
+          "const": "connection-protection-3.22"
+        },
+        "calculated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "protection",
+        "risk_level",
+        "decision_cap",
+        "timeline",
+        "reason_codes",
+        "evidence_refs",
+        "calculation_version",
+        "calculated_at"
+      ],
+      "x-contract-id": "SCH-ProtectionResult-3.22",
+      "x-status": "ACTIVE",
+      "x-audience": "INTERNAL"
+    },
+    "TransferComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "required": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BooleanFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "included_in_mct": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BooleanFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "duration": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DurationFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "configuration_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [],
+      "x-contract-id": "SCH-TransferComponent-3.22",
+      "x-status": "ACTIVE",
+      "x-audience": "INTERNAL"
+    },
+    "TransferInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "arrival": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/InstantFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "departure": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/InstantFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "protected_connection": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BooleanFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mct": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DurationFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "check_in_ready_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/InstantFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "check_in_deadline": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/InstantFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "components": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "deplane": {
+              "$ref": "#/$defs/TransferComponent"
+            },
+            "immigration": {
+              "$ref": "#/$defs/TransferComponent"
+            },
+            "reclaim": {
+              "$ref": "#/$defs/TransferComponent"
+            },
+            "ground": {
+              "$ref": "#/$defs/TransferComponent"
+            },
+            "check_in_cutoff": {
+              "$ref": "#/$defs/TransferComponent"
+            },
+            "security": {
+              "$ref": "#/$defs/TransferComponent"
+            },
+            "buffer": {
+              "$ref": "#/$defs/TransferComponent"
+            }
+          },
+          "required": []
+        }
+      },
+      "required": [],
+      "x-contract-id": "SCH-TransferInput-3.22",
+      "x-status": "ACTIVE",
+      "x-audience": "INTERNAL"
+    },
+    "TransferResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "FEASIBLE",
+            "INFEASIBLE",
+            "UNKNOWN"
+          ]
+        },
+        "available_seconds": {
+          "oneOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "required_seconds": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "known_required_seconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "certainty": {
+          "type": "string",
+          "enum": [
+            "EXACT",
+            "ESTIMATED",
+            "UNKNOWN"
+          ]
+        },
+        "decision_cap": {
+          "type": "string",
+          "enum": [
+            "REJECTED",
+            "SHOWN_WITH_WARNING",
+            "NO_ADDITIONAL_RESTRICTION"
+          ]
+        },
+        "included_components": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "configuration_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "calculation_version": {
+          "const": "transfer-seconds-3.22"
+        },
+        "calculated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "status",
+        "available_seconds",
+        "required_seconds",
+        "known_required_seconds",
+        "certainty",
+        "decision_cap",
+        "included_components",
+        "reason_codes",
+        "evidence_refs",
+        "configuration_versions",
+        "calculation_version",
+        "calculated_at"
+      ],
+      "x-contract-id": "SCH-TransferResult-3.22",
+      "x-status": "ACTIVE",
+      "x-audience": "INTERNAL"
+    },
+    "FoodInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "booking": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/TextFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "price_level": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/TextFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "price": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/MoneyFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reservation_link": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/TextFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [],
+      "x-contract-id": "SCH-FoodInput-3.22",
+      "x-status": "ACTIVE",
+      "x-audience": "INTERNAL"
+    },
+    "FoodResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "price_kind": {
+          "type": "string",
+          "enum": [
+            "AMOUNT",
+            "PRICE_LEVEL",
+            "UNKNOWN"
+          ]
+        },
+        "price": {
+          "oneOf": [
+            {
+              "$ref": "../../schemas/Money.schema.json"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "price_certainty": {
+          "type": "string",
+          "enum": [
+            "EXACT",
+            "ESTIMATED",
+            "UNKNOWN"
+          ]
+        },
+        "price_level": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "booking_requirement": {
+          "type": "string",
+          "enum": [
+            "REQUIRED",
+            "RECOMMENDED",
+            "NOT_REQUIRED",
+            "UNKNOWN"
+          ]
+        },
+        "reservation_actionable": {
+          "type": "boolean"
+        },
+        "calculation_version": {
+          "const": "inventory-3.22"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "calculated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "price_kind",
+        "price",
+        "price_certainty",
+        "price_level",
+        "booking_requirement",
+        "reservation_actionable",
+        "calculation_version",
+        "evidence_refs",
+        "calculated_at"
+      ],
+      "x-contract-id": "SCH-FoodResult-3.22",
+      "x-status": "ACTIVE",
+      "x-audience": "INTERNAL"
+    },
+    "EventInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/TextFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ticket_status": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/TextFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "starts_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/InstantFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ends_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/InstantFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "iana_timezone": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ticket_link": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/TextFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [],
+      "x-contract-id": "SCH-EventInput-3.22",
+      "x-status": "ACTIVE",
+      "x-audience": "INTERNAL"
+    },
+    "EventResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "active_recommendation": {
+          "type": "boolean"
+        },
+        "ticket_actionable": {
+          "type": "boolean"
+        },
+        "fixed_constraint": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "constraint_type": {
+                  "const": "FIXED"
+                },
+                "starts_at": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "ends_at": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "iana_timezone": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "constraint_type",
+                "starts_at",
+                "ends_at",
+                "iana_timezone"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "feasibility_status": {
+          "const": "NOT_EVALUATED"
+        },
+        "calculation_version": {
+          "const": "inventory-3.22"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "calculated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "active_recommendation",
+        "ticket_actionable",
+        "fixed_constraint",
+        "feasibility_status",
+        "calculation_version",
+        "evidence_refs",
+        "calculated_at"
+      ],
+      "x-contract-id": "SCH-EventResult-3.22",
+      "x-status": "ACTIVE",
+      "x-audience": "INTERNAL"
+    },
+    "OpportunityResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "MATCH",
+            "NO_MATCH",
+            "NOT_VERIFIED",
+            "CURRENCY_MISMATCH"
+          ]
+        },
+        "threshold": {
+          "$ref": "../../schemas/Money.schema.json"
+        },
+        "observed_price": {
+          "oneOf": [
+            {
+              "$ref": "../../schemas/Money.schema.json"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verified_at": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expires_at": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evaluated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "policy_version": {
+          "const": "selected-flight-threshold-3.22"
+        }
+      },
+      "required": [
+        "status",
+        "threshold",
+        "observed_price",
+        "verified_at",
+        "expires_at",
+        "evaluated_at",
+        "policy_version"
+      ],
+      "x-contract-id": "SCH-OpportunityResult-3.22",
+      "x-status": "ACTIVE",
+      "x-audience": "PUBLIC"
+    }
+  },
+  "x-status": "ACTIVE"
+}

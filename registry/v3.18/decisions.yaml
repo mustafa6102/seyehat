@@ -1,0 +1,25 @@
+version: 3.18.0
+inherits: ../v3.17/decisions.yaml
+decisions:
+  - id: OD-029
+    status: RESOLVED
+    note: 'APPROVED (user, 2026-10-23) - Seçenek A: günler EXACT gidiş/dönüş tarihlerinden (dahil) varış IANA saat diliminde türetilir; kullanıcı POI öğesini elle güne atar/sıralar; atama uygulanabilirlik iddiası taşımaz. ONE_WAY/FLEXIBLE tarihte gün yok.'
+  - id: OD-030
+    status: OPEN
+    note: Plan öğesi saati ve ziyaret süresi kaynağı.
+  - id: OD-031
+    status: OPEN
+    note: Çalışma saati/müsaitlik kanıtının gate kullanımı (UNVERIFIED, timezone null, özel günler).
+  - id: OD-032
+    status: OPEN
+    note: Ulaşım süresi kaynağı ve coğrafi uygulanabilirlik (OD-003 ile ilişkili).
+  - id: OD-033
+    status: OPEN
+    note: Gün içi tampon, pace_preference değerleri, temel tempo limiti, gün penceresi.
+  - id: OD-034
+    status: OPEN
+    note: Uçuş/konaklama seçimlerinin gün sınırı olarak kullanımı.
+  - id: OD-035
+    status: OPEN
+    note: Feasibility gate sonucu, saklanması ve reason kodları.
+open_decisions: [OD-001, OD-008, OD-011, OD-012, OD-013, OD-014, OD-015, OD-016, OD-020, OD-022, OD-026, OD-030, OD-031, OD-032, OD-033, OD-034, OD-035, ADR-006, ADR-007, ADR-010]

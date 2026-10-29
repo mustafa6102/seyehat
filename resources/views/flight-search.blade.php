@@ -47,7 +47,7 @@
         <section class="card empty-state" data-flight-search-blocked>
             <h2 class="card-title">Bu talep için uçuş araması başlatılamıyor</h2>
             @if ($journeyBlocker)
-                <p>Yukarıda belirtilen nedenlerle arama sağlayıcıya gönderilmez. Şu anda kesin tarihli tek yön uçuş araması yapılabilir; bunun için yeni bir talep oluşturabilirsiniz.</p>
+                <p>Yukarıda belirtilen nedenlerle arama sağlayıcıya gönderilmez. Şu anda kesin tarihli tek yön veya gidiş-dönüş uçuş araması yapılabilir; bunun için yeni bir talep oluşturabilirsiniz.</p>
             @else
                 <p>Yukarıda belirtilen nedenlerle arama sağlayıcıya gönderilmez. Uçuş için havalimanı veya şehir aramasından seçilmiş konumlar ve yolculuk tipiyle birlikte gidiş (gerekiyorsa dönüş) tarihi içeren yeni bir talep oluşturabilirsiniz.</p>
             @endif
@@ -80,13 +80,14 @@
                 <button type="button" class="btn btn-primary" data-search-start>Uçuş aramasını başlat</button>
                 <button type="button" class="btn btn-secondary" data-search-refresh hidden>Durumu yenile</button>
                 <button type="button" class="btn btn-link" data-search-restart hidden>Yeni arama başlat</button>
+                <p class="field-hint">Kısmi sonuçlarda mevcut teklifler korunur; sağlayıcı sorunu sürüyorsa daha sonra yeni bir arama başlatabilirsiniz.</p>
             </div>
         </section>
 
         <section class="results" aria-labelledby="results-title" data-search-results hidden>
             <div class="results-header">
                 <h2 id="results-title" class="card-title">Teklifler</h2>
-                <p class="summary-meta">Teklifler arama sonucunun sırasıyla gösterilir; bu sıralama kişiselleştirilmiş bir öneri değildir.</p>
+                <p class="summary-meta">Tam maliyeti bilinmeyen teklifler, tam maliyetli tekliflerin önüne alınmaz ve “en ucuz” sayılmaz. Teklif ayrıntısındaki maliyet kapsamı, bilinen alt sınırı ve bilinmeyen zorunlu kalemleri ayrı gösterir. Sıralama kişiselleştirilmiş bir öneri değildir.</p>
             </div>
             <ol class="offer-list" data-offer-list></ol>
         </section>

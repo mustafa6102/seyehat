@@ -1,0 +1,16 @@
+version: 3.19.0
+inherits: ../v3.18/decisions.yaml
+decisions:
+  - {id: OD-HOW-001, status: RESOLVED, choice: A, note: 'İlk kapsam yalnız CURRENT PlanRevision POI öğesi; HOW-001 DONE değildir.'}
+  - {id: OD-HOW-002, status: RESOLVED, choice: A, note: 'Deterministik Türkçe şablon + typed evidence slot.'}
+  - {id: OD-HOW-003, status: RESOLVED, choice: A, note: 'Yalnız kanonik snapshot ve onaylı source reverify.'}
+  - {id: OD-HOW-004, status: RESOLVED, choice: A, detail_choice: A, note: 'Kaynak freshness mirası; ayrı TTL yok; source resilience profiliyle senkron reverify; başarısızlık 503 fail-closed.'}
+  - {id: OD-HOW-005, status: RESOLVED, choice: B, note: 'Yan etkisiz GET + ayrı POST refresh.'}
+  - {id: OD-HOW-006, status: RESOLVED, choice: A, note: 'HOW rehberi hesaplanan read model; rehber snapshotı saklanmaz.'}
+  - {id: OD-HOW-007, status: RESOLVED, choice: A, note: 'Yalnız TripRequest owner read/refresh.'}
+  - {id: OD-HOW-008, status: RESOLVED, choice: A, note: 'CURRENT PlanRevision item + If-Match.'}
+  - {id: OD-HOW-009, status: RESOLVED, choice: A, detail_choice: A, retention_choice: A, note: 'Refresh kalıcı operation-idempotency replay kaydı; PlanRevision/outbox yok; kayıt TripRequest yaşam döngüsüne bağlı.'}
+  - {id: OD-HOW-010, status: RESOLVED, choice: A, note: 'OD-028 web kanalı; session + CSRF.'}
+  - {id: OD-HOW-011, status: RESOLVED, choice: A, note: 'TIME/FEE/TERMINAL/PLATFORM/LINK/ENTRY_RULE kritik slot matrisi; yalnız FRESH source-backed CTA aktiftir.'}
+open_decisions: [OD-001, OD-008, OD-011, OD-012, OD-013, OD-014, OD-015, OD-016, OD-020, OD-022, OD-026, OD-030, OD-031, OD-032, OD-033, OD-034, OD-035, ADR-006, ADR-007, ADR-010]
+note: ADR-006 genel olarak çözülmez. HOW yalnız source operation için mevcut onaylı profili devralır; profil/capability yoksa provider çağrısı yapılmaz ve 503 döner. OD-013 genel retention kararı açık kalır.

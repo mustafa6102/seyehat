@@ -1,0 +1,16 @@
+version: 3.21.0
+inherits: ../../v3.20/registries/od_impact.yaml
+decisions:
+  - id: OD-031
+    title: Çalışma saati ve müsaitlik kanıtının gate'te kullanımı
+    status: RESOLVED
+    approved_by: user
+    approved_at: 2026-10-23
+    affects: [AC-DAY-001-03, RULE-POI-001-02, RULE-POI-001-06]
+    policy: >-
+      Eksik, UNVERIFIED, STALE veya EXPIRED opening-hours/availability kanıtı FEASIBLE sonucu üretemez. Eksik IANA timezone
+      veya gerekli özel-gün kanıtı tahmin edilmez. Yetersiz kanıt UNKNOWN / NOT_VERIFIED'dır; yalnız kanıt yetersizliği
+      IMPOSSIBLE sonucu değildir. Çalışma saati, müsaitlik, timezone veya provider doğrulaması uydurulmaz.
+    unsupported_implementation_details: >-
+      Feasibility sonuç şeması ve UNKNOWN ile NOT_VERIFIED ilişkisinin temsili, değerlendirme operasyonu, lifecycle,
+      persistence ve reason/error kodları bu kararla onaylanmamıştır. OD-032..035 açık kalır.

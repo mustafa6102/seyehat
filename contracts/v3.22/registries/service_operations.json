@@ -1,0 +1,55 @@
+{
+  "version": "3.22.0",
+  "status": "ACTIVE",
+  "audience": "INTERNAL",
+  "operations": [
+    {
+      "id": "INT-evaluateConnectionProtection",
+      "handler": "App\\Modules\\FeasibilityCompliance\\Application\\ConnectionProtection::evaluate",
+      "input_schema": "../schemas/DecisionSupport.schema.json#/$defs/ProtectionInput",
+      "output_schema": "../schemas/DecisionSupport.schema.json#/$defs/ProtectionResult",
+      "extra_arguments": [
+        "DateTimeImmutable asOf"
+      ],
+      "side_effects": []
+    },
+    {
+      "id": "INT-evaluateTransfer",
+      "handler": "App\\Modules\\FeasibilityCompliance\\Application\\TransferFeasibility::evaluate",
+      "input_schema": "../schemas/DecisionSupport.schema.json#/$defs/TransferInput",
+      "output_schema": "../schemas/DecisionSupport.schema.json#/$defs/TransferResult",
+      "extra_arguments": [
+        "DateTimeImmutable asOf"
+      ],
+      "side_effects": []
+    },
+    {
+      "id": "INT-projectFoodEvidence",
+      "handler": "App\\Modules\\Discovery\\Application\\InventoryDecision::food",
+      "input_schema": "../schemas/DecisionSupport.schema.json#/$defs/FoodInput",
+      "output_schema": "../schemas/DecisionSupport.schema.json#/$defs/FoodResult",
+      "extra_arguments": [
+        "DateTimeImmutable asOf",
+        "approved authority host list"
+      ],
+      "side_effects": []
+    },
+    {
+      "id": "INT-projectEventEvidence",
+      "handler": "App\\Modules\\Discovery\\Application\\InventoryDecision::event",
+      "input_schema": "../schemas/DecisionSupport.schema.json#/$defs/EventInput",
+      "output_schema": "../schemas/DecisionSupport.schema.json#/$defs/EventResult",
+      "extra_arguments": [
+        "DateTimeImmutable asOf",
+        "approved authority host list"
+      ],
+      "side_effects": []
+    }
+  ],
+  "invariants": {
+    "evidence": "A valid envelope is not proof of provenance by itself. Only a trusted provider-normalization/application boundary may construct these inputs. No input DTO is exposed as a public request. FRESH with absent/expired/future verification timestamps yields UNKNOWN.",
+    "transfer": "Durations are nonnegative integer seconds. Self-transfer deplane and configured buffer are mandatory; other applicability must be evidenced. Protected MCT-covered terms are excluded; coverage unknown leaves the sum UNKNOWN. Negative connection window is INFEASIBLE. If protection is unknown, a self-transfer subtotal cannot prove infeasibility. known_required_seconds is a diagnostic subtotal, not a safe connection claim. Proven cutoff miss independently rejects.",
+    "inventory": "Event active_recommendation requires fresh SCHEDULED plus AVAILABLE. Ticket CTA additionally requires valid fixed start/timezone and fresh allowlisted HTTPS ticket link. Food PRICE_LEVEL never converts to Money. Host list is supplied only from approved provider authority configuration; no default host is trusted.",
+    "opportunity": "Only the existing canonical verified_price from an owner-scoped selection is compared. No historical dataset or predicted price. MATCH does not book or emit a notification."
+  }
+}

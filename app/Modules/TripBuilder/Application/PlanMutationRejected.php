@@ -24,6 +24,18 @@ final class PlanMutationRejected extends RuntimeException
         return new self('REVISION_STALE', 'Plan sürümü güncel değil.', 409);
     }
 
+    /** RC-VALIDATION-DAY-FRAME-UNAVAILABLE (v3.18, RULE-DAY-001-04) */
+    public static function dayFrameUnavailable(): self
+    {
+        return new self('DAY_FRAME_UNAVAILABLE', 'Bu seyahat talebinin tarihlerinden plan günleri oluşturulamıyor; yer bir güne atanamaz.', 422);
+    }
+
+    /** RC-VALIDATION-DAY-ASSIGNMENT-INVALID (v3.18, RULE-DAY-001-05) */
+    public static function dayAssignmentInvalid(): self
+    {
+        return new self('DAY_ASSIGNMENT_INVALID', 'Seçilen gün seyahat tarihleri içinde değil veya sıra geçersiz.', 422);
+    }
+
     /** RC-CONFLICT-IDEMPOTENCY-KEY */
     public static function idempotencyConflict(): self
     {

@@ -2,6 +2,8 @@
 
 namespace App\Modules\TripBuilder\Application;
 
+use App\Modules\Api\Contracts\TripRequestService;
+use App\Modules\Event\Contracts\EventReader;
 use App\Modules\Poi\Contracts\PoiReader;
 use App\Modules\TripBuilder\Infrastructure\Persistence\DatabaseTripPlanRepository;
 use App\Shared\Outbox\Contracts\OutboxEvent;
@@ -10,9 +12,12 @@ use Closure;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Str;
+use LogicException;
 
 /**
- * TRIP-BLD-001 v3.16 plan increment: SCH-TripPlan read, unscheduled FLEXIBLE POI add and item removal (OD-021, OD-027).
+ * TRIP-BLD-001 v3.16 plan increment: SCH-TripPlan read, unscheduled FLEXIBLE POI add and item removal (OD-021, OD-027);
+ * v3.18 DAY-001 manual day assignment and in-day ordering (OD-029 A) with the derived day_frame; v3.20 adds only a
+ * user-provided, explicitly UNVERIFIED visit duration (OD-030 A). No time or feasibility is ever computed.
  * Callers have already authenticated and authorized against the TripRequest owner. Every successful mutation is one
  * transaction: [Trip on first mutation] + previous CURRENT -> SUPERSEDED + new immutable PlanRevision (with its
  * Idempotency-Key) + EVT-PlanRevisionCreated outbox record (ADR-003). Nothing is persisted on any refusal.
@@ -25,8 +30,10 @@ final readonly class TripPlanService
     public function __construct(
         private DatabaseTripPlanRepository $plans,
         private PoiReader $pois,
+        private EventReader $eventReader,
         private OutboxWriter $outbox,
         private ConnectionInterface $database,
+        private TripRequestService $tripRequests,
     ) {}
 
     /**
@@ -38,7 +45,7 @@ final readonly class TripPlanService
     {
         $trip = $this->plans->tripFor($tripRequestId);
         if ($trip === null) {
-            return ['body' => ['trip_request_id' => $tripRequestId, 'trip' => null, 'revision' => null], 'etag' => null];
+            return ['body' => ['trip_request_id' => $tripRequestId, 'trip' => null, 'revision' => null, 'day_frame' => $this->dayFrame($tripRequestId)->toContract()], 'etag' => null];
         }
 
         return $this->result($tripRequestId, $trip, $this->plans->currentRevision($trip['trip_id']));
@@ -62,10 +69,35 @@ final readonly class TripPlanService
         if ($poi === null) {
             throw PlanMutationRejected::notFound('Gezilecek yer bulunamadı.');
         }
-        $item = ['item_id' => (string) Str::uuid(), 'item_type' => 'POI', 'constraint_type' => 'FLEXIBLE', 'poi_snapshot' => $poi];
+        $item = ['item_id' => (string) Str::uuid(), 'item_type' => 'POI', 'constraint_type' => 'FLEXIBLE', 'poi_snapshot' => $poi, 'day_assignment' => null, 'planning_duration' => null];
 
         return $this->commit($tripRequestId, $idempotencyKey, $fingerprint, $precondition, true,
-            fn (array $items): array => [[...$items, $item], [$item['item_id']], []]);
+            fn (array $items): array => [[...$items, $item], [$item['item_id']], [], [], []]);
+    }
+
+    /**
+     * OP-addTripPlanEventItem (EVT-001 v3.22): the snapshot is the stored canonical SCH-Event; constraint is FIXED.
+     * No provider call is made here — the event must already exist in canonical storage (RunEventDiscovery).
+     *
+     * @return array{body: array<string, mixed>, etag: string|null}
+     *
+     * @throws PlanMutationRejected
+     */
+    public function addEvent(string $tripRequestId, string $idempotencyKey, PlanPrecondition $precondition, string $eventId): array
+    {
+        $fingerprint = $this->fingerprint('add-event', $tripRequestId, $eventId, $precondition);
+        $replay = $this->replay($tripRequestId, $idempotencyKey, $fingerprint);
+        if ($replay !== null) {
+            return $replay;
+        }
+        $event = $this->eventReader->find($eventId);
+        if ($event === null) {
+            throw PlanMutationRejected::notFound('Etkinlik bulunamadı.');
+        }
+        $item = ['item_id' => (string) Str::uuid(), 'item_type' => 'EVENT', 'constraint_type' => 'FIXED', 'event_snapshot' => $event, 'day_assignment' => null, 'planning_duration' => null];
+
+        return $this->commit($tripRequestId, $idempotencyKey, $fingerprint, $precondition, true,
+            fn (array $items): array => [[...$items, $item], [$item['item_id']], [], [], []]);
     }
 
     /**
@@ -84,17 +116,146 @@ final readonly class TripPlanService
         }
 
         return $this->commit($tripRequestId, $idempotencyKey, $fingerprint, $precondition, false, function (array $items) use ($itemId): array {
-            $remaining = array_values(array_filter($items, fn (array $item): bool => $item['item_id'] !== $itemId));
-            if (count($remaining) === count($items)) {
-                throw PlanMutationRejected::notFound('Plan öğesi bulunamadı.');
-            }
+            $removed = $this->find($items, $itemId);
+            // The rest of the removed item's day closes the gap (AC-DAY-001-07); relative order is unchanged.
+            $remaining = $this->withoutPosition(array_values(array_filter($items, fn (array $item): bool => $item['item_id'] !== $itemId)), $removed['day_assignment'] ?? null);
 
-            return [$remaining, [], [$itemId]];
+            return [$remaining, [], [$itemId], [], []];
         });
     }
 
     /**
-     * @param  Closure(list<array<string, mixed>>): array{0: list<array<string, mixed>>, 1: list<string>, 2: list<string>}  $change
+     * OP-assignTripPlanItemDay (v3.18): $date null removes the assignment; otherwise the item is placed at $position (default:
+     * end) of a day_frame day and the other items of the old and new day are renumbered 1..n in their relative order.
+     *
+     * @return array{body: array<string, mixed>, etag: string|null}
+     *
+     * @throws PlanMutationRejected
+     */
+    public function assignDay(string $tripRequestId, string $idempotencyKey, PlanPrecondition $precondition, string $itemId, ?string $date, ?int $position): array
+    {
+        $fingerprint = $this->fingerprint('assign-day', $tripRequestId, json_encode([$itemId, $date, $position], JSON_THROW_ON_ERROR), $precondition);
+        $replay = $this->replay($tripRequestId, $idempotencyKey, $fingerprint);
+        if ($replay !== null) {
+            return $replay;
+        }
+        $frame = $date === null ? null : $this->dayFrame($tripRequestId);
+
+        return $this->commit($tripRequestId, $idempotencyKey, $fingerprint, $precondition, false, function (array $items) use ($itemId, $date, $position, $frame): array {
+            $item = $this->find($items, $itemId);
+            if ($frame !== null && $frame->status !== DayFrame::AVAILABLE) {
+                throw PlanMutationRejected::dayFrameUnavailable();
+            }
+            if ($frame !== null && ! $frame->contains((string) $date)) {
+                throw PlanMutationRejected::dayAssignmentInvalid();
+            }
+            // Take the item out of its old day first, so both days stay 1..n.
+            $items = $this->withoutPosition(array_map(
+                fn (array $other): array => $other['item_id'] === $itemId ? array_merge($other, ['day_assignment' => null]) : $other,
+                $items,
+            ), $item['day_assignment'] ?? null);
+            $assignment = null;
+            if ($date !== null) {
+                $taken = count(array_filter($items, fn (array $other): bool => ($other['day_assignment']['date'] ?? null) === $date));
+                $position ??= $taken + 1;
+                if ($position < 1 || $position > $taken + 1) {
+                    throw PlanMutationRejected::dayAssignmentInvalid();
+                }
+                $assignment = ['date' => $date, 'position' => $position, 'feasibility_status' => 'NOT_EVALUATED'];
+            }
+            $items = array_map(function (array $other) use ($itemId, $assignment): array {
+                if ($other['item_id'] === $itemId) {
+                    return array_merge($other, ['day_assignment' => $assignment]);
+                }
+                $current = $other['day_assignment'] ?? null;
+                if ($assignment !== null && $current !== null && $current['date'] === $assignment['date'] && $current['position'] >= $assignment['position']) {
+                    return array_merge($other, ['day_assignment' => array_merge($current, ['position' => $current['position'] + 1])]);
+                }
+
+                return $other;
+            }, $items);
+
+            return [$items, [], [], [$itemId], []];
+        });
+    }
+
+    /** OD-030 A: user-provided duration only; no provider evidence, time, opening-hours or feasibility evaluation. */
+    public function setDuration(string $tripRequestId, string $idempotencyKey, PlanPrecondition $precondition, string $itemId, int $minutes): array
+    {
+        $fingerprint = $this->fingerprint('set-duration', $tripRequestId, json_encode([$itemId, $minutes], JSON_THROW_ON_ERROR), $precondition);
+        $replay = $this->replay($tripRequestId, $idempotencyKey, $fingerprint);
+        if ($replay !== null) {
+            return $replay;
+        }
+
+        return $this->commit($tripRequestId, $idempotencyKey, $fingerprint, $precondition, false, function (array $items) use ($itemId, $minutes): array {
+            $item = $this->find($items, $itemId);
+            if (($item['item_type'] ?? null) !== 'POI') {
+                throw PlanMutationRejected::notFound('Ziyaret süresi desteklenen plan öğesi bulunamadı.');
+            }
+            $items = array_map(
+                fn (array $other): array => $other['item_id'] === $itemId
+                    ? array_merge($other, ['planning_duration' => ['minutes' => $minutes, 'source' => 'USER_PROVIDED', 'verification_status' => 'UNVERIFIED']])
+                    : $other,
+                $items,
+            );
+
+            return [$items, [], [], [], [$itemId]];
+        });
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $items
+     * @return array<string, mixed>
+     *
+     * @throws PlanMutationRejected
+     */
+    private function find(array $items, string $itemId): array
+    {
+        foreach ($items as $item) {
+            if ($item['item_id'] === $itemId) {
+                return $item;
+            }
+        }
+
+        throw PlanMutationRejected::notFound('Plan öğesi bulunamadı.');
+    }
+
+    /**
+     * Closes the gap a left position leaves in its day: later items of that day move up by one.
+     *
+     * @param  list<array<string, mixed>>  $items
+     * @param  array{date: string, position: int}|null  $left
+     * @return list<array<string, mixed>>
+     */
+    private function withoutPosition(array $items, ?array $left): array
+    {
+        if ($left === null) {
+            return $items;
+        }
+
+        return array_map(function (array $item) use ($left): array {
+            $current = $item['day_assignment'] ?? null;
+
+            return $current !== null && $current['date'] === $left['date'] && $current['position'] > $left['position']
+                ? array_merge($item, ['day_assignment' => array_merge($current, ['position' => $current['position'] - 1])])
+                : $item;
+        }, $items);
+    }
+
+    /** RULE-DAY-001-04: derived from the TripRequest on every call, never stored. */
+    private function dayFrame(string $tripRequestId): DayFrame
+    {
+        try {
+            return DayFrame::from($this->tripRequests->get($tripRequestId));
+        } catch (LogicException) {
+            // An incomplete DRAFT cannot be represented as a TripRequestView.
+            return DayFrame::from(null);
+        }
+    }
+
+    /**
+     * @param  Closure(list<array<string, mixed>>): array{0: list<array<string, mixed>>, 1: list<string>, 2: list<string>, 3: list<string>, 4: list<string>}  $change
      * @return array{body: array<string, mixed>, etag: string|null}
      */
     private function commit(string $tripRequestId, string $key, string $fingerprint, PlanPrecondition $precondition, bool $mayCreateTrip, Closure $change): array
@@ -119,7 +280,7 @@ final readonly class TripPlanService
                     }
                 }
 
-                [$items, $added, $removed] = $change($current['items'] ?? []);
+                [$items, $added, $removed, $moved, $updated] = $change($current['items'] ?? []);
                 $version = ($current['version'] ?? 0) + 1;
                 if ($current !== null) {
                     // TRN-PLANREVISION-01
@@ -129,6 +290,8 @@ final readonly class TripPlanService
                     'base_version' => $current['version'] ?? null,
                     'added_item_ids' => $added,
                     'removed_item_ids' => $removed,
+                    'moved_item_ids' => $moved,
+                    'updated_item_ids' => $updated,
                     'reason_code' => self::REASON_CODE,
                 ], $key, $fingerprint);
                 // EVT-PlanRevisionCreated: identifiers only (no principal, token or provider data); ordering is ADR-008 (OPEN).
@@ -174,7 +337,7 @@ final readonly class TripPlanService
     private function result(string $tripRequestId, array $trip, ?array $revision): array
     {
         return [
-            'body' => ['trip_request_id' => $tripRequestId, 'trip' => $trip, 'revision' => $revision],
+            'body' => ['trip_request_id' => $tripRequestId, 'trip' => $trip, 'revision' => $revision, 'day_frame' => $this->dayFrame($tripRequestId)->toContract()],
             'etag' => $revision === null ? null : PlanPrecondition::etag($revision['version']),
         ];
     }

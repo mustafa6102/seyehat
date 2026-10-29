@@ -1,0 +1,26 @@
+version: 3.22.0-proposal
+status: PROPOSED_NON_NORMATIVE
+inherits: contracts/v3.21
+decision_basis: OD-031
+active_contract_changes: []
+proposed_surface:
+  schema: UNDEFINED
+  operation: UNDEFINED
+  lifecycle: UNDEFINED
+  persistence: UNDEFINED
+  reason_codes: UNDEFINED
+approved_invariants:
+  - insufficient opening-hours or availability evidence never yields FEASIBLE
+  - missing IANA timezone or required special-day evidence is not inferred
+  - insufficient evidence is UNKNOWN_OR_NOT_VERIFIED and is not IMPOSSIBLE solely for insufficiency
+  - existing Sourced certainty freshness and provenance semantics are reused
+blocked_by:
+  - representation of UNKNOWN versus NOT_VERIFIED
+  - classification scope and trigger
+  - result lifecycle and persistence
+  - positive and negative evidence thresholds
+  - OD-032
+  - OD-033
+  - OD-034
+  - OD-035
+affected_requirements: [AC-DAY-001-03, RULE-POI-001-02, RULE-POI-001-06]

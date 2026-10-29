@@ -1,0 +1,3394 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Eight backend groups proposal ONLY",
+    "version": "0.1.0-proposed"
+  },
+  "x-base-contract": "3.21.0",
+  "x-active-contract-changes": [],
+  "paths": {
+    "/trips/{tripId}/travelers": {
+      "get": {
+        "operationId": "listTripTravelers",
+        "x-contract-id": "OP-listTripTravelers-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-TRV",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/TravelerList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createTripTraveler",
+        "x-contract-id": "OP-createTripTraveler-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-TRV",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/TravelerProfile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/TravelerInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/travelers/{travelerId}": {
+      "get": {
+        "operationId": "getTraveler",
+        "x-contract-id": "OP-getTraveler-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-TRV",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "travelerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/TravelerProfile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateTraveler",
+        "x-contract-id": "OP-updateTraveler-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-TRV",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "travelerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/TravelerProfile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/TravelerInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/travelers/{travelerId}/readiness": {
+      "get": {
+        "operationId": "getTravelerReadiness",
+        "x-contract-id": "OP-getTravelerReadiness-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-TRV-READINESS",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "travelerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/TravelerReadiness"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trips/{tripId}/traveler-invitations": {
+      "post": {
+        "operationId": "createTravelerInvitation",
+        "x-contract-id": "OP-createTravelerInvitation-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-TRV",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tripId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/InviteResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/InviteCreate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/traveler-invitations/accept": {
+      "post": {
+        "operationId": "acceptTravelerInvitation",
+        "x-contract-id": "OP-acceptTravelerInvitation-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-TRV",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/TravelerBinding"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/InviteAccept"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/travelers/{travelerId}/grants": {
+      "post": {
+        "operationId": "grantTravelerAccess",
+        "x-contract-id": "OP-grantTravelerAccess-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-TRV",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "travelerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Grant"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/GrantInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/travelers/{travelerId}/grants/{grantId}": {
+      "delete": {
+        "operationId": "revokeTravelerAccess",
+        "x-contract-id": "OP-revokeTravelerAccess-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-TRV",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "travelerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "grantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Grant"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/route-candidate-jobs": {
+      "post": {
+        "operationId": "startRouteCandidateSearch",
+        "x-contract-id": "OP-startRouteCandidateSearch-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-RCG",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/JobAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/JobInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/route-candidate-jobs/{jobId}": {
+      "get": {
+        "operationId": "pollRouteCandidateSearch",
+        "x-contract-id": "OP-pollRouteCandidateSearch-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-RCG",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/CandidateResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/route-candidate-jobs/{jobId}/candidates/{candidateId}/risks": {
+      "get": {
+        "operationId": "getCandidateRisks",
+        "x-contract-id": "OP-getCandidateRisks-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-STF",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "candidateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/RiskAssessment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/route-candidate-jobs/{jobId}/candidates/{candidateId}/transfer": {
+      "get": {
+        "operationId": "getCandidateTransfer",
+        "x-contract-id": "OP-getCandidateTransfer-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-TRF",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "candidateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/TransferAssessment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trip-requests/{tripRequestId}/price-history/{productType}/{offerId}": {
+      "get": {
+        "operationId": "getTripRequestPriceHistoryEvaluation",
+        "x-contract-id": "OP-getTripRequestPriceHistoryEvaluation-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-PRC",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tripRequestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "productType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "FLIGHT"
+            }
+          },
+          {
+            "name": "offerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/PriceEvaluation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/opportunity-watches": {
+      "post": {
+        "operationId": "createOpportunityWatch",
+        "x-contract-id": "OP-createOpportunityWatch-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-NOT",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Watch"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/WatchInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/opportunity-watches/{watchId}": {
+      "get": {
+        "operationId": "getOpportunityWatch",
+        "x-contract-id": "OP-getOpportunityWatch-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-NOT",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "watchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Watch"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateOpportunityWatch",
+        "x-contract-id": "OP-updateOpportunityWatch-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-NOT",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "watchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Watch"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/WatchUpdate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/opportunity-watches/{watchId}/notifications": {
+      "get": {
+        "operationId": "listOpportunityNotifications",
+        "x-contract-id": "OP-listOpportunityNotifications-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-NOT",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "watchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/NotificationList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/opportunity-watches/{watchId}/notifications/{notificationId}/acknowledgement": {
+      "post": {
+        "operationId": "acknowledgeOpportunityNotification",
+        "x-contract-id": "OP-acknowledgeOpportunityNotification-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-NOT",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "watchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "notificationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Notification"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/Empty"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/food-discovery-jobs": {
+      "post": {
+        "operationId": "startFoodDiscovery",
+        "x-contract-id": "OP-startFoodDiscovery-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-FOOD",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/JobAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/FoodSearchInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/food-discovery-jobs/{jobId}": {
+      "get": {
+        "operationId": "pollFoodDiscovery",
+        "x-contract-id": "OP-pollFoodDiscovery-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-FOOD",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/FoodResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/food-discovery-jobs/{jobId}/places/{foodPlaceId}/assessment": {
+      "get": {
+        "operationId": "getFoodWindowAssessment",
+        "x-contract-id": "OP-getFoodWindowAssessment-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-FOOD-WINDOW",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "foodPlaceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/FoodAssessment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trip-requests/{tripRequestId}/plan/food-items": {
+      "post": {
+        "operationId": "addTripPlanFood",
+        "x-contract-id": "OP-addTripPlanFood-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-FOOD-PLAN",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tripRequestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Exactly one precondition; existing v3.16 semantics."
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Exactly one precondition; existing v3.16 semantics."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/TripPlan"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/FoodSelection"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/event-discovery-jobs": {
+      "post": {
+        "operationId": "startEventDiscovery",
+        "x-contract-id": "OP-startEventDiscovery-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-EVT",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/JobAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/JobInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/event-discovery-jobs/{jobId}": {
+      "get": {
+        "operationId": "pollEventDiscovery",
+        "x-contract-id": "OP-pollEventDiscovery-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-EVT",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/EventResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/trip-requests/{tripRequestId}/plan/event-items": {
+      "post": {
+        "operationId": "addTripPlanEvent",
+        "x-contract-id": "OP-addTripPlanEvent-P8",
+        "x-status": "PROPOSED_NON_NORMATIVE",
+        "x-activation-gate": "P8-EVT-PLAN",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tripRequestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Exactly one precondition; existing v3.16 semantics."
+          },
+          {
+            "name": "If-None-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Exactly one precondition; existing v3.16 semantics."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Defined canonical result, not booking or delivery confirmation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/TripPlan"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Error mapping in records.md; not every operation emits every status.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "schemas.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "schemas.json#/$defs/EventSelection"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

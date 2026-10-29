@@ -1,0 +1,8 @@
+version: 3.20.0
+inherits: ../v3.19/contract_index.yaml
+contracts:
+  - {id: SCH-ItineraryItem, path: contracts/v3.20/schemas/ItineraryItem.schema.json, status: ACTIVE, audience: PUBLIC, replaces: contracts/v3.18/schemas/ItineraryItem.schema.json}
+  - {id: SCH-PlanRevision, path: contracts/v3.20/schemas/PlanRevision.schema.json, status: ACTIVE, audience: PUBLIC, replaces: contracts/v3.18/schemas/PlanRevision.schema.json}
+  - {id: SCH-TripPlan, path: contracts/v3.20/schemas/TripPlan.schema.json, status: ACTIVE, audience: PUBLIC, replaces: contracts/v3.18/schemas/TripPlan.schema.json}
+  - {id: OP-setTripPlanItemDuration, path: contracts/v3.20/openapi/m1a.openapi.yaml, status: ACTIVE, decision_ref: OD-030}
+note: OD-030 A aktiftir; OD-031..035 açık ve feasibility kapsam dışıdır.

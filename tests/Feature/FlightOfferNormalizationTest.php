@@ -139,6 +139,7 @@ final class FlightOfferNormalizationTest extends TestCase
 
         self::assertSame([
             'provider_offer_id',
+            'journey_type',
             'state',
             'price',
             'expires_at',
@@ -180,11 +181,13 @@ final class FlightOfferNormalizationTest extends TestCase
 
         $contract = $offer->toContract(new DateTimeImmutable('2026-09-27T10:05:00+00:00'));
 
-        self::assertSame(['provider_offer_id', 'state', 'price', 'expires_at', 'baggage', 'bookable', 'sources', 'segments'], array_keys($contract));
+        self::assertSame(['provider_offer_id', 'journey_type', 'state', 'price', 'expires_at', 'baggage', 'bookable', 'sources', 'segments'], array_keys($contract));
+        self::assertSame('ONE_WAY', $contract['journey_type']);
         self::assertFalse($contract['bookable']);
         self::assertSame(['provider_id', 'provider_offer_id', 'provider_role', 'distribution_channel', 'fetched_at', 'verified_at', 'expires_at', 'verification_status'], array_keys($contract['sources'][0]));
         self::assertSame(['provider-a', 'AGGREGATOR', 'NDC'], [$contract['sources'][0]['provider_id'], $contract['sources'][0]['provider_role'], $contract['sources'][0]['distribution_channel']]);
         self::assertSame([
+            'direction' => 'OUTBOUND',
             'operating_carrier' => 'LH',
             'operating_flight_number' => 'LH1301',
             'marketing_flight_references' => ['TK1984'],

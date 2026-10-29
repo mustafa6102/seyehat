@@ -1,0 +1,190 @@
+{
+  "version": "3.22.0",
+  "inherits": "../../v3.21/registries/od_impact.yaml",
+  "decision_source": "../../../registry/v3.22/decisions.json",
+  "decisions": [
+    {
+      "id": "OD-P8-001",
+      "status": "RESOLVED",
+      "scope": "Delegated independent v3.22 internal calculations and selected-flight read projection only",
+      "decision": "Activate exact service input/output schemas and the owner-only selected-flight opportunity GET. Do not activate the 26 proposal operations wholesale. Stateless domain calculations are internal, not new unprotected HTTP endpoints.",
+      "rationale": "Existing canonical evidence and Money/owner infrastructure permit useful deterministic processing without new personal data persistence or external integrations.",
+      "decision_version": "3.22.0",
+      "recorded_at": "2026-10-28",
+      "decision_owner": "Project owner (technical/product authority delegated in current user instruction)",
+      "recorded_by": "Codex under delegated technical/product authority",
+      "approval_basis": "Current user instruction EXECUTE CONTRACT DECISION ACTIVATION AND BACKEND IMPLEMENTATION",
+      "external_approval_claimed": false
+    },
+    {
+      "id": "OD-017",
+      "status": "PARTIALLY_RESOLVED",
+      "scope": "STF protection and evidence timeline only",
+      "decision": "Separate-ticket evidence wins -> UNPROTECTED; provider-backed through-ticket/interline/explicit protection -> PROTECTED; missing -> UNKNOWN. Risk scoring remains UNKNOWN and cap SHOWN_WITH_WARNING. No numeric risk model or HIGH policy activated.",
+      "remaining_open": [
+        "licensed evidence mapping",
+        "risk scoring thresholds and independent Data validation"
+      ],
+      "decision_version": "3.22.0",
+      "recorded_at": "2026-10-28",
+      "decision_owner": "Project owner (technical/product authority delegated in current user instruction)",
+      "recorded_by": "Codex under delegated technical/product authority",
+      "approval_basis": "Current user instruction EXECUTE CONTRACT DECISION ACTIVATION AND BACKEND IMPLEMENTATION",
+      "external_approval_claimed": false
+    },
+    {
+      "id": "OD-004",
+      "status": "PARTIALLY_RESOLVED",
+      "scope": "Verified transfer calculation only",
+      "decision": "Canonical duration unit SECOND, integer durations; available timestamp window floors subsecond differences conservatively. Sum applicable components, never double count MCT-covered components. Versioned buffer must be supplied as current evidence. No global numeric fallback or universal safety buffer. Missing inputs UNKNOWN; insufficient known lower bound or proven cutoff missed INFEASIBLE.",
+      "remaining_open": [
+        "airport-specific MCT/fallback evidence",
+        "production buffer values and provider applicability mappings"
+      ],
+      "decision_version": "3.22.0",
+      "recorded_at": "2026-10-28",
+      "decision_owner": "Project owner (technical/product authority delegated in current user instruction)",
+      "recorded_by": "Codex under delegated technical/product authority",
+      "approval_basis": "Current user instruction EXECUTE CONTRACT DECISION ACTIVATION AND BACKEND IMPLEMENTATION",
+      "external_approval_claimed": false
+    },
+    {
+      "id": "OD-006",
+      "status": "PARTIALLY_RESOLVED",
+      "scope": "EPIC-11 product refinement and on-demand threshold matching",
+      "decision": "Allocate NTF-001 from P8-NOT-001. Same-currency verified selected price <= user threshold is MATCH. Activate AC-NTF-001-05 independent read projection only. Watch/inbox/push/email/SMS operations remain inactive pending Security/Legal persistence approval.",
+      "remaining_open": [
+        "inbox retention",
+        "delivery channels and notification volume governance",
+        "external delivery approvals"
+      ],
+      "decision_version": "3.22.0",
+      "recorded_at": "2026-10-28",
+      "decision_owner": "Project owner (technical/product authority delegated in current user instruction)",
+      "recorded_by": "Codex under delegated technical/product authority",
+      "approval_basis": "Current user instruction EXECUTE CONTRACT DECISION ACTIVATION AND BACKEND IMPLEMENTATION",
+      "external_approval_claimed": false
+    },
+    {
+      "id": "OD-P8-002",
+      "status": "RESOLVED",
+      "scope": "FOOD/EVT internal evidence projection",
+      "decision": "Keep price-level distinct from Money. HTTPS CTA only with fresh supported status and exact approved authority host. No default host allowlist. Cancelled/postponed/sold-out event cannot be active recommendation; confirmed start+timezone yield a FIXED constraint projection, never automatic plan mutation.",
+      "remaining_open": [
+        "provider licenses/mappings",
+        "FOOD/Event snapshot retention and collection",
+        "plan variant persistence activation"
+      ],
+      "decision_version": "3.22.0",
+      "recorded_at": "2026-10-28",
+      "decision_owner": "Project owner (technical/product authority delegated in current user instruction)",
+      "recorded_by": "Codex under delegated technical/product authority",
+      "approval_basis": "Current user instruction EXECUTE CONTRACT DECISION ACTIVATION AND BACKEND IMPLEMENTATION",
+      "external_approval_claimed": false
+    },
+    {
+      "id": "OD-P8-003",
+      "status": "RESOLVED",
+      "scope": "Activation boundaries for remaining groups",
+      "decision": "TRV security/subject identity and erasure remain gated. RCG existing budget/pruning implementation retained; provider-specific quotas, seed and leg mappings have no external evidence and are not manufactured. PRC historical capture/evaluation operations remain inactive until cohort mapping, privacy and governance records exist. No approved persistence change in v3.22.",
+      "decision_version": "3.22.0",
+      "recorded_at": "2026-10-28",
+      "decision_owner": "Project owner (technical/product authority delegated in current user instruction)",
+      "recorded_by": "Codex under delegated technical/product authority",
+      "approval_basis": "Current user instruction EXECUTE CONTRACT DECISION ACTIVATION AND BACKEND IMPLEMENTATION",
+      "external_approval_claimed": false
+    },
+    {
+      "id": "ADR-006",
+      "status": "PARTIALLY_RESOLVED",
+      "scope": "RCG product generation cap only",
+      "decision": "At most 4 initial candidate leg requests per provider/operation/generation; min(product cap, explicit provider-approved configured budget). Missing provider entry stays blocked; product cap is not provider quota evidence. Version both constraints in SearchBudgetLimit. No global retry/concurrency/provider rate policy activated.",
+      "remaining_open": [
+        "provider-specific quota evidence",
+        "real HTTP retry accounting and leg/seed integration"
+      ],
+      "decision_version": "3.22.0",
+      "recorded_at": "2026-10-28",
+      "decision_owner": "Project owner (technical/product authority delegated in current user instruction)",
+      "recorded_by": "Codex under delegated technical/product authority",
+      "approval_basis": "Current user instruction EXECUTE CONTRACT DECISION ACTIVATION AND BACKEND IMPLEMENTATION",
+      "external_approval_claimed": false
+    },
+    {
+      "id": "OD-P8-PRC-POLICY",
+      "status": "RESOLVED",
+      "scope": "Product selection, not historical-data operation or persistence activation",
+      "decision": "Retain proposed flight-only exact cohort and observed-currency policy; minimum 20 comparable observations over 14 UTC calendar days after outlier exclusion; modified-Z MAD threshold 3.5 strict greater-than; even median arithmetic mean; scale 0.67448975; MAD=0 excludes none. No target price or guarantee. These are actual delegated product choices, not provider validation.",
+      "remaining_open": [
+        "Legal OD-013 retention/deletion",
+        "Security storage and access governance",
+        "provider fare-product/cohort evidence mapping",
+        "historical operation/schema activation"
+      ],
+      "decision_version": "3.22.0",
+      "recorded_at": "2026-10-28",
+      "decision_owner": "Project owner (technical/product authority delegated in current user instruction)",
+      "recorded_by": "Codex under delegated technical/product authority",
+      "approval_basis": "Current user instruction EXECUTE CONTRACT DECISION ACTIVATION AND BACKEND IMPLEMENTATION",
+      "external_approval_claimed": false
+    },
+    {
+      "id": "OD-P8-TRV-SCOPE",
+      "status": "RESOLVED",
+      "scope": "Product/architecture scope only, no PII workflow activation",
+      "decision": "Profiles attach only to an existing Trip, server-generated id, insert-only creation, no ownership inferred from client id/trip_id. Sensitive fields require subject binding and explicit per-action grants. No plaintext profile workflow activated. Minor and adult rights unchanged.",
+      "remaining_open": [
+        "Legal OD-013/014",
+        "Security identity ceremony, per-subject encryption/key lifecycle",
+        "authoritative required-document mapping"
+      ],
+      "decision_version": "3.22.0",
+      "recorded_at": "2026-10-28",
+      "decision_owner": "Project owner (technical/product authority delegated in current user instruction)",
+      "recorded_by": "Codex under delegated technical/product authority",
+      "approval_basis": "Current user instruction EXECUTE CONTRACT DECISION ACTIVATION AND BACKEND IMPLEMENTATION",
+      "external_approval_claimed": false
+    },
+    {
+      "id": "OD-EVT-001-TM",
+      "status": "RESOLVED",
+      "scope": "EVT-001 Ticketmaster provider selection, discovery activation and event-to-plan add",
+      "decision": "Ticketmaster Discovery API v2 is the selected event provider for EVT-001. Activate event discovery jobs (start/poll), canonical event storage, and FIXED EVENT add-to-plan through the same TripPlanService/TripPlanController pattern as POI. Approved ticket host list comes exclusively from config (no default). Cancelled/postponed/rescheduled events cannot be active recommendations per OD-P8-002. A confirmed start+timezone produces a FIXED constraint projection; no automatic plan mutation. API key is server-side only; never logged or exposed. Evidence freshness window: 24 h from fetch time.",
+      "decision_version": "3.22.0",
+      "recorded_at": "2026-10-28",
+      "decision_owner": "Project owner (technical/product authority delegated in current user instruction)",
+      "recorded_by": "Codex under delegated technical/product authority",
+      "approval_basis": "Current user instruction COMPLETE EVT-001 END-TO-END USING TICKETMASTER DISCOVERY API",
+      "external_approval_claimed": false
+    }
+  ],
+  "blocked_features": {
+    "TRV-001": [
+      "OD-013",
+      "OD-014",
+      "ADR-010 subject binding and field encryption",
+      "OD-020/021 unresolved traveler lifecycle"
+    ],
+    "RCG-001": [
+      "OD-003",
+      "OD-008",
+      "OD-022 cabin/flexible/passenger remaining_open",
+      "ADR-006 production budgets",
+      "no approved seed/pruning/leg adapters"
+    ],
+    "PRC-004": [
+      "OD-013",
+      "cohort field mapping",
+      "Data/Legal/Security governance not recorded"
+    ],
+    "NTF-001 durable watches/inbox": [
+      "OD-013",
+      "Security delivery/retention approval"
+    ],
+    "FOOD/EVT discovery and plan": [
+      "provider coverage/license/mapping",
+      "OD-013/014",
+      "OD-032..035 full feasibility"
+    ]
+  }
+}

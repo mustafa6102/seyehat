@@ -1,0 +1,12 @@
+version: 3.18.0
+inherits: ../../v3.16/registries/lifecycle.yaml
+new_machines: []
+new_transitions: []
+changes:
+  - transition: TRN-PLANREVISION-01
+    semantics_changed: false
+    note: >-
+      Yeni tetikleyici: OP-assignTripPlanItemDay (If-Match zorunlu; Trip yoksa 404). Guard, idempotency, stale ve outbox kuralları
+      v3.16 ile aynıdır. Gün ataması için ek guard: date null değilse day_frame AVAILABLE ve date day_frame.days içinde, position
+      aralıkta (aksi 422, kalıcı durum yazılmaz).
+    refs: [OD-027, OD-029, PLT-CONC-001, DAY-001]

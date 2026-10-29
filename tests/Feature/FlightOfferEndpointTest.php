@@ -46,7 +46,9 @@ final class FlightOfferEndpointTest extends TestCase
             ->assertJsonPath('baggage.cabin_baggage.value', false)
             ->assertJsonPath('baggage.checked_baggage.value', false)
             ->assertJsonPath('baggage.fees.0.value.minor_units', 2500)
-            ->assertJsonCount(8)
+            ->assertJsonCount(9)
+            ->assertJsonPath('journey_type', 'ONE_WAY')
+            ->assertJsonPath('segments.0.direction', 'OUTBOUND')
             ->assertJsonPath('segments.0.departure.iana_timezone', fn ($value): bool => is_string($value) && $value !== '')
             ->assertJsonMissingPath('raw_payload');
     }
@@ -63,6 +65,8 @@ final class FlightOfferEndpointTest extends TestCase
     private function offer(): FlightOffer
     {
         $verifiedAt = new DateTimeImmutable('2026-09-27T10:00:00+00:00');
+        // Relative to the real clock: the offer must still be CURRENT whenever the test runs.
+        $expiresAt = (new DateTimeImmutable('now'))->modify('+30 days');
         $fee = new AncillaryFee(
             component: 'AIRPORT_CHECK_IN_FEE',
             mandatory: true,
@@ -79,7 +83,7 @@ final class FlightOfferEndpointTest extends TestCase
             priceCertainty: 'EXACT',
             priceCompleteness: 'COMPLETE',
             baggage: new BaggageAllowance(true, false, false, [$fee], 'provider-a:offer-1', $verifiedAt, $verifiedAt),
-            expiresAt: new DateTimeImmutable('2026-10-27T10:00:00+00:00'),
+            expiresAt: $expiresAt,
             sources: [new ProviderSource(
                 providerId: 'provider-a',
                 providerOfferId: 'offer-1',
@@ -91,7 +95,7 @@ final class FlightOfferEndpointTest extends TestCase
                 bookCapabilityStatus: 'UNKNOWN',
                 fetchedAt: $verifiedAt,
                 verifiedAt: $verifiedAt,
-                expiresAt: new DateTimeImmutable('2026-10-27T10:00:00+00:00'),
+                expiresAt: $expiresAt,
             )],
             segments: [new FlightSegment(
                 operatingCarrier: 'TK',

@@ -1,0 +1,46 @@
+openapi: 3.1.0
+info:
+  title: AI Travel Planner M1A API
+  version: 3.20.0
+x-inherits: ../../v3.19/openapi/m1a.openapi.yaml
+x-operation-changes:
+  - operation: OP-getTripRequestPlan
+    semantics_changed: false
+    note: Response uses v3.20 SCH-TripPlan inheritance with v3.20 PlanRevision/ItineraryItem.
+paths:
+  /trip-requests/{tripRequestId}/plan/items/{itemId}/duration:
+    put:
+      operationId: setTripPlanItemDuration
+      security:
+        - bearerAuth: []
+      x-contract-id: OP-setTripPlanItemDuration
+      x-status: ACTIVE
+      x-decision-ref: OD-030
+      x-requirement-refs: [DAY-001, RULE-DAY-001-01, AC-DAY-001-01, TRIP-BLD-001, FR-TRIP-BLD-001-02, PLT-CONC-001]
+      x-open-decisions: [OD-031, OD-032, OD-033, OD-034, OD-035, ADR-010]
+      description: >-
+        Sets or edits the CURRENT POI plan item's positive integer visit duration. The server stores source=USER_PROVIDED and
+        verification_status=UNVERIFIED. It creates a new immutable PlanRevision and outbox record; it does not evaluate time,
+        opening hours, transport, buffers or feasibility.
+      parameters:
+        - {name: tripRequestId, in: path, required: true, schema: {type: string, minLength: 1}}
+        - {name: itemId, in: path, required: true, schema: {type: string, minLength: 1}}
+        - {name: If-Match, in: header, required: true, schema: {type: string}}
+        - {name: Idempotency-Key, in: header, required: true, schema: {type: string, minLength: 1, maxLength: 255}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                minutes: {type: integer, minimum: 1}
+              required: [minutes]
+      responses:
+        '200': {description: Updated v3.20 TripPlan; ETag is the new CURRENT revision.}
+        '400': {description: Schema/precondition validation failure.}
+        '401': {description: Authentication required.}
+        '403': {description: Owner authorization denied.}
+        '404': {description: TripRequest, plan or item not found.}
+        '409': {description: Stale revision or idempotency conflict.}

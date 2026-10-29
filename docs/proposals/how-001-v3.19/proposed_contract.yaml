@@ -1,0 +1,100 @@
+status: DRAFT_NON_NORMATIVE
+proposed_version: 3.19.0
+inherits: 3.18.0
+story: HOW-001
+decisions:
+  - {id: OD-HOW-001, status: OPEN, user_approved_choice: A, approval_record: approval-record.md, topic: first_supported_context}
+  - {id: OD-HOW-002, status: OPEN, user_approved_choice: A, approval_record: approval-record.md, topic: rendering_model}
+  - {id: OD-HOW-003, status: OPEN, user_approved_choice: A, approval_record: approval-record.md, topic: evidence_sources}
+  - {id: OD-HOW-004, status: OPEN, user_approved_choice: A, user_approved_detail_choice: A, approval_record: approval-record.md, topic: freshness_and_reverification}
+  - {id: OD-HOW-005, status: OPEN, user_approved_choice: B, approval_record: approval-record.md, topic: operation_shape}
+  - {id: OD-HOW-006, status: OPEN, user_approved_choice: A, approval_record: approval-record.md, topic: persistence}
+  - {id: OD-HOW-007, status: OPEN, user_approved_choice: A, approval_record: approval-record.md, topic: permissions}
+  - {id: OD-HOW-008, status: OPEN, user_approved_choice: A, approval_record: approval-record.md, topic: plan_revision_binding}
+  - {id: OD-HOW-009, status: OPEN, user_approved_choice: A, user_approved_detail_choice: A, user_approved_retention_choice: A, approval_record: approval-record.md, topic: idempotency_and_outbox}
+  - {id: OD-HOW-010, status: OPEN, user_approved_choice: A, approval_record: approval-record.md, topic: web_channel}
+  - {id: OD-HOW-011, status: OPEN, user_approved_choice: A, approval_record: approval-record.md, topic: critical_fields_and_presentation}
+contracts:
+  - {id: SCH-ContextualGuide, path: schemas/ContextualGuide.schema.json, status: PROPOSED}
+  - {id: SCH-InstructionBlock, path: schemas/InstructionBlock.schema.json, status: PROPOSED}
+  - {id: OP-getTripPlanItemGuide, path: openapi/m1a.openapi.yaml, status: PROPOSED}
+  - {id: OP-refreshTripPlanItemGuide, path: openapi/m1a.openapi.yaml, status: PROPOSED}
+  - {id: RC-HOW-CONTEXT-UNSUPPORTED, status: PROPOSED, http_status: 422}
+  - {id: RC-HOW-EVIDENCE-UNAVAILABLE, status: PROPOSED, http_status: 503}
+  - {id: RC-HOW-REVERIFY-UNAVAILABLE, status: PROPOSED, http_status: 503}
+traceability:
+  - requirement: FR-HOW-001-01
+    artifacts: [OP-getTripPlanItemGuide, SCH-ContextualGuide, SCH-InstructionBlock]
+    tests: [TS-HOW-001-01, TS-HOW-001-02]
+    open_decisions: [OD-HOW-001, OD-HOW-002, OD-HOW-003, OD-HOW-008, OD-HOW-011]
+  - requirement: FR-HOW-001-02
+    artifacts: [OP-refreshTripPlanItemGuide, SCH-InstructionBlock, TRN-HOW-EVIDENCE-01]
+    tests: [TS-HOW-001-03]
+    open_decisions: [OD-HOW-003, OD-HOW-004, OD-HOW-005, OD-HOW-009]
+  - requirement: RULE-HOW-001-03
+    artifacts: [SCH-ContextualGuide, SCH-InstructionBlock]
+    refs: [NFR-LOC-001]
+  - requirement: RULE-HOW-001-01
+    artifacts: [SCH-InstructionBlock, RC-HOW-EVIDENCE-UNAVAILABLE]
+    refs: [NFR-AI-GRD-001, RULE-M3-001, RULE-M3-002, RULE-M3-006]
+permissions:
+  resource: TripRequest.CurrentPlanRevision.ItineraryItem.ContextualGuide
+  owner:
+    read: PROPOSED_ALLOW
+    refresh: PROPOSED_ALLOW
+  collaborator: PROPOSED_DENY
+  anonymous: DENY
+  evaluation_order: [AUTHN_401, RESOURCE_404, OWNER_403, PRECONDITION_409, DOMAIN_422]
+  refs: [PLT-AUTH-001, OD-HOW-007, OD-HOW-008]
+lifecycle:
+  id: TRN-HOW-EVIDENCE-01
+  status: PROPOSED
+  machine: VerificationStatus
+  trigger: OP-refreshTripPlanItemGuide
+  semantics: >-
+    Reverification delegates to the approved canonical source operation. HOW does not turn UNVERIFIED evidence into FRESH.
+    Success/failure and FRESH/STALE/EXPIRED/UNVERIFIED retain the source contract semantics.
+  persistence: none_for_how_read_model
+  plan_revision_effect: none
+  outbox_effect: none
+reason_error:
+  reused:
+    - RC-AUTHN-REQUIRED
+    - RC-AUTHZ-DENIED
+    - RC-RESOURCE-NOT-FOUND
+    - RC-VALIDATION-SCHEMA
+    - RC-CONFLICT-REVISION-STALE
+    - RC-CONFLICT-IDEMPOTENCY-KEY
+    - RC-EVIDENCE-STALE
+  proposed:
+    - id: RC-HOW-CONTEXT-UNSUPPORTED
+      machine_code: HOW_CONTEXT_UNSUPPORTED
+      http_status: 422
+      message_tr: Bu plan öğesi için adım adım rehber henüz desteklenmiyor.
+      retryable: false
+    - id: RC-HOW-EVIDENCE-UNAVAILABLE
+      machine_code: HOW_EVIDENCE_UNAVAILABLE
+      http_status: 503
+      message_tr: Bu adım için doğrulanabilir kaynak bilgisi şu anda kullanılamıyor.
+      retryable: true
+    - id: RC-HOW-REVERIFY-UNAVAILABLE
+      machine_code: HOW_REVERIFY_UNAVAILABLE
+      http_status: 503
+      message_tr: Kaynak bilgisi şu anda yeniden doğrulanamadı; mevcut bilgi eski olarak gösteriliyor.
+      retryable: true
+config:
+  - id: CFG-HOW-EVIDENCE-FRESHNESS
+    status: PROPOSED_ALIAS_ONLY
+    value: INHERIT_SOURCE
+    note: No numeric default. Each evidence slot inherits its canonical source verification_status and expires_at.
+  - id: CFG-HOW-REVERIFY-TIMEOUT
+    status: PROPOSED_NOT_ADDED
+    value: NOT_APPLICABLE_IF_OD-HOW-004-D1-A
+    note: HOW does not define a second timeout. Reverify inherits the approved source operation resilience profile; missing profile or unavailable capability fails closed without a provider call. No numeric default.
+persistence:
+  provisional: COMPUTED_READ_MODEL
+  stored_how_records: false
+  source_of_truth: canonical_domain_snapshots
+  accepts_raw_provider_payload: false
+  accepts_client_asserted_facts: false
+  future_schema_change: none_if_OD-HOW-006_option_A_is_approved

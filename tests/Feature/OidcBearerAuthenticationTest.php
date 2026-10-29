@@ -211,8 +211,7 @@ final class OidcBearerAuthenticationTest extends TestCase
     public function web_creation_without_an_authenticated_principal_creates_nothing(): void
     {
         $this->from('/')->post('/planla', ['origin_value' => 'x'])
-            ->assertRedirect('/')
-            ->assertSessionHasErrors(['trip_request' => 'Seyahat talebi oluşturmak için giriş yapmanız gerekiyor. Giriş yaptıktan sonra formu yeniden gönderin.']);
+            ->assertRedirect(route('auth.login', ['donus' => '/']));
         self::assertSame([], $this->repository->all());
     }
 

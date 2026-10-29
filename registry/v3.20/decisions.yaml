@@ -1,0 +1,8 @@
+version: 3.20.0
+inherits: ../v3.19/decisions.yaml
+decisions:
+  - id: OD-030
+    status: RESOLVED
+    choice: A
+    note: 'APPROVED (user, 2026-10-23) - Kullanıcı pozitif tam sayı dakika girer; source=USER_PROVIDED, verification_status=UNVERIFIED. Saat, opening-hours ve feasibility anlamı yoktur.'
+open_decisions: [OD-001, OD-008, OD-011, OD-012, OD-013, OD-014, OD-015, OD-016, OD-020, OD-022, OD-026, OD-031, OD-032, OD-033, OD-034, OD-035, ADR-006, ADR-007, ADR-010]

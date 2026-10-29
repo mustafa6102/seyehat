@@ -1,0 +1,27 @@
+version: 3.19.0
+inherits: ../../v3.18/registries/lifecycle.yaml
+new_transitions:
+  - id: TRN-HOW-EVIDENCE-01
+    machine: VerificationStatus
+    trigger: OP-refreshTripPlanItemGuide
+    guard: CURRENT PlanRevision POI item + owner + If-Match + Idempotency-Key; source reverify capability/profile available.
+    side_effects: Canonical POI source operation may refresh the POI record; HOW guide is recomputed and is not persisted.
+    failure: 503 RC-HOW-REVERIFY-UNAVAILABLE; prior GET presentation stays marked and CTA remains inactive.
+    plan_revision_effect: none
+    outbox_effect: none
+    refs: [HOW-001, FR-HOW-001-02, AC-HOW-001-03, ADR-006]
+  - id: TRN-HOW-IDEMPOTENCY-01
+    machine: HowOperationIdempotencyStatus
+    from: NONE
+    to: IN_PROGRESS
+    trigger: first valid OP-refreshTripPlanItemGuide scope/key/fingerprint
+    side_effects: INTERNAL replay record only; no provider call precedes the claim.
+  - id: TRN-HOW-IDEMPOTENCY-02
+    machine: HowOperationIdempotencyStatus
+    from: IN_PROGRESS
+    to: COMPLETED
+    trigger: refresh HTTP result available
+    side_effects: First status/body is stored and replayed exactly; provider is not called again for the same request.
+new_machines:
+  - name: HowOperationIdempotencyStatus
+    states: [IN_PROGRESS, COMPLETED]

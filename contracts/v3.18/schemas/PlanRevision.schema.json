@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.18:PlanRevision",
+  "title": "PlanRevision",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trip_id": {"type": "string", "minLength": 1, "readOnly": true},
+    "version": {"type": "integer", "minimum": 1, "readOnly": true, "description": "v3.16 ile aynı (OD-027)."},
+    "status": {"type": "string", "enum": ["CURRENT", "SUPERSEDED"], "x-lifecycle": "PlanRevisionStatus", "readOnly": true},
+    "items": {"type": "array", "items": {"$ref": "./ItineraryItem.schema.json"}, "description": "Revision'daki öğelerin tam listesi. Dizi sırası ekleme sırasıdır; gün içi sıra yalnız day_assignment.position'dadır."},
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "FR-TRIP-BLD-001-02 before/after diff ve reason_code. v3.18: moved_item_ids eklendi.",
+      "properties": {
+        "base_version": {"type": ["integer", "null"], "minimum": 1},
+        "added_item_ids": {"type": "array", "items": {"type": "string"}},
+        "removed_item_ids": {"type": "array", "items": {"type": "string"}},
+        "moved_item_ids": {"type": "array", "items": {"type": "string"}, "description": "Günü veya gün içi sırası kullanıcı tarafından değiştirilen hedef öğe (OP-assignTripPlanItemDay). Aynı gündeki diğer öğelerin yeniden numaralanması burada listelenmez. v3.16 revision'ları için boş dizi olarak okunur."},
+        "reason_code": {"type": "string", "description": "Kullanıcı ekleme/çıkarma/gün ataması için RC-DECISION-TRANSITION-APPLIED."}
+      },
+      "required": ["base_version", "added_item_ids", "removed_item_ids", "moved_item_ids", "reason_code"]
+    },
+    "created_at": {"type": "string", "format": "date-time", "readOnly": true}
+  },
+  "required": ["trip_id", "version", "status", "items", "change", "created_at"],
+  "x-contract-id": "SCH-PlanRevision",
+  "x-version": "3.18",
+  "x-status": "ACTIVE",
+  "x-replaces": "urn:ai-seyahat:v3.16:PlanRevision",
+  "x-requirement-refs": ["TRIP-BLD-001", "FR-TRIP-BLD-001-01", "FR-TRIP-BLD-001-02", "AC-TRIP-BLD-001-02", "PLT-CONC-001", "RULE-PLT-CONC-001-01", "NFR-CONC-001", "FR-DAY-001-03"],
+  "x-open-decisions": ["ADR-010", "OD-013", "ADR-008"],
+  "description": "v3.16 immutable plan sürümü; v3.18 öğe şeması (day_assignment) ve change.moved_item_ids ile. Sürümleme, SUPERSEDED geçişi ve outbox aynı transaction kuralı değişmez."
+}

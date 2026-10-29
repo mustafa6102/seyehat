@@ -1,0 +1,59 @@
+{
+  "version": "3.23.0",
+  "inherits": "../../v3.22/registries/od_impact.json",
+  "decision_source": "../../../registry/v3.23/decisions.json",
+  "decisions": [
+    {
+      "id": "OD-022",
+      "status": "PARTIALLY_RESOLVED",
+      "scope": "ROUND_TRIP sub-decision only (D1-D4); other OD-022 items unchanged",
+      "resolved": [
+        "ROUND_TRIP - FlightOffer'da slice/yon yapisi yok (v3.11 remaining_open)"
+      ],
+      "remaining_open": [
+        "FLEXIBLE date provider search (GAP-FLT-CRITERIA-001)",
+        "cabin class",
+        "segment departure/arrival location (LocationRef)",
+        "PASSENGER type distribution (OD-020); adapter runs only with explicit ALL_ADULT deployment policy"
+      ],
+      "blocks_development": [
+        "flexible-date provider search",
+        "cabin class selection"
+      ],
+      "decision_version": "3.23.0",
+      "recorded_at": "2026-10-29",
+      "decision_owner": "Project owner",
+      "recorded_by": "Claude Code",
+      "approval_basis": "Project owner instruction 2026-10-29: 'Project-owner approval applies to D1-D4 for ROUND_TRIP only' (docs/proposals/od-022-round-trip/approval-document.md)",
+      "external_approval_claimed": false,
+      "affects": [
+        "SCH-FlightOffer",
+        "SCH-FlightSearchResult",
+        "SCH-FlightSearchJob",
+        "SCH-OfferSnapshot",
+        "SCH-RepriceResult",
+        "SCH-TripRequestFlightSelection",
+        "OP-pollFlightSearch",
+        "OP-getOffer",
+        "OP-repriceOffer",
+        "OP-getTripRequestFlightSelection",
+        "OP-selectTripRequestFlight",
+        "OP-reconfirmTripRequestFlight",
+        "FLT-002",
+        "FLT-005",
+        "FLT-REPRICE-001"
+      ],
+      "impact_status": "PARTIALLY_UNBLOCKED"
+    }
+  ],
+  "blocked_features": {
+    "RCG-001": [
+      "OD-003",
+      "OD-008",
+      "OD-022 remaining_open: FLEXIBLE dates, cabin class, segment location, OD-020 passenger (ROUND_TRIP sub-decision resolved in v3.23)",
+      "ADR-006 production budgets",
+      "no approved seed/pruning/leg adapters"
+    ]
+  },
+  "note": "blocked_features.RCG-001 restated in full only to correct the v3.22 OD-022 wording, which omitted the then-open ROUND_TRIP item; other entries are inherited unchanged."
+}

@@ -7,6 +7,12 @@ use InvalidArgumentException;
 final class FlightSegment
 {
     /**
+     * v3.23 (OD-022 D1): OUTBOUND for the provider's first slice, INBOUND for the second. Deliberately not readonly
+     * and defaulted: segments cached before v3.23 unserialize without this property and must read as OUTBOUND (D2).
+     */
+    public string $direction = 'OUTBOUND';
+
+    /**
      * @param  list<string>  $marketingFlightReferences
      */
     public function __construct(
@@ -16,10 +22,15 @@ final class FlightSegment
         public readonly string $carrierModel,
         public readonly SegmentTime $departure,
         public readonly SegmentTime $arrival,
+        string $direction = 'OUTBOUND',
     ) {
         if (! in_array($carrierModel, ['FULL_SERVICE', 'LCC', 'HYBRID', 'UNKNOWN'], true)) {
             throw new InvalidArgumentException('Invalid CarrierModel.');
         }
+        if (! in_array($direction, ['OUTBOUND', 'INBOUND'], true)) {
+            throw new InvalidArgumentException('Invalid segment direction.');
+        }
+        $this->direction = $direction;
         $this->marketingFlightReferences = self::sortedUnique($marketingFlightReferences);
     }
 
@@ -53,6 +64,7 @@ final class FlightSegment
     public function toContract(): array
     {
         return [
+            'direction' => $this->direction,
             'operating_carrier' => $this->operatingCarrier,
             'operating_flight_number' => $this->operatingFlightNumber,
             'marketing_flight_references' => $this->marketingFlightReferences,

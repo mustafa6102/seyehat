@@ -1,0 +1,11 @@
+version: 3.19.0
+inherits: ../../v3.15/registries/config.yaml
+records:
+  - id: CFG-HOW-EVIDENCE-FRESHNESS
+    type: alias
+    value: INHERIT_SOURCE
+    default: none
+    note: Her evidence slot kanonik source verification_status/verified_at/expires_at değerini devralır; HOW TTL üretmez.
+  - id: CFG-HOW-REVERIFY-TIMEOUT
+    status: NOT_ADDED
+    note: HOW ikinci timeout tanımlamaz; çağrılan source operation'ın onaylı ADR-006 profili kullanılır. Profil yoksa çağrı yapılmaz.

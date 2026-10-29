@@ -1,0 +1,35 @@
+openapi: 3.1.0
+info:
+  title: AI Travel Planner PRC-004 proposal
+  version: 3.20.0-proposal
+  description: Non-normative delta; active v3.19 is unchanged.
+x-inherits: ../../../../../contracts/v3.19/openapi/m1a.openapi.yaml
+paths:
+  /trip-requests/{tripRequestId}/price-history/{productType}/{offerId}:
+    get:
+      operationId: getTripRequestPriceHistoryEvaluation
+      security: [{bearerAuth: []}]
+      x-contract-id: OP-getTripRequestPriceHistoryEvaluation-PROPOSED
+      x-status: PROPOSED
+      x-requirement-refs: [PRC-004, RULE-PRC-004-01, RULE-PRC-004-02, RULE-PRC-004-03, AC-PRC-004-01, AC-PRC-004-02, AC-PRC-004-03, NFR-AUD-001]
+      description: >-
+        Owner-only read. The server must prove that offerId belongs to the TripRequest context; otherwise it returns 404.
+        Missing cohort/sufficiency/outlier configuration returns a 200 fail-closed read model and performs no grouping.
+        It never returns target, recommended or guaranteed prices.
+      parameters:
+        - {name: tripRequestId, in: path, required: true, schema: {type: string}}
+        - {name: productType, in: path, required: true, schema: {type: string, enum: [FLIGHT, ACCOMMODATION]}}
+        - {name: offerId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: Fail-closed or evidence summary result.
+          content:
+            application/json:
+              schema: {$ref: ../schemas/PriceHistoryEvaluation.schema.json}
+        '401': {description: RC-AUTHN-REQUIRED}
+        '403': {description: RC-AUTHZ-DENIED}
+        '404': {description: RC-RESOURCE-NOT-FOUND}
+x-web-channel:
+  status: PROPOSED
+  operation: OP-getTripRequestPriceHistoryEvaluation-PROPOSED
+  note: Same path under /web-api/v1 with session principal; GET has no mutation or provider call.

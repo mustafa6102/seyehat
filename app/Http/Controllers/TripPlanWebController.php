@@ -46,6 +46,25 @@ final readonly class TripPlanWebController
         return $this->mutate($tripRequestId, fn () => $this->plans->addPoi($tripRequestId, $key, $precondition, $poiId), 'Gezilecek yer plana eklendi.');
     }
 
+    /** Web-channel OP-addTripPlanEventItem (EVT-001 v3.22). Only event_id, expected_version and idempotency_key are read. */
+    public function storeEvent(Request $request, string $tripRequestId): RedirectResponse
+    {
+        $refused = $this->authorize($request, $tripRequestId);
+        if ($refused !== null) {
+            return $refused;
+        }
+        $eventId = $request->input('event_id');
+        [$key, $precondition] = $this->mutationMeta($request);
+        if (! is_string($eventId) || $eventId === '' || strlen($eventId) > 255 || $key === null || $precondition === null) {
+            return $this->backEvent($tripRequestId, error: 'İstek geçerli değil. Sayfayı yenileyip yeniden deneyin.');
+        }
+        if (! $this->isSearchable($tripRequestId)) {
+            return $this->backEvent($tripRequestId, error: 'Seyahat talebinin zorunlu alanları eksik; plana etkinlik eklenemez.');
+        }
+
+        return $this->mutateEvent($tripRequestId, fn () => $this->plans->addEvent($tripRequestId, $key, $precondition, $eventId), 'Etkinlik plana eklendi.');
+    }
+
     public function destroy(Request $request, string $tripRequestId, string $itemId): RedirectResponse
     {
         $refused = $this->authorize($request, $tripRequestId);
@@ -124,6 +143,28 @@ final readonly class TripPlanWebController
     private function back(string $tripRequestId, ?string $status = null, ?string $error = null): RedirectResponse
     {
         return redirect()->to(route('trip-plan.show', ['tripRequestId' => $tripRequestId]).'#plan-pois')
+            ->with($error !== null ? 'plan_error' : 'plan_status', $error ?? $status);
+    }
+
+    /** @param  callable(): array{body: array<string, mixed>, etag: string|null}  $mutation */
+    private function mutateEvent(string $tripRequestId, callable $mutation, string $success): RedirectResponse
+    {
+        try {
+            $mutation();
+        } catch (PlanMutationRejected $rejection) {
+            return $this->backEvent($tripRequestId, error: match ($rejection->machineCode) {
+                'REVISION_STALE' => 'Plan bu sırada değişti. Sayfayı yenileyip yeniden deneyin.',
+                'IDEMPOTENCY_KEY_CONFLICT' => 'Bu işlem zaten kullanılmış bir istekle gönderildi. Sayfayı yenileyip yeniden deneyin.',
+                default => $rejection->getMessage(),
+            });
+        }
+
+        return $this->backEvent($tripRequestId, status: $success);
+    }
+
+    private function backEvent(string $tripRequestId, ?string $status = null, ?string $error = null): RedirectResponse
+    {
+        return redirect()->to(route('trip-plan.show', ['tripRequestId' => $tripRequestId]).'#plan-events')
             ->with($error !== null ? 'plan_error' : 'plan_status', $error ?? $status);
     }
 }

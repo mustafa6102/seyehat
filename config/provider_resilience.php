@@ -107,6 +107,29 @@ return [
          * this application's development safety budget, not a provider quota. The production profile is OPEN (ADR-006):
          * in production the entry is null, so the provider is never called (fail closed).
          */
+        /*
+         * ticketmaster (OD-EVT-001-TM, v3.22): EVT-001 event discovery. GET is read-only, so retries are safe.
+         * Ticketmaster documentation quotes 5000 API calls/day and 200 req/hour (non-burst); 150/3600 s stays
+         * safely below the hourly limit. Timeout covers event payload + network latency.
+         */
+        'ticketmaster' => [
+            'version' => env('TICKETMASTER_POLICY_VERSION', 'ticketmaster-ops-2026-10-28'),
+            'timeout_ms' => (int) env('TICKETMASTER_TIMEOUT_MS', 8000),
+            'retry' => [
+                'max_attempts' => (int) env('TICKETMASTER_RETRY_MAX_ATTEMPTS', 2),
+                'base_delay_ms' => (int) env('TICKETMASTER_RETRY_BASE_DELAY_MS', 500),
+                'max_delay_ms' => (int) env('TICKETMASTER_RETRY_MAX_DELAY_MS', 2000),
+            ],
+            'circuit_breaker' => [
+                'failure_threshold' => (int) env('TICKETMASTER_CIRCUIT_FAILURE_THRESHOLD', 5),
+                'open_seconds' => (int) env('TICKETMASTER_CIRCUIT_OPEN_SECONDS', 120),
+            ],
+            'rate_limit' => [
+                'max_requests' => (int) env('TICKETMASTER_RATE_LIMIT_MAX_REQUESTS', 150),
+                'per_seconds' => (int) env('TICKETMASTER_RATE_LIMIT_PER_SECONDS', 3600),
+            ],
+        ],
+
         'osm_overpass' => env('APP_ENV') === 'production' ? null : [
             'version' => 'osm-overpass-dev-2026-10-06',
             'timeout_ms' => 10000,

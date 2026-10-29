@@ -63,7 +63,8 @@ final class OidcBrowserLoginTest extends TestCase
     #[Test]
     public function signed_out_planner_submission_persists_nothing(): void
     {
-        $this->from('/')->post('/planla', $this->plannerForm())->assertRedirect('/')->assertSessionHasErrors('trip_request');
+        // Signed out, the planner sends the user to the OIDC login and creates nothing (RULE-PLT-AUTH-001-04).
+        $this->from('/')->post('/planla', $this->plannerForm())->assertRedirect(route('auth.login', ['donus' => '/']));
         self::assertSame([], $this->repository->all());
     }
 
@@ -161,7 +162,7 @@ final class OidcBrowserLoginTest extends TestCase
         $this->post('/cikis')->assertRedirect('/');
 
         self::assertNull(session(SessionWebPrincipalResolver::SESSION_KEY));
-        $this->from('/')->post('/planla', $this->plannerForm())->assertSessionHasErrors('trip_request');
+        $this->from('/')->post('/planla', $this->plannerForm())->assertRedirect(route('auth.login', ['donus' => '/']));
         self::assertSame([], $this->repository->all());
     }
 

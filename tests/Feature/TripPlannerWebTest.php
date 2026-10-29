@@ -284,7 +284,8 @@ final class TripPlannerWebTest extends TestCase
             ->assertDontSee('ONE_WAY')
             ->assertSee('dengeli')
             ->assertSee('trip-ui-1')
-            ->assertSee('Yolcu bilgileri şu anda bu arayüzden eklenemiyor')
+            ->assertSee('Yolcu bilgileri')
+            ->assertSee('Henüz eklenemiyor')
             ->assertSee('Uçuş sağlayıcısı henüz yapılandırılmadığı için arama şu anda başlatılamıyor.');
 
         self::assertSame([

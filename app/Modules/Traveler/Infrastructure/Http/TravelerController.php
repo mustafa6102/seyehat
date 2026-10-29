@@ -2,6 +2,9 @@
 
 namespace App\Modules\Traveler\Infrastructure\Http;
 
+use App\Modules\Authorization\Contracts\AccessControl;
+use App\Modules\Authorization\Contracts\AccessDenied;
+use App\Modules\Authorization\Contracts\AccessRequest;
 use App\Modules\Traveler\Contracts\TravelerService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,10 +25,17 @@ final readonly class TravelerController
         'residence_permits',
     ];
 
-    public function __construct(private TravelerService $travelers) {}
+    public function __construct(
+        private TravelerService $travelers,
+        private AccessControl $access,
+    ) {}
 
     public function store(Request $request): JsonResponse
     {
+        if ($denied = $this->authorize('create')) {
+            return $denied;
+        }
+
         $unknownFields = array_diff(array_keys($request->all()), self::FIELDS);
 
         if ($unknownFields !== []) {
@@ -66,6 +76,10 @@ final readonly class TravelerController
 
     public function show(string $travelerId): JsonResponse
     {
+        if ($denied = $this->authorize('read')) {
+            return $denied;
+        }
+
         $traveler = $this->travelers->get($travelerId);
 
         if ($traveler === null) {
@@ -73,6 +87,27 @@ final readonly class TravelerController
         }
 
         return response()->json($traveler->toContract());
+    }
+
+    private function authorize(string $action): ?JsonResponse
+    {
+        // POLICY-TRAVELER-001 / POLICY-PII-VIEW-001 require a trusted Trip/Traveler binding.
+        // OD-013 and the v3.16 OD-021 scope do not define that binding. Neither a bearer
+        // principal nor caller-supplied trip_id/id establishes membership or consent.
+        // Evaluate the existing matrix with no granted scope before touching PII storage.
+        // PrincipalRef and caller-supplied document/profile values must not enter the audit log.
+        try {
+            $this->access->ensure(new AccessRequest(
+                subjectId: '',
+                rolesInTrip: [],
+                resource: 'Traveler.basic',
+                action: $action,
+            ));
+        } catch (AccessDenied $exception) {
+            return $this->error(AccessDenied::MACHINE_CODE, $exception->getMessage(), 403);
+        }
+
+        return null;
     }
 
     /** @param array<string, mixed>|null $details */

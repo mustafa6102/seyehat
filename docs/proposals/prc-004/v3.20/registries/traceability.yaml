@@ -1,0 +1,23 @@
+version: 3.20.0-proposal
+status: PROPOSED
+records:
+  - requirement: FR-PRC-004-01
+    proposed_contracts: [SCH-PriceSnapshot-PROPOSED]
+    blocked_by: [OD-013, canonical cohort field mappings]
+  - requirement: AC-PRC-004-01
+    proposed_contracts: [OP-getTripRequestPriceHistoryEvaluation-PROPOSED, SCH-PriceHistoryEvaluation-PROPOSED]
+    scenarios: [TS-PRC-004-01]
+    readiness: CONTRACT_READY_FAIL_CLOSED
+  - requirement: AC-PRC-004-02
+    proposed_contracts: [SCH-PriceSnapshot-PROPOSED, SCH-PriceHistoryEvaluation-PROPOSED, CFG-PRC-SUFFICIENCY-PROPOSED]
+    scenarios: [TS-PRC-004-02]
+    readiness: BLOCKED
+    blocked_by: [canonical cohort field mappings, numeric sufficiency values]
+  - requirement: AC-PRC-004-03
+    proposed_contracts: [SCH-PriceSnapshot-PROPOSED, SCH-PriceHistoryEvaluation-PROPOSED, CFG-PRC-OUTLIER-PROPOSED]
+    scenarios: [TS-PRC-004-03]
+    readiness: BLOCKED
+    blocked_by: [approved outlier method and parameters]
+  - requirement: NFR-AUD-001
+    proposed_contracts: [SCH-PriceSnapshot-PROPOSED, SCH-PriceHistoryEvaluation-PROPOSED, CFG-PRC-SUFFICIENCY-PROPOSED, CFG-PRC-OUTLIER-PROPOSED]
+    readiness: PARTIAL

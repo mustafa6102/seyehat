@@ -6,8 +6,8 @@
 |--------------------------------------------------------------------------
 |
 | Config boundary for CFG-SEARCH-BUDGET (type integer, unit request, scope provider/operation,
-| decision ADR-006). Default and range are OPEN in the SSOT, so no value is defined here and
-| there is no fallback: a provider/operation without a complete, versioned entry gets no
+| decision ADR-006). Provider quotas remain OPEN; v3.22 defines only a product ceiling.
+| There is no provider fallback: a provider/operation without a complete, versioned entry gets no
 | candidate search request (fail closed).
 |
 | Entry shape, keyed by provider_id then operation:
@@ -16,5 +16,8 @@
 */
 
 return [
+    // v3.22 delegated product ceiling; a provider-specific approved entry is still mandatory.
+    'product_cap' => 4,
+    'product_cap_version' => 'rcg-product-cap-3.22',
     'providers' => [],
 ];

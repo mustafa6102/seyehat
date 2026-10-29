@@ -38,6 +38,18 @@ final class FlightOffer
         if ($segments === []) {
             throw new InvalidArgumentException('FlightOffer requires at least one segment.');
         }
+        // FR-FLT-002-04: one contiguous ordered list, all OUTBOUND segments first, then all INBOUND segments.
+        $inbound = false;
+        foreach ($segments as $index => $segment) {
+            if ($segment->direction === 'INBOUND') {
+                $inbound = true;
+            } elseif ($inbound || $index !== 0 && $segment->direction !== 'OUTBOUND') {
+                throw new InvalidArgumentException('FlightOffer segments must be OUTBOUND first, then INBOUND.');
+            }
+        }
+        if ($segments[0]->direction !== 'OUTBOUND') {
+            throw new InvalidArgumentException('FlightOffer segments must start with OUTBOUND.');
+        }
         if (! in_array($lifecycleState, ['CURRENT', 'CHANGED', 'EXPIRED', 'UNVERIFIED'], true)) {
             throw new InvalidArgumentException('Invalid OfferState.');
         }
@@ -54,6 +66,54 @@ final class FlightOffer
             calculatedAt: $sources[0]->fetchedAt ?? new DateTimeImmutable('now'),
         );
         $this->fareConditions = $fareConditions ?? new FareConditionSnapshot;
+    }
+
+    /** SCH-FlightOffer 3.23 journey_type: derived from the provider slices the segments came from (OD-022 D1). */
+    public function journeyType(): string
+    {
+        foreach ($this->segments as $segment) {
+            if ($segment->direction === 'INBOUND') {
+                return 'ROUND_TRIP';
+            }
+        }
+
+        return 'ONE_WAY';
+    }
+
+    /**
+     * OD-022 D3: the physical itinerary including direction. A reprice returning a different value for the same
+     * offer id is not evidence for the selected offer.
+     */
+    public function itinerarySignature(): string
+    {
+        return implode('>', array_map(
+            fn (FlightSegment $segment, int $index): string => $segment->direction.'|'.$segment->physicalFingerprint($index + 1),
+            $this->segments,
+            array_keys($this->segments),
+        ));
+    }
+
+    /**
+     * OD-022 D2 (SCH-FlightOffer 3.23 x-legacy-read): a stored v3.4 offer contract without journey_type/direction can
+     * only have come from a single-slice provider offer, so it reads as ONE_WAY with OUTBOUND segments. Nothing else
+     * changes and already-v3.23 contracts are returned as they are.
+     *
+     * @param  array<string, mixed>  $offer
+     * @return array<string, mixed>
+     */
+    public static function normalizeLegacyContract(array $offer): array
+    {
+        // Only a stored FlightOffer contract is normalized; anything else is returned untouched.
+        if (array_key_exists('journey_type', $offer) || ! array_key_exists('provider_offer_id', $offer)
+            || ! is_array($offer['segments'] ?? null)) {
+            return $offer;
+        }
+        $offer['segments'] = array_map(
+            fn (mixed $segment): mixed => is_array($segment) && ! array_key_exists('direction', $segment) ? ['direction' => 'OUTBOUND'] + $segment : $segment,
+            $offer['segments'],
+        );
+
+        return ['provider_offer_id' => $offer['provider_offer_id'], 'journey_type' => 'ONE_WAY'] + $offer;
     }
 
     public function itineraryFingerprint(): string
@@ -119,6 +179,7 @@ final class FlightOffer
     {
         return [
             'provider_offer_id' => $this->providerOfferId,
+            'journey_type' => $this->journeyType(),
             'state' => $this->state($asOf),
             'price' => $this->calculatedPrice->toContract(),
             'expires_at' => $this->expiresAt?->format(DATE_ATOM),

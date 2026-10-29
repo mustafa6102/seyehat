@@ -37,7 +37,7 @@ final class DesignSystemTest extends TestCase
         // The toggle is hidden until ui.js is ready, so the links stay reachable without scripting.
         self::assertMatchesRegularExpression('/<button type="button" class="icon-btn nav-toggle" aria-label="Menü" aria-controls="primary-nav" aria-expanded="false" data-nav-toggle hidden>/', $content);
         self::assertStringContainsString('<nav class="app-nav" id="primary-nav" aria-label="Ana gezinme">', $content);
-        self::assertMatchesRegularExpression('/href="[^"]*"\s+aria-current="page"\s*>Yeni plan</', $content);
+        self::assertMatchesRegularExpression('/href="[^"]*"\s+aria-current="page"\s*>Ana sayfa</', $content);
     }
 
     #[Test]

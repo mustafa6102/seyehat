@@ -1,0 +1,1276 @@
+{
+  "status": "PROPOSED_NON_NORMATIVE",
+  "existing_ac_mappings": [
+    {
+      "requirement": "AC-TRV-001-01",
+      "existing_text": "Given birden fazla yolcu When profil tamamlanır Then tüm yolcular ayrı değerlendirmeye hazırdır.",
+      "story": "TRV-001",
+      "existing_feature": "FEAT-TRAVELER-PROFILE",
+      "rules": [
+        {
+          "id": "RULE-TRV-001-01",
+          "text": "Bir Trip birden fazla Traveler içerir."
+        },
+        {
+          "id": "RULE-TRV-001-02",
+          "text": "nationalities[], travel_documents[], held_visas[], residence_permits[] desteklenir."
+        },
+        {
+          "id": "RULE-TRV-001-03",
+          "text": "Gereksiz hassas veri toplanmaz."
+        },
+        {
+          "id": "RULE-TRV-001-04",
+          "text": "Başka yolcuların verisi PLT-PII-001 ve PLT-AUTH-001 kurallarıyla saklanır ve erişilir. (v3.0)"
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-TRV-001-01",
+          "text": "Yolcu profili age_category ve belge/izin bilgilerini taşır."
+        }
+      ],
+      "operations": [
+        "OP-createTripTraveler-P8",
+        "OP-listTripTravelers-P8",
+        "OP-updateTraveler-P8"
+      ],
+      "schemas": [
+        "SCH-TravelerProfile-P8",
+        "SCH-TravelerList-P8"
+      ],
+      "activation_gates": [
+        "P8-TRV",
+        "P8-TRV-READINESS"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-TRV-001-02",
+      "existing_text": "Given bir yolcunun karar için gerekli belge bilgisi eksik When uyum değerlendirmesi istenir Then o yolcu için sonuç NEEDS_VERIFICATION olur ve eksik bilgi belirtilir.",
+      "story": "TRV-001",
+      "existing_feature": "FEAT-TRAVELER-PROFILE",
+      "rules": [
+        {
+          "id": "RULE-TRV-001-01",
+          "text": "Bir Trip birden fazla Traveler içerir."
+        },
+        {
+          "id": "RULE-TRV-001-02",
+          "text": "nationalities[], travel_documents[], held_visas[], residence_permits[] desteklenir."
+        },
+        {
+          "id": "RULE-TRV-001-03",
+          "text": "Gereksiz hassas veri toplanmaz."
+        },
+        {
+          "id": "RULE-TRV-001-04",
+          "text": "Başka yolcuların verisi PLT-PII-001 ve PLT-AUTH-001 kurallarıyla saklanır ve erişilir. (v3.0)"
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-TRV-001-01",
+          "text": "Yolcu profili age_category ve belge/izin bilgilerini taşır."
+        }
+      ],
+      "operations": [
+        "OP-getTravelerReadiness-P8"
+      ],
+      "schemas": [
+        "SCH-TravelerReadiness-P8"
+      ],
+      "activation_gates": [
+        "P8-TRV-READINESS"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-TRV-001-03",
+      "existing_text": "Given kullanıcı başka bir yetişkin yolcunun belge verisini girer When kaydedilir Then veri alan bazlı şifrelenir ve yolcu bazlı erişim yetkisi uygulanır.",
+      "story": "TRV-001",
+      "existing_feature": "FEAT-TRAVELER-PROFILE",
+      "rules": [
+        {
+          "id": "RULE-TRV-001-01",
+          "text": "Bir Trip birden fazla Traveler içerir."
+        },
+        {
+          "id": "RULE-TRV-001-02",
+          "text": "nationalities[], travel_documents[], held_visas[], residence_permits[] desteklenir."
+        },
+        {
+          "id": "RULE-TRV-001-03",
+          "text": "Gereksiz hassas veri toplanmaz."
+        },
+        {
+          "id": "RULE-TRV-001-04",
+          "text": "Başka yolcuların verisi PLT-PII-001 ve PLT-AUTH-001 kurallarıyla saklanır ve erişilir. (v3.0)"
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-TRV-001-01",
+          "text": "Yolcu profili age_category ve belge/izin bilgilerini taşır."
+        }
+      ],
+      "operations": [
+        "OP-grantTravelerAccess-P8",
+        "OP-revokeTravelerAccess-P8",
+        "OP-getTraveler-P8",
+        "OP-updateTraveler-P8",
+        "OP-acceptTravelerInvitation-P8"
+      ],
+      "schemas": [
+        "SCH-TravelerBinding-P8",
+        "SCH-Grant-P8",
+        "SCH-TravelerProfile-P8"
+      ],
+      "activation_gates": [
+        "P8-TRV"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-RCG-001-01",
+      "existing_text": "Given arama When candidate generation çalışır Then bütçe aşılmadan aday seti üretilir.",
+      "story": "RCG-001",
+      "existing_feature": "FEAT-ROUTE-CANDIDATE",
+      "rules": [
+        {
+          "id": "RULE-RCG-001-01",
+          "text": "MVP: direkt + tek uçuş hub + alternatif varış + ground."
+        },
+        {
+          "id": "RULE-RCG-001-02",
+          "text": "Hub adayları seed + connectivity + detour + coverage + savings + compliance ile prune edilir."
+        },
+        {
+          "id": "RULE-RCG-001-03",
+          "text": "Search budget provider bazında sayısal olarak konfigüre edilir."
+        },
+        {
+          "id": "RULE-RCG-001-04",
+          "text": "Pruning ile elenen aday provider API'sine sorgulanmaz."
+        },
+        {
+          "id": "RULE-RCG-001-05",
+          "text": "Search budget tükenirse sonuç seti kısmi olarak etiketlenir. (v3.0)"
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-RCG-001-01",
+          "text": "Candidate generator provider çağrı bütçesini ölçer ve request counter tutar."
+        }
+      ],
+      "operations": [
+        "OP-startRouteCandidateSearch-P8",
+        "OP-pollRouteCandidateSearch-P8"
+      ],
+      "schemas": [
+        "SCH-CandidateResult-P8",
+        "SCH-Candidate-P8",
+        "SCH-BudgetUsage-P8"
+      ],
+      "activation_gates": [
+        "P8-RCG"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-RCG-001-02",
+      "existing_text": "Given search budget dolmuş When yeni aday oluşur Then ek provider çağrısı yapılmaz.",
+      "story": "RCG-001",
+      "existing_feature": "FEAT-ROUTE-CANDIDATE",
+      "rules": [
+        {
+          "id": "RULE-RCG-001-01",
+          "text": "MVP: direkt + tek uçuş hub + alternatif varış + ground."
+        },
+        {
+          "id": "RULE-RCG-001-02",
+          "text": "Hub adayları seed + connectivity + detour + coverage + savings + compliance ile prune edilir."
+        },
+        {
+          "id": "RULE-RCG-001-03",
+          "text": "Search budget provider bazında sayısal olarak konfigüre edilir."
+        },
+        {
+          "id": "RULE-RCG-001-04",
+          "text": "Pruning ile elenen aday provider API'sine sorgulanmaz."
+        },
+        {
+          "id": "RULE-RCG-001-05",
+          "text": "Search budget tükenirse sonuç seti kısmi olarak etiketlenir. (v3.0)"
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-RCG-001-01",
+          "text": "Candidate generator provider çağrı bütçesini ölçer ve request counter tutar."
+        }
+      ],
+      "operations": [
+        "OP-startRouteCandidateSearch-P8",
+        "OP-pollRouteCandidateSearch-P8"
+      ],
+      "schemas": [
+        "SCH-CandidateResult-P8",
+        "SCH-Candidate-P8",
+        "SCH-BudgetUsage-P8"
+      ],
+      "activation_gates": [
+        "P8-RCG"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-RCG-001-03",
+      "existing_text": "Given aday pruning ile elenmiş When arama yürür Then provider API'sine gönderilmez.",
+      "story": "RCG-001",
+      "existing_feature": "FEAT-ROUTE-CANDIDATE",
+      "rules": [
+        {
+          "id": "RULE-RCG-001-01",
+          "text": "MVP: direkt + tek uçuş hub + alternatif varış + ground."
+        },
+        {
+          "id": "RULE-RCG-001-02",
+          "text": "Hub adayları seed + connectivity + detour + coverage + savings + compliance ile prune edilir."
+        },
+        {
+          "id": "RULE-RCG-001-03",
+          "text": "Search budget provider bazında sayısal olarak konfigüre edilir."
+        },
+        {
+          "id": "RULE-RCG-001-04",
+          "text": "Pruning ile elenen aday provider API'sine sorgulanmaz."
+        },
+        {
+          "id": "RULE-RCG-001-05",
+          "text": "Search budget tükenirse sonuç seti kısmi olarak etiketlenir. (v3.0)"
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-RCG-001-01",
+          "text": "Candidate generator provider çağrı bütçesini ölçer ve request counter tutar."
+        }
+      ],
+      "operations": [
+        "OP-startRouteCandidateSearch-P8",
+        "OP-pollRouteCandidateSearch-P8"
+      ],
+      "schemas": [
+        "SCH-CandidateResult-P8",
+        "SCH-Candidate-P8",
+        "SCH-BudgetUsage-P8"
+      ],
+      "activation_gates": [
+        "P8-RCG"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-RCG-001-04",
+      "existing_text": "Given budget tükendi When sonuç gösterilir Then kısmi sonuç etiketi gösterilir.",
+      "story": "RCG-001",
+      "existing_feature": "FEAT-ROUTE-CANDIDATE",
+      "rules": [
+        {
+          "id": "RULE-RCG-001-01",
+          "text": "MVP: direkt + tek uçuş hub + alternatif varış + ground."
+        },
+        {
+          "id": "RULE-RCG-001-02",
+          "text": "Hub adayları seed + connectivity + detour + coverage + savings + compliance ile prune edilir."
+        },
+        {
+          "id": "RULE-RCG-001-03",
+          "text": "Search budget provider bazında sayısal olarak konfigüre edilir."
+        },
+        {
+          "id": "RULE-RCG-001-04",
+          "text": "Pruning ile elenen aday provider API'sine sorgulanmaz."
+        },
+        {
+          "id": "RULE-RCG-001-05",
+          "text": "Search budget tükenirse sonuç seti kısmi olarak etiketlenir. (v3.0)"
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-RCG-001-01",
+          "text": "Candidate generator provider çağrı bütçesini ölçer ve request counter tutar."
+        }
+      ],
+      "operations": [
+        "OP-startRouteCandidateSearch-P8",
+        "OP-pollRouteCandidateSearch-P8"
+      ],
+      "schemas": [
+        "SCH-CandidateResult-P8",
+        "SCH-Candidate-P8",
+        "SCH-BudgetUsage-P8"
+      ],
+      "activation_gates": [
+        "P8-RCG"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-STF-003-01",
+      "existing_text": "Given unprotected self-transfer When gösterilir Then risk etiketi, reason_code ve segment timeline gösterilir.",
+      "story": "STF-003",
+      "existing_feature": "FEAT-SELF-TRANSFER",
+      "rules": [
+        {
+          "id": "RULE-STF-003-01",
+          "text": "Ayrı PNR/bilet ile kurulan bağlantı UNPROTECTED'dır. Tek bilet/PNR olup Bölüm 7.3'teki koruma kanıtı yoksa ProtectionStatus=UNKNOWN olur. (v3.0 netleştirme)"
+        },
+        {
+          "id": "RULE-STF-003-02",
+          "text": "Riskler makine-okunur reason_code ile tutulur."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-STF-003-01",
+          "text": "Segment bazlı timeline ve risk kodları üretilir."
+        }
+      ],
+      "operations": [
+        "OP-getCandidateRisks-P8"
+      ],
+      "schemas": [
+        "SCH-RiskAssessment-P8",
+        "SCH-RiskConnection-P8",
+        "SCH-TimelineStep-P8"
+      ],
+      "activation_gates": [
+        "P8-STF",
+        "P8-RCG"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-STF-003-02",
+      "existing_text": "Given bagaj reclaim gerekiyor When rota gösterilir Then reclaim/check-in adımı timeline ve risk kodunda görünür.",
+      "story": "STF-003",
+      "existing_feature": "FEAT-SELF-TRANSFER",
+      "rules": [
+        {
+          "id": "RULE-STF-003-01",
+          "text": "Ayrı PNR/bilet ile kurulan bağlantı UNPROTECTED'dır. Tek bilet/PNR olup Bölüm 7.3'teki koruma kanıtı yoksa ProtectionStatus=UNKNOWN olur. (v3.0 netleştirme)"
+        },
+        {
+          "id": "RULE-STF-003-02",
+          "text": "Riskler makine-okunur reason_code ile tutulur."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-STF-003-01",
+          "text": "Segment bazlı timeline ve risk kodları üretilir."
+        }
+      ],
+      "operations": [
+        "OP-getCandidateRisks-P8"
+      ],
+      "schemas": [
+        "SCH-RiskAssessment-P8",
+        "SCH-RiskConnection-P8",
+        "SCH-TimelineStep-P8"
+      ],
+      "activation_gates": [
+        "P8-STF",
+        "P8-RCG"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-STF-003-03",
+      "existing_text": "Given terminal/havalimanı değişimi var When rota gösterilir Then ilgili transfer adımı ve risk nedeni görünür.",
+      "story": "STF-003",
+      "existing_feature": "FEAT-SELF-TRANSFER",
+      "rules": [
+        {
+          "id": "RULE-STF-003-01",
+          "text": "Ayrı PNR/bilet ile kurulan bağlantı UNPROTECTED'dır. Tek bilet/PNR olup Bölüm 7.3'teki koruma kanıtı yoksa ProtectionStatus=UNKNOWN olur. (v3.0 netleştirme)"
+        },
+        {
+          "id": "RULE-STF-003-02",
+          "text": "Riskler makine-okunur reason_code ile tutulur."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-STF-003-01",
+          "text": "Segment bazlı timeline ve risk kodları üretilir."
+        }
+      ],
+      "operations": [
+        "OP-getCandidateRisks-P8"
+      ],
+      "schemas": [
+        "SCH-RiskAssessment-P8",
+        "SCH-RiskConnection-P8",
+        "SCH-TimelineStep-P8"
+      ],
+      "activation_gates": [
+        "P8-STF",
+        "P8-RCG"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-STF-003-04",
+      "existing_text": "Given tek bilet ancak koruma kanıtı yok When karar üretilir Then ProtectionStatus=UNKNOWN olur ve rota en fazla SHOWN_WITH_WARNING alır.",
+      "story": "STF-003",
+      "existing_feature": "FEAT-SELF-TRANSFER",
+      "rules": [
+        {
+          "id": "RULE-STF-003-01",
+          "text": "Ayrı PNR/bilet ile kurulan bağlantı UNPROTECTED'dır. Tek bilet/PNR olup Bölüm 7.3'teki koruma kanıtı yoksa ProtectionStatus=UNKNOWN olur. (v3.0 netleştirme)"
+        },
+        {
+          "id": "RULE-STF-003-02",
+          "text": "Riskler makine-okunur reason_code ile tutulur."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-STF-003-01",
+          "text": "Segment bazlı timeline ve risk kodları üretilir."
+        }
+      ],
+      "operations": [
+        "OP-getCandidateRisks-P8"
+      ],
+      "schemas": [
+        "SCH-RiskAssessment-P8",
+        "SCH-RiskConnection-P8",
+        "SCH-TimelineStep-P8"
+      ],
+      "activation_gates": [
+        "P8-STF",
+        "P8-RCG"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-TRF-001-01",
+      "existing_text": "Given resmi MCT yok When fallback kullanılır Then tahmini etiketi gösterilir.",
+      "story": "TRF-001",
+      "existing_feature": "FEAT-TRANSFER-FEASIBILITY",
+      "rules": [
+        {
+          "id": "RULE-TRF-001-01",
+          "text": "Gerekli bağlantı süresi Bölüm 7.2'deki formülle hesaplanır: PROTECTED bağlantıda doğrulanmış MCT (+ yalnız MCT kapsamı dışında olduğu doğrulanan ek bileşenler); self-transfer'de yalnız gerekli bileşenlerin koşullu toplamı."
+        },
+        {
+          "id": "RULE-TRF-001-02",
+          "text": "Resmi MCT yoksa fallback kullanılabilir ancak sonuç \"tahmini güvenli bağlantı\" olarak etiketlenir."
+        },
+        {
+          "id": "RULE-TRF-001-03",
+          "text": "Mevcut süre < gerekli süre ise rota REJECTED."
+        },
+        {
+          "id": "RULE-TRF-001-04",
+          "text": "Fallback MCT ile yalnız tahmini güvenli bulunan bağlantı en fazla SHOWN_WITH_WARNING olabilir."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-TRF-001-01",
+          "text": "Mevcut ve gerekli süre kullanıcıya gösterilir."
+        },
+        {
+          "id": "FR-TRF-001-02",
+          "text": "Fallback kaynağı/config version audit edilir."
+        },
+        {
+          "id": "FR-TRF-001-03",
+          "text": "Her süre bileşeni Sourced/Derived olarak izlenir; eksik kritik bileşen UNKNOWN ise bağlantı kesin güvenli etiketlenmez. (v3.0)"
+        }
+      ],
+      "operations": [
+        "OP-getCandidateTransfer-P8"
+      ],
+      "schemas": [
+        "SCH-TransferAssessment-P8",
+        "SCH-TransferConnection-P8",
+        "SCH-TransferComponent-P8"
+      ],
+      "activation_gates": [
+        "P8-TRF",
+        "P8-RCG"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-TRF-001-02",
+      "existing_text": "Given havalimanı değişimi When hesaplanır Then kara ulaşım süresi dahil edilir.",
+      "story": "TRF-001",
+      "existing_feature": "FEAT-TRANSFER-FEASIBILITY",
+      "rules": [
+        {
+          "id": "RULE-TRF-001-01",
+          "text": "Gerekli bağlantı süresi Bölüm 7.2'deki formülle hesaplanır: PROTECTED bağlantıda doğrulanmış MCT (+ yalnız MCT kapsamı dışında olduğu doğrulanan ek bileşenler); self-transfer'de yalnız gerekli bileşenlerin koşullu toplamı."
+        },
+        {
+          "id": "RULE-TRF-001-02",
+          "text": "Resmi MCT yoksa fallback kullanılabilir ancak sonuç \"tahmini güvenli bağlantı\" olarak etiketlenir."
+        },
+        {
+          "id": "RULE-TRF-001-03",
+          "text": "Mevcut süre < gerekli süre ise rota REJECTED."
+        },
+        {
+          "id": "RULE-TRF-001-04",
+          "text": "Fallback MCT ile yalnız tahmini güvenli bulunan bağlantı en fazla SHOWN_WITH_WARNING olabilir."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-TRF-001-01",
+          "text": "Mevcut ve gerekli süre kullanıcıya gösterilir."
+        },
+        {
+          "id": "FR-TRF-001-02",
+          "text": "Fallback kaynağı/config version audit edilir."
+        },
+        {
+          "id": "FR-TRF-001-03",
+          "text": "Her süre bileşeni Sourced/Derived olarak izlenir; eksik kritik bileşen UNKNOWN ise bağlantı kesin güvenli etiketlenmez. (v3.0)"
+        }
+      ],
+      "operations": [
+        "OP-getCandidateTransfer-P8"
+      ],
+      "schemas": [
+        "SCH-TransferAssessment-P8",
+        "SCH-TransferConnection-P8",
+        "SCH-TransferComponent-P8"
+      ],
+      "activation_gates": [
+        "P8-TRF",
+        "P8-RCG"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-TRF-001-03",
+      "existing_text": "Given check-in cutoff'a yetişilemiyor When değerlendirilir Then rota reddedilir.",
+      "story": "TRF-001",
+      "existing_feature": "FEAT-TRANSFER-FEASIBILITY",
+      "rules": [
+        {
+          "id": "RULE-TRF-001-01",
+          "text": "Gerekli bağlantı süresi Bölüm 7.2'deki formülle hesaplanır: PROTECTED bağlantıda doğrulanmış MCT (+ yalnız MCT kapsamı dışında olduğu doğrulanan ek bileşenler); self-transfer'de yalnız gerekli bileşenlerin koşullu toplamı."
+        },
+        {
+          "id": "RULE-TRF-001-02",
+          "text": "Resmi MCT yoksa fallback kullanılabilir ancak sonuç \"tahmini güvenli bağlantı\" olarak etiketlenir."
+        },
+        {
+          "id": "RULE-TRF-001-03",
+          "text": "Mevcut süre < gerekli süre ise rota REJECTED."
+        },
+        {
+          "id": "RULE-TRF-001-04",
+          "text": "Fallback MCT ile yalnız tahmini güvenli bulunan bağlantı en fazla SHOWN_WITH_WARNING olabilir."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-TRF-001-01",
+          "text": "Mevcut ve gerekli süre kullanıcıya gösterilir."
+        },
+        {
+          "id": "FR-TRF-001-02",
+          "text": "Fallback kaynağı/config version audit edilir."
+        },
+        {
+          "id": "FR-TRF-001-03",
+          "text": "Her süre bileşeni Sourced/Derived olarak izlenir; eksik kritik bileşen UNKNOWN ise bağlantı kesin güvenli etiketlenmez. (v3.0)"
+        }
+      ],
+      "operations": [
+        "OP-getCandidateTransfer-P8"
+      ],
+      "schemas": [
+        "SCH-TransferAssessment-P8",
+        "SCH-TransferConnection-P8",
+        "SCH-TransferComponent-P8"
+      ],
+      "activation_gates": [
+        "P8-TRF",
+        "P8-RCG"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-TRF-001-04",
+      "existing_text": "Given mevcut süre gerekli süreden kısa When değerlendirilir Then rota REJECTED olur.",
+      "story": "TRF-001",
+      "existing_feature": "FEAT-TRANSFER-FEASIBILITY",
+      "rules": [
+        {
+          "id": "RULE-TRF-001-01",
+          "text": "Gerekli bağlantı süresi Bölüm 7.2'deki formülle hesaplanır: PROTECTED bağlantıda doğrulanmış MCT (+ yalnız MCT kapsamı dışında olduğu doğrulanan ek bileşenler); self-transfer'de yalnız gerekli bileşenlerin koşullu toplamı."
+        },
+        {
+          "id": "RULE-TRF-001-02",
+          "text": "Resmi MCT yoksa fallback kullanılabilir ancak sonuç \"tahmini güvenli bağlantı\" olarak etiketlenir."
+        },
+        {
+          "id": "RULE-TRF-001-03",
+          "text": "Mevcut süre < gerekli süre ise rota REJECTED."
+        },
+        {
+          "id": "RULE-TRF-001-04",
+          "text": "Fallback MCT ile yalnız tahmini güvenli bulunan bağlantı en fazla SHOWN_WITH_WARNING olabilir."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-TRF-001-01",
+          "text": "Mevcut ve gerekli süre kullanıcıya gösterilir."
+        },
+        {
+          "id": "FR-TRF-001-02",
+          "text": "Fallback kaynağı/config version audit edilir."
+        },
+        {
+          "id": "FR-TRF-001-03",
+          "text": "Her süre bileşeni Sourced/Derived olarak izlenir; eksik kritik bileşen UNKNOWN ise bağlantı kesin güvenli etiketlenmez. (v3.0)"
+        }
+      ],
+      "operations": [
+        "OP-getCandidateTransfer-P8"
+      ],
+      "schemas": [
+        "SCH-TransferAssessment-P8",
+        "SCH-TransferConnection-P8",
+        "SCH-TransferComponent-P8"
+      ],
+      "activation_gates": [
+        "P8-TRF",
+        "P8-RCG"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-TRF-001-05",
+      "existing_text": "Given PROTECTED bağlantı ve doğrulanmış MCT When hesaplanır Then MCT içindeki immigration/security/reclaim bileşenleri ayrıca eklenmez.",
+      "story": "TRF-001",
+      "existing_feature": "FEAT-TRANSFER-FEASIBILITY",
+      "rules": [
+        {
+          "id": "RULE-TRF-001-01",
+          "text": "Gerekli bağlantı süresi Bölüm 7.2'deki formülle hesaplanır: PROTECTED bağlantıda doğrulanmış MCT (+ yalnız MCT kapsamı dışında olduğu doğrulanan ek bileşenler); self-transfer'de yalnız gerekli bileşenlerin koşullu toplamı."
+        },
+        {
+          "id": "RULE-TRF-001-02",
+          "text": "Resmi MCT yoksa fallback kullanılabilir ancak sonuç \"tahmini güvenli bağlantı\" olarak etiketlenir."
+        },
+        {
+          "id": "RULE-TRF-001-03",
+          "text": "Mevcut süre < gerekli süre ise rota REJECTED."
+        },
+        {
+          "id": "RULE-TRF-001-04",
+          "text": "Fallback MCT ile yalnız tahmini güvenli bulunan bağlantı en fazla SHOWN_WITH_WARNING olabilir."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-TRF-001-01",
+          "text": "Mevcut ve gerekli süre kullanıcıya gösterilir."
+        },
+        {
+          "id": "FR-TRF-001-02",
+          "text": "Fallback kaynağı/config version audit edilir."
+        },
+        {
+          "id": "FR-TRF-001-03",
+          "text": "Her süre bileşeni Sourced/Derived olarak izlenir; eksik kritik bileşen UNKNOWN ise bağlantı kesin güvenli etiketlenmez. (v3.0)"
+        }
+      ],
+      "operations": [
+        "OP-getCandidateTransfer-P8"
+      ],
+      "schemas": [
+        "SCH-TransferAssessment-P8",
+        "SCH-TransferConnection-P8",
+        "SCH-TransferComponent-P8"
+      ],
+      "activation_gates": [
+        "P8-TRF",
+        "P8-RCG"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-TRF-001-06",
+      "existing_text": "Given airside self-connect ve bagaj taşınmıyor When hesaplanır Then reclaim ve landside bileşenleri eklenmez.",
+      "story": "TRF-001",
+      "existing_feature": "FEAT-TRANSFER-FEASIBILITY",
+      "rules": [
+        {
+          "id": "RULE-TRF-001-01",
+          "text": "Gerekli bağlantı süresi Bölüm 7.2'deki formülle hesaplanır: PROTECTED bağlantıda doğrulanmış MCT (+ yalnız MCT kapsamı dışında olduğu doğrulanan ek bileşenler); self-transfer'de yalnız gerekli bileşenlerin koşullu toplamı."
+        },
+        {
+          "id": "RULE-TRF-001-02",
+          "text": "Resmi MCT yoksa fallback kullanılabilir ancak sonuç \"tahmini güvenli bağlantı\" olarak etiketlenir."
+        },
+        {
+          "id": "RULE-TRF-001-03",
+          "text": "Mevcut süre < gerekli süre ise rota REJECTED."
+        },
+        {
+          "id": "RULE-TRF-001-04",
+          "text": "Fallback MCT ile yalnız tahmini güvenli bulunan bağlantı en fazla SHOWN_WITH_WARNING olabilir."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-TRF-001-01",
+          "text": "Mevcut ve gerekli süre kullanıcıya gösterilir."
+        },
+        {
+          "id": "FR-TRF-001-02",
+          "text": "Fallback kaynağı/config version audit edilir."
+        },
+        {
+          "id": "FR-TRF-001-03",
+          "text": "Her süre bileşeni Sourced/Derived olarak izlenir; eksik kritik bileşen UNKNOWN ise bağlantı kesin güvenli etiketlenmez. (v3.0)"
+        }
+      ],
+      "operations": [
+        "OP-getCandidateTransfer-P8"
+      ],
+      "schemas": [
+        "SCH-TransferAssessment-P8",
+        "SCH-TransferConnection-P8",
+        "SCH-TransferComponent-P8"
+      ],
+      "activation_gates": [
+        "P8-TRF",
+        "P8-RCG"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-PRC-004-01",
+      "existing_text": "Given yetersiz geçmiş When fiyat değerlendirilir Then keyfi hedef fiyat üretilmez.",
+      "story": "PRC-004",
+      "existing_feature": "FEAT-PRICE-HISTORY",
+      "rules": [
+        {
+          "id": "RULE-PRC-004-01",
+          "text": "Yeterli snapshot yoksa \"veri yetersiz\" denir."
+        },
+        {
+          "id": "RULE-PRC-004-02",
+          "text": "Geçmişte görülmemiş fiyat garanti/hedef olarak sunulmaz."
+        },
+        {
+          "id": "RULE-PRC-004-03",
+          "text": "Yeterlilik eşiği ve outlier politikası versiyonlu config ile yönetilir. (v3.0)"
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-PRC-004-01",
+          "text": "Snapshot source/fetched_at ile saklanır."
+        }
+      ],
+      "operations": [
+        "OP-getTripRequestPriceHistoryEvaluation-P8"
+      ],
+      "schemas": [
+        "SCH-PriceSnapshot-P8",
+        "SCH-PriceEvaluation-P8"
+      ],
+      "activation_gates": [
+        "P8-PRC"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-PRC-004-02",
+      "existing_text": "Given yeterli karşılaştırılabilir snapshot var When fiyat değerlendirilir Then değerlendirme snapshot sayısı, tarih aralığı ve kaynakla birlikte gösterilir.",
+      "story": "PRC-004",
+      "existing_feature": "FEAT-PRICE-HISTORY",
+      "rules": [
+        {
+          "id": "RULE-PRC-004-01",
+          "text": "Yeterli snapshot yoksa \"veri yetersiz\" denir."
+        },
+        {
+          "id": "RULE-PRC-004-02",
+          "text": "Geçmişte görülmemiş fiyat garanti/hedef olarak sunulmaz."
+        },
+        {
+          "id": "RULE-PRC-004-03",
+          "text": "Yeterlilik eşiği ve outlier politikası versiyonlu config ile yönetilir. (v3.0)"
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-PRC-004-01",
+          "text": "Snapshot source/fetched_at ile saklanır."
+        }
+      ],
+      "operations": [
+        "OP-getTripRequestPriceHistoryEvaluation-P8"
+      ],
+      "schemas": [
+        "SCH-PriceSnapshot-P8",
+        "SCH-PriceEvaluation-P8"
+      ],
+      "activation_gates": [
+        "P8-PRC"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-PRC-004-03",
+      "existing_text": "Given outlier snapshot When değerlendirme yapılır Then outlier politikası uygulanır ve outlier değer hedef fiyat olarak sunulmaz.",
+      "story": "PRC-004",
+      "existing_feature": "FEAT-PRICE-HISTORY",
+      "rules": [
+        {
+          "id": "RULE-PRC-004-01",
+          "text": "Yeterli snapshot yoksa \"veri yetersiz\" denir."
+        },
+        {
+          "id": "RULE-PRC-004-02",
+          "text": "Geçmişte görülmemiş fiyat garanti/hedef olarak sunulmaz."
+        },
+        {
+          "id": "RULE-PRC-004-03",
+          "text": "Yeterlilik eşiği ve outlier politikası versiyonlu config ile yönetilir. (v3.0)"
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-PRC-004-01",
+          "text": "Snapshot source/fetched_at ile saklanır."
+        }
+      ],
+      "operations": [
+        "OP-getTripRequestPriceHistoryEvaluation-P8"
+      ],
+      "schemas": [
+        "SCH-PriceSnapshot-P8",
+        "SCH-PriceEvaluation-P8"
+      ],
+      "activation_gates": [
+        "P8-PRC"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-FOOD-001-01",
+      "existing_text": "Given restoran öğle saatinde kapalı When adaylar oluşturulur Then o pencereye yerleştirilmez.",
+      "story": "FOOD-001",
+      "existing_feature": "FEAT-FOOD",
+      "rules": [
+        {
+          "id": "RULE-FOOD-001-01",
+          "text": "Açık/kapalı, fiyat ve rezervasyon durumu doğrulanmadan kesinleştirilmez."
+        },
+        {
+          "id": "RULE-FOOD-001-02",
+          "text": "Restoran seçimi günlük rota üzerinde gereksiz detour oluşturuyorsa etkisi gösterilir."
+        },
+        {
+          "id": "RULE-FOOD-001-03",
+          "text": "Diyet/alerji bilgisi yalnız kullanıcı beyanıyla filtreleme girdisidir; tıbbi uygunluk çıkarımı yapılmaz."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-FOOD-001-01",
+          "text": "Yemek adayları zaman penceresi, konum, tercih ve doğrulanmış açık saatle filtrelenir."
+        },
+        {
+          "id": "FR-FOOD-001-02",
+          "text": "Rezervasyon bağlantısı varsa doğrulanmış kaynaktan gösterilir."
+        }
+      ],
+      "operations": [
+        "OP-getFoodWindowAssessment-P8",
+        "OP-addTripPlanFood-P8"
+      ],
+      "schemas": [
+        "SCH-FoodAssessment-P8",
+        "SCH-FoodItem-P8"
+      ],
+      "activation_gates": [
+        "P8-FOOD-WINDOW",
+        "P8-FOOD-PLAN"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-FOOD-001-02",
+      "existing_text": "Given fiyat yalnız price-level When gösterilir Then kesin hesap gibi sunulmaz.",
+      "story": "FOOD-001",
+      "existing_feature": "FEAT-FOOD",
+      "rules": [
+        {
+          "id": "RULE-FOOD-001-01",
+          "text": "Açık/kapalı, fiyat ve rezervasyon durumu doğrulanmadan kesinleştirilmez."
+        },
+        {
+          "id": "RULE-FOOD-001-02",
+          "text": "Restoran seçimi günlük rota üzerinde gereksiz detour oluşturuyorsa etkisi gösterilir."
+        },
+        {
+          "id": "RULE-FOOD-001-03",
+          "text": "Diyet/alerji bilgisi yalnız kullanıcı beyanıyla filtreleme girdisidir; tıbbi uygunluk çıkarımı yapılmaz."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-FOOD-001-01",
+          "text": "Yemek adayları zaman penceresi, konum, tercih ve doğrulanmış açık saatle filtrelenir."
+        },
+        {
+          "id": "FR-FOOD-001-02",
+          "text": "Rezervasyon bağlantısı varsa doğrulanmış kaynaktan gösterilir."
+        }
+      ],
+      "operations": [
+        "OP-pollFoodDiscovery-P8"
+      ],
+      "schemas": [
+        "SCH-FoodPlace-P8",
+        "SCH-FoodPrice-P8"
+      ],
+      "activation_gates": [
+        "P8-FOOD"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-FOOD-001-03",
+      "existing_text": "Given rezervasyon gerekli ve doğrulanmış link yok When gösterilir Then rezervasyon durumu kesin gibi sunulmaz.",
+      "story": "FOOD-001",
+      "existing_feature": "FEAT-FOOD",
+      "rules": [
+        {
+          "id": "RULE-FOOD-001-01",
+          "text": "Açık/kapalı, fiyat ve rezervasyon durumu doğrulanmadan kesinleştirilmez."
+        },
+        {
+          "id": "RULE-FOOD-001-02",
+          "text": "Restoran seçimi günlük rota üzerinde gereksiz detour oluşturuyorsa etkisi gösterilir."
+        },
+        {
+          "id": "RULE-FOOD-001-03",
+          "text": "Diyet/alerji bilgisi yalnız kullanıcı beyanıyla filtreleme girdisidir; tıbbi uygunluk çıkarımı yapılmaz."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-FOOD-001-01",
+          "text": "Yemek adayları zaman penceresi, konum, tercih ve doğrulanmış açık saatle filtrelenir."
+        },
+        {
+          "id": "FR-FOOD-001-02",
+          "text": "Rezervasyon bağlantısı varsa doğrulanmış kaynaktan gösterilir."
+        }
+      ],
+      "operations": [
+        "OP-pollFoodDiscovery-P8"
+      ],
+      "schemas": [
+        "SCH-FoodPlace-P8",
+        "SCH-Booking-P8",
+        "SCH-LinkFact-P8"
+      ],
+      "activation_gates": [
+        "P8-FOOD"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-FOOD-001-04",
+      "existing_text": "Given restoran rotada detour oluşturuyor When öneri gösterilir Then ek süre/maliyet etkisi gösterilir.",
+      "story": "FOOD-001",
+      "existing_feature": "FEAT-FOOD",
+      "rules": [
+        {
+          "id": "RULE-FOOD-001-01",
+          "text": "Açık/kapalı, fiyat ve rezervasyon durumu doğrulanmadan kesinleştirilmez."
+        },
+        {
+          "id": "RULE-FOOD-001-02",
+          "text": "Restoran seçimi günlük rota üzerinde gereksiz detour oluşturuyorsa etkisi gösterilir."
+        },
+        {
+          "id": "RULE-FOOD-001-03",
+          "text": "Diyet/alerji bilgisi yalnız kullanıcı beyanıyla filtreleme girdisidir; tıbbi uygunluk çıkarımı yapılmaz."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-FOOD-001-01",
+          "text": "Yemek adayları zaman penceresi, konum, tercih ve doğrulanmış açık saatle filtrelenir."
+        },
+        {
+          "id": "FR-FOOD-001-02",
+          "text": "Rezervasyon bağlantısı varsa doğrulanmış kaynaktan gösterilir."
+        }
+      ],
+      "operations": [
+        "OP-getFoodWindowAssessment-P8"
+      ],
+      "schemas": [
+        "SCH-FoodAssessment-P8"
+      ],
+      "activation_gates": [
+        "P8-FOOD-WINDOW"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-EVT-001-01",
+      "existing_text": "Given etkinlik iptal edilmiş When sonuç gösterilir Then aktif bilet önerisi yapılmaz.",
+      "story": "EVT-001",
+      "existing_feature": "FEAT-EVENTS",
+      "rules": [
+        {
+          "id": "RULE-EVT-001-01",
+          "text": "Etkinlik tarihi/saati ve bilet URL'si doğrulanmış kaynaktan gelmelidir."
+        },
+        {
+          "id": "RULE-EVT-001-02",
+          "text": "Sabit saatli etkinlik itinerary içinde FIXED constraint oluşturur."
+        },
+        {
+          "id": "RULE-EVT-001-03",
+          "text": "Sold-out/cancelled etkinlik satın alınabilir veya aktif öneri gibi gösterilmez."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-EVT-001-01",
+          "text": "Etkinlikler tarih/şehir/tercih bazında normalize edilerek plan adayına dönüştürülür."
+        },
+        {
+          "id": "FR-EVT-001-02",
+          "text": "Etkinlik öncesi ulaşım ve buffer günlük rota motoruna aktarılır."
+        }
+      ],
+      "operations": [
+        "OP-pollEventDiscovery-P8",
+        "OP-addTripPlanEvent-P8"
+      ],
+      "schemas": [
+        "SCH-Event-P8",
+        "SCH-EventItem-P8"
+      ],
+      "activation_gates": [
+        "P8-EVT"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-EVT-001-02",
+      "existing_text": "Given etkinlik 20:00 When günlük plan oluşturulur Then etkinlik sabit zaman kısıtı olarak korunur.",
+      "story": "EVT-001",
+      "existing_feature": "FEAT-EVENTS",
+      "rules": [
+        {
+          "id": "RULE-EVT-001-01",
+          "text": "Etkinlik tarihi/saati ve bilet URL'si doğrulanmış kaynaktan gelmelidir."
+        },
+        {
+          "id": "RULE-EVT-001-02",
+          "text": "Sabit saatli etkinlik itinerary içinde FIXED constraint oluşturur."
+        },
+        {
+          "id": "RULE-EVT-001-03",
+          "text": "Sold-out/cancelled etkinlik satın alınabilir veya aktif öneri gibi gösterilmez."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-EVT-001-01",
+          "text": "Etkinlikler tarih/şehir/tercih bazında normalize edilerek plan adayına dönüştürülür."
+        },
+        {
+          "id": "FR-EVT-001-02",
+          "text": "Etkinlik öncesi ulaşım ve buffer günlük rota motoruna aktarılır."
+        }
+      ],
+      "operations": [
+        "OP-addTripPlanEvent-P8"
+      ],
+      "schemas": [
+        "SCH-EventItem-P8",
+        "SCH-PlanItem-P8",
+        "SCH-PlanRevision-P8",
+        "SCH-TripPlan-P8"
+      ],
+      "activation_gates": [
+        "P8-EVT-PLAN"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    },
+    {
+      "requirement": "AC-EVT-001-03",
+      "existing_text": "Given bilet linki STALE/EXPIRED When gösterilir Then aktif satın alma CTA'sı sunulmaz (RULE-M3-006).",
+      "story": "EVT-001",
+      "existing_feature": "FEAT-EVENTS",
+      "rules": [
+        {
+          "id": "RULE-EVT-001-01",
+          "text": "Etkinlik tarihi/saati ve bilet URL'si doğrulanmış kaynaktan gelmelidir."
+        },
+        {
+          "id": "RULE-EVT-001-02",
+          "text": "Sabit saatli etkinlik itinerary içinde FIXED constraint oluşturur."
+        },
+        {
+          "id": "RULE-EVT-001-03",
+          "text": "Sold-out/cancelled etkinlik satın alınabilir veya aktif öneri gibi gösterilmez."
+        }
+      ],
+      "functional_requirements": [
+        {
+          "id": "FR-EVT-001-01",
+          "text": "Etkinlikler tarih/şehir/tercih bazında normalize edilerek plan adayına dönüştürülür."
+        },
+        {
+          "id": "FR-EVT-001-02",
+          "text": "Etkinlik öncesi ulaşım ve buffer günlük rota motoruna aktarılır."
+        }
+      ],
+      "operations": [
+        "OP-pollEventDiscovery-P8"
+      ],
+      "schemas": [
+        "SCH-Event-P8",
+        "SCH-LinkFact-P8"
+      ],
+      "activation_gates": [
+        "P8-EVT"
+      ],
+      "implementation_status": "NOT_COMPLETED_BY_THIS_PROPOSAL",
+      "backend_scope_only": true,
+      "remaining_ui": "AC requires display or user workflow where stated; backend response is not full UI completion."
+    }
+  ],
+  "new_story_proposal": {
+    "id": "P8-NOT-001",
+    "status": "PROPOSED_NEW_STORY_NOT_ACTIVE",
+    "epic": "EPIC-11",
+    "feature": "FEAT-NOTIFICATION",
+    "title": "Kullan?c? e?ikli u?u? f?rsat? ve uygulama i?i bildirim",
+    "canonical_story_id": "ALLOCATE_ON_APPROVAL",
+    "rules": {
+      "P8-RULE-NOT-01": "Yaln?z ayn? owner TripRequest ve currency kapsam?ndaki FRESH COMPLETE g?zlem kullan?c? e?i?i ile kar??la?t?r?l?r.",
+      "P8-RULE-NOT-02": "Watch/g?zlem ba??na en fazla bir notification; notification+outbox atomik.",
+      "P8-RULE-NOT-03": "?ptal/duraklatma, yetki ve expiry her i?lemde korunur; d?? kanal ilk kapsamda yok."
+    },
+    "functional_requirements": {
+      "P8-FR-NOT-01": "Owner watch olu?turur, okur, duraklat?r veya iptal eder.",
+      "P8-FR-NOT-02": "Mevcut g?zlem i?lenince kal?c? inbox olu?ur; owner okuyup acknowledge eder."
+    },
+    "acceptance_criteria": [
+      {
+        "id": "P8-AC-NOT-01",
+        "text": "Given ACTIVE watch ve ayn? currency FRESH COMPLETE fiyat <= kullan?c? e?i?i When mevcut g?zlem i?lenir Then bir inbox kayd? ve ayn? transaction i?inde outbox olu?ur.",
+        "operations": [
+          "createOpportunityWatch",
+          "listOpportunityNotifications"
+        ]
+      },
+      {
+        "id": "P8-AC-NOT-02",
+        "text": "Given ayn? watch/observation When worker tekrar ?al???r Then ikinci notification/outbox yoktur.",
+        "operations": [
+          "listOpportunityNotifications"
+        ]
+      },
+      {
+        "id": "P8-AC-NOT-03",
+        "text": "Given PAUSED/CANCELLED watch veya PARTIAL/eski/farkl? currency g?zlem When i?lenir Then bildirim olu?turulmaz.",
+        "operations": [
+          "updateOpportunityWatch"
+        ]
+      },
+      {
+        "id": "P8-AC-NOT-04",
+        "text": "Given ba?ka principal veya tekrar ack When inbox eri?ilir Then ba?ka owner 403; yetkili tekrar ack ilk read_at de?erini korur.",
+        "operations": [
+          "acknowledgeOpportunityNotification"
+        ]
+      }
+    ],
+    "activation_gate": "P8-NOT"
+  },
+  "note": "RULE/FR lists intentionally include full approved story context; each AC has individual operation/schema/gate mapping. No existing AC or ID redefined."
+}

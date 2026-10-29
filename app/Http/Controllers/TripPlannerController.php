@@ -41,9 +41,24 @@ final class TripPlannerController extends Controller
         private readonly WebPrincipalResolver $principals,
     ) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        return $this->plannerView();
+        $recentTrips = [];
+        foreach (array_slice($this->sessionTripRequests->newestFirst($request->session()), 0, 3) as $tripRequestId) {
+            $tripRequest = $this->tripRequests->get($tripRequestId);
+            if ($tripRequest === null) {
+                continue;
+            }
+
+            $recentTrips[] = [
+                'id' => $tripRequestId,
+                'origin' => $this->presentation->place($tripRequest->originPlace)['label'],
+                'destination' => $this->presentation->place($tripRequest->destinationPlace)['label'],
+                'status' => $tripRequest->status,
+            ];
+        }
+
+        return $this->plannerView(['recentTrips' => $recentTrips]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -52,9 +67,7 @@ final class TripPlannerController extends Controller
         // principal is unavailable and nothing is created (no ownerless records, no default or session-derived owner).
         $owner = $this->principals->resolve($request);
         if ($owner === null) {
-            return back()->withInput()->withErrors([
-                'trip_request' => 'Seyahat talebi oluşturmak için giriş yapmanız gerekiyor. Giriş yaptıktan sonra formu yeniden gönderin.',
-            ]);
+            return redirect()->route('auth.login', ['donus' => '/']);
         }
         // Flight locations (OD-022 v3.8): only a server-issued selection token yields kind/value/timezone and
         // aviation identity; browser-sent location fields are replaced by the token's server-normalized values.
@@ -223,6 +236,60 @@ final class TripPlannerController extends Controller
     }
 
     /**
+     * GND-001 safety slice: the owned TripRequest is real, but no ground provider contract is approved.
+     * Therefore no connection, duration or fare is synthesized; AC-GND-001-02 remains fail-closed.
+     */
+    public function groundConnections(Request $request, string $tripRequestId, TripRequestOwnership $ownership): View
+    {
+        $tripRequest = $this->tripRequests->get($tripRequestId);
+        abort_if($tripRequest === null, 404);
+
+        $access = $this->planAccess($request, $tripRequestId, $ownership);
+        abort_if($access === 'SIGNED_OUT', 401);
+        abort_if($access !== 'OWNER', 403);
+
+        return view('ground-connections', [
+            'tripRequestId' => $tripRequestId,
+            'origin' => $this->presentation->place($tripRequest->originPlace)['label'],
+            'destination' => $this->presentation->place($tripRequest->destinationPlace)['label'],
+            'groundStatus' => 'UNKNOWN',
+            'costCompleteness' => 'PARTIAL',
+            'unknownComponents' => [
+                'Kara bağlantısının ücreti ve süresi',
+                'İstasyona erişim ve bekleme süresi',
+                'Son kilometre ulaşımı',
+            ],
+        ]);
+    }
+
+    /**
+     * D2D-001 safety slice: comparison requires complete, verified first/last-mile and segment evidence.
+     * The active contract exposes none, so the owned trip context is shown without ranking or totals.
+     */
+    public function doorToDoorComparison(Request $request, string $tripRequestId, TripRequestOwnership $ownership): View
+    {
+        $tripRequest = $this->tripRequests->get($tripRequestId);
+        abort_if($tripRequest === null, 404);
+
+        $access = $this->planAccess($request, $tripRequestId, $ownership);
+        abort_if($access === 'SIGNED_OUT', 401);
+        abort_if($access !== 'OWNER', 403);
+
+        return view('door-to-door-comparison', [
+            'tripRequestId' => $tripRequestId,
+            'origin' => $this->presentation->place($tripRequest->originPlace)['label'],
+            'destination' => $this->presentation->place($tripRequest->destinationPlace)['label'],
+            'comparisonStatus' => 'NOT_AVAILABLE',
+            'missingEvidence' => [
+                'Başlangıç noktasından terminale doğrulanmış erişim süresi',
+                'Terminalden varış noktasına doğrulanmış erişim süresi',
+                'Timezone-normalize edilmiş segment zamanları',
+                'Doğrulanmış toplam maliyet bileşenleri',
+            ],
+        ]);
+    }
+
+    /**
      * "Seyahat Planım" for a stored TripRequest: TripRequest facts plus the v3.13 flight selection. TRIP-BLD-001
      * Trip/ItineraryDay/PlanRevision persistence does not exist yet, so stay, days and other costs stay empty/unknown.
      */
@@ -248,7 +315,7 @@ final class TripPlannerController extends Controller
             ]));
 
         $route = $this->presentation->place($tripRequest->originPlace)['label'].' → '.$this->presentation->place($tripRequest->destinationPlace)['label'];
-        [$flight, $flightCost, $flightCostNote] = $this->selectedFlight($flightSelections->find($tripRequestId), $route);
+        [$flight, $flightCost, $flightCostNote] = $this->selectedFlight($flightSelections->find($tripRequestId), $route, $tripRequestId);
         [$stay, $stayCost, $stayCostNote] = $this->selectedStay($accommodationSelections->find($tripRequestId));
 
         return view('trip-plan', ['plan' => [
@@ -277,17 +344,63 @@ final class TripPlannerController extends Controller
      * The owner's unscheduled FLEXIBLE POI items of the CURRENT PlanRevision (v3.16), read through TripPlanService (never
      * creates a Trip). version is null before the first revision; it is the OD-027 precondition of the web forms.
      *
-     * @return array{version: int|null, items: list<array{item_id: string, poi: array<string, mixed>}>, change: array<string, mixed>|null}
+     * v3.18 DAY-001 (OD-029 A): items are grouped under the derived day_frame days in their stored in-day order; items without
+     * a frame day are listed separately. Nothing about time, duration or feasibility is derived here.
+     *
+     * @return array{version: int|null, items: list<array<string, mixed>>, change: array<string, mixed>|null, frame: array<string, mixed>, days: list<array<string, mixed>>, unassigned: list<array<string, mixed>>}
      */
     private function poiPlan(TripPlanService $tripPlans, string $tripRequestId): array
     {
-        $revision = $tripPlans->read($tripRequestId)['body']['revision'];
-        $items = array_map(fn (array $item): array => ['item_id' => $item['item_id'], 'poi' => PoiPresentation::describe($item['poi_snapshot'])], $revision['items'] ?? []);
+        $body = $tripPlans->read($tripRequestId)['body'];
+        $revision = $body['revision'];
+        $frame = $body['day_frame'];
+        $items = array_map(fn (array $item): array => [
+            'item_id' => $item['item_id'],
+            'poi' => PoiPresentation::describe($item['poi_snapshot']),
+            'identity' => [
+                'poi_id' => (string) $item['poi_snapshot']['poi_id'],
+                'provider_id' => (string) $item['poi_snapshot']['provider_ref']['provider_id'],
+                'provider_place_id' => (string) $item['poi_snapshot']['provider_ref']['provider_place_id'],
+            ],
+            'date' => $item['day_assignment']['date'] ?? null,
+            'position' => $item['day_assignment']['position'] ?? null,
+            'url' => route('web-api.trip-plan.items.day-assignment', ['tripRequestId' => $tripRequestId, 'itemId' => $item['item_id']]),
+            'duration' => $item['planning_duration'] ?? null,
+            'duration_url' => route('web-api.trip-plan.items.duration', ['tripRequestId' => $tripRequestId, 'itemId' => $item['item_id']]),
+            'guide_url' => route('web-api.trip-plan.items.guide.show', ['tripRequestId' => $tripRequestId, 'itemId' => $item['item_id']]),
+            'guide_refresh_url' => route('web-api.trip-plan.items.guide.refresh', ['tripRequestId' => $tripRequestId, 'itemId' => $item['item_id']]),
+        ], $revision['items'] ?? []);
+
+        $days = [];
+        foreach ($frame['days'] as $index => $date) {
+            $dayItems = array_values(array_filter($items, fn (array $item): bool => $item['date'] === $date));
+            usort($dayItems, fn (array $a, array $b): int => $a['position'] <=> $b['position']);
+            $days[] = [
+                'date' => $date,
+                'label' => ($index + 1).'. gün · '.Carbon::parse($date)->locale('tr')->translatedFormat('j F Y, l'),
+                'short' => ($index + 1).'. gün ('.Carbon::parse($date)->locale('tr')->translatedFormat('j F').')',
+                'items' => array_map(fn (array $item): array => $item + ['count' => count($dayItems)], $dayItems),
+            ];
+        }
 
         return [
             'version' => $revision['version'] ?? null,
             'items' => $items,
             'change' => $revision === null ? null : $this->revisionChange($revision, $items),
+            'frame' => [
+                'available' => $frame['status'] === 'AVAILABLE',
+                'timezone' => $frame['iana_timezone'],
+                'message' => match ($frame['unavailable_reason']) {
+                    null => null,
+                    'NOT_ROUND_TRIP' => 'Plan günleri yalnız gidiş-dönüş seyahatlerde oluşturulur; tek yön talepte yerler bir güne atanamaz.',
+                    'DATES_NOT_EXACT' => 'Plan günleri yalnız kesin gidiş ve dönüş tarihlerinden oluşturulur; esnek tarihli talepte yerler bir güne atanamaz.',
+                    'LEGACY_DATE_MODEL' => 'Bu talep eski tarih biçimiyle kaydedildiği için plan günleri oluşturulamıyor.',
+                    'DESTINATION_TIMEZONE_UNKNOWN' => 'Varış noktasının saat dilimi bilinmediği için plan günleri oluşturulamıyor.',
+                    default => 'Seyahat talebinin zorunlu alanları eksik olduğu için plan günleri oluşturulamıyor.',
+                },
+            ],
+            'days' => $days,
+            'unassigned' => array_values(array_filter($items, fn (array $item): bool => $item['date'] === null || ! in_array($item['date'], $frame['days'], true))),
         ];
     }
 
@@ -297,8 +410,8 @@ final class TripPlannerController extends Controller
      * counted, not named. created_at is the stored UTC instant.
      *
      * @param  array<string, mixed>  $revision
-     * @param  list<array{item_id: string, poi: array<string, mixed>}>  $items
-     * @return array{version: int, base_version: int|null, created_at: string, added: list<string>, removed_count: int, reason: string}
+     * @param  list<array<string, mixed>>  $items
+     * @return array{version: int, base_version: int|null, created_at: string, added: list<string>, moved: list<string>, updated: list<string>, removed_count: int, reason: string}
      */
     private function revisionChange(array $revision, array $items): array
     {
@@ -310,6 +423,8 @@ final class TripPlannerController extends Controller
             'base_version' => $revision['change']['base_version'],
             'created_at' => Carbon::parse($revision['created_at'])->utc()->format('d.m.Y H:i').' UTC',
             'added' => array_values(array_map(fn (string $id): string => $names[$id] ?? 'Adı bilinmeyen yer', $revision['change']['added_item_ids'])),
+            'moved' => array_values(array_map(fn (string $id): string => $names[$id] ?? 'Adı bilinmeyen yer', $revision['change']['moved_item_ids'])),
+            'updated' => array_values(array_map(fn (string $id): string => $names[$id] ?? 'Adı bilinmeyen yer', $revision['change']['updated_item_ids'] ?? [])),
             'removed_count' => count($revision['change']['removed_item_ids']),
             // v3.16: RC-DECISION-TRANSITION-APPLIED is the user add/remove reason; any other stored code is shown unchanged.
             'reason' => $reason === TripPlanService::REASON_CODE ? 'Kullanıcı değişikliği' : $reason,
@@ -340,6 +455,7 @@ final class TripPlannerController extends Controller
         if ($selection === null) {
             return [null, null, null];
         }
+
         $offer = $selection['offer'];
         $date = fn (string $value): string => Carbon::parse($value)->locale('tr')->translatedFormat('j F');
         $detail = implode(' · ', array_filter([
@@ -361,7 +477,15 @@ final class TripPlannerController extends Controller
         }
         $verified = 'Son doğrulama: '.Carbon::parse($selection['verified_at'])->locale('tr')->translatedFormat('j F Y, H:i').' (UTC)';
         $price = $selection['verified_price'] === null ? null : $this->formatMoney($selection['verified_price']);
-        $base = ['name' => (string) $offer['property_name'], 'detail' => $detail, 'cancellation' => $cancellationText];
+        $base = [
+            'name' => (string) $offer['property_name'],
+            'detail' => $detail,
+            'cancellation' => $cancellationText,
+            'provider_id' => (string) $selection['provider_id'],
+            'offer_id' => (string) $selection['provider_offer_id'],
+            'property_id' => (string) $offer['property_id'],
+            'expires' => 'Teklif geçerlilik sonu: '.Carbon::parse($selection['expires_at'])->locale('tr')->translatedFormat('j F Y, H:i').' (UTC)',
+        ];
 
         return match ($selection['status']) {
             'CURRENT' => [
@@ -389,38 +513,62 @@ final class TripPlannerController extends Controller
      * @param  array<string, mixed>|null  $selection
      * @return array{0: array<string, string>|null, 1: string|null, 2: string|null}
      */
-    private function selectedFlight(?array $selection, string $route): array
+    private function selectedFlight(?array $selection, string $route, string $tripRequestId): array
     {
         if ($selection === null) {
             return [null, null, null];
         }
-        $segments = $selection['offer']['segments'] ?? [];
-        $first = $segments[0] ?? [];
+
+        $offer = $selection['offer'];
         $time = fn (array $point): ?string => isset($point['local_datetime'])
             ? Carbon::parse($point['local_datetime'])->locale('tr')->translatedFormat('j F, H:i')
             : null;
-        $stops = max(0, count($segments) - 1);
-        $detail = implode(' · ', array_filter([
-            $time($first['departure'] ?? []),
-            isset($first['operating_carrier'], $first['operating_flight_number']) ? $first['operating_carrier'].' '.$first['operating_flight_number'] : null,
-            $stops === 0 ? 'Aktarmasız' : "{$stops} aktarma",
-        ]));
+        $leg = function (array $segments) use ($time): string {
+            $first = $segments[0] ?? [];
+            $stops = max(0, count($segments) - 1);
+
+            return implode(' · ', array_filter([
+                $time($first['departure'] ?? []),
+                isset($first['operating_carrier'], $first['operating_flight_number']) ? $first['operating_carrier'].' '.$first['operating_flight_number'] : null,
+                $stops === 0 ? 'Aktarmasız' : "{$stops} aktarma",
+            ]));
+        };
+        // v3.23 OD-022: one offer, both directions in order; segments without a direction are a stored one-way offer (D2).
+        $segments = $offer['segments'] ?? [];
+        $inbound = array_values(array_filter($segments, fn (array $s): bool => ($s['direction'] ?? 'OUTBOUND') === 'INBOUND'));
+        $outbound = array_values(array_filter($segments, fn (array $s): bool => ($s['direction'] ?? 'OUTBOUND') !== 'INBOUND'));
+        $detail = $inbound === []
+            ? $leg($outbound)
+            : 'Gidiş: '.$leg($outbound).' / Dönüş: '.$leg($inbound);
         $verifiedAt = 'Son doğrulama: '.Carbon::parse($selection['verified_at'])->locale('tr')->translatedFormat('j F Y, H:i').' (UTC)';
         $price = $selection['verified_price'] === null ? null : $this->formatMoney($selection['verified_price']);
+        $manageUrl = route('flights.offer', [
+            'offerId' => (string) $selection['provider_offer_id'],
+            'talep' => $tripRequestId,
+        ]);
+        $base = [
+            'route' => $route,
+            'detail' => $detail,
+            'currency' => (string) ($selection['verified_price']['currency'] ?? ''),
+            'provider_id' => (string) $selection['provider_id'],
+            'offer_id' => (string) $selection['provider_offer_id'],
+            'expires' => 'Teklif geçerlilik sonu: '.Carbon::parse($selection['expires_at'])->locale('tr')->translatedFormat('j F Y, H:i').' (UTC)',
+            'manage_url' => $manageUrl,
+        ];
 
         return match ($selection['status']) {
             'CURRENT' => [
-                ['route' => $route, 'detail' => $detail, 'verified' => $verifiedAt, 'state' => 'current', 'state_label' => 'Doğrulandı'],
+                $base + ['verified' => $verifiedAt, 'state' => 'current', 'state_label' => 'Doğrulandı'],
                 $price,
                 $price === null ? 'Toplam fiyat doğrulanamadı' : null,
             ],
             'RECONFIRMATION_REQUIRED' => [
-                ['route' => $route, 'detail' => $detail, 'verified' => 'Fiyat veya koşullar değişti; uçuşun yeniden onaylanması gerekiyor.', 'state' => 'reconfirm', 'state_label' => 'Yeniden onay gerekiyor'],
+                $base + ['verified' => 'Fiyat veya koşullar değişti; uçuşun yeniden onaylanması gerekiyor.', 'state' => 'reconfirm', 'state_label' => 'Yeniden onay gerekiyor'],
                 null,
                 'Yeniden onay gerekiyor',
             ],
             default => [
-                ['route' => $route, 'detail' => $detail, 'verified' => 'Seçilen uçuş teklifinin süresi doldu; yeni bir arama yapın.', 'state' => 'expired', 'state_label' => 'Süresi doldu'],
+                $base + ['verified' => 'Seçilen uçuş teklifinin süresi doldu; yeni bir arama yapın.', 'state' => 'expired', 'state_label' => 'Süresi doldu', 'manage_url' => route('flights.search', ['tripRequestId' => $tripRequestId])],
                 null,
                 'Teklifin süresi doldu',
             ],

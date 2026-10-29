@@ -1,0 +1,246 @@
+{
+  "description": "SCH-FlightOffer 3.23 örnekleri. expect_v3_23: v3.23 şemasına göre beklenen sonuç; expect_v3_4: v3.4 şemasına göre. offer_patch.legacy_normalize = D2 okuma normalizasyonu.",
+  "cases": [
+    {
+      "name": "round_trip_istanbul_amsterdam_dst",
+      "note": "Gidiş 2026-10-24 (Avrupa yaz saati), dönüş 2026-10-31 (AB DST bitişi 2026-10-25 sonrası). Süreler UTC instant farkıdır.",
+      "expect_v3_4": "invalid",
+      "offer": {
+        "provider_offer_id": "off_rt_0001",
+        "journey_type": "ROUND_TRIP",
+        "state": "CURRENT",
+        "price": {
+          "value": {
+            "minor_units": 41000,
+            "currency": "EUR"
+          },
+          "certainty": "EXACT",
+          "completeness": "COMPLETE",
+          "known_lower_bound": null,
+          "unknown_components": [],
+          "fx_snapshot_id": null,
+          "input_refs": [
+            "duffel_flights:off_rt_0001"
+          ],
+          "calculation_version": "offer-price-1",
+          "calculated_at": "2026-10-20T09:00:00Z"
+        },
+        "expires_at": "2026-10-20T09:30:00Z",
+        "baggage": null,
+        "bookable": false,
+        "sources": [
+          {
+            "provider_id": "duffel_flights",
+            "provider_offer_id": "off_rt_0001",
+            "provider_role": "UNKNOWN",
+            "distribution_channel": "UNKNOWN",
+            "fetched_at": "2026-10-20T09:00:00Z",
+            "verified_at": null,
+            "expires_at": "2026-10-20T09:30:00Z",
+            "verification_status": "UNVERIFIED"
+          }
+        ],
+        "segments": [
+          {
+            "direction": "OUTBOUND",
+            "operating_carrier": "TK",
+            "operating_flight_number": "1951",
+            "marketing_flight_references": [],
+            "carrier_model": "UNKNOWN",
+            "departure": {
+              "local_datetime": "2026-10-24T07:30:00",
+              "iana_timezone": "Europe/Istanbul",
+              "utc_instant": "2026-10-24T04:30:00Z"
+            },
+            "arrival": {
+              "local_datetime": "2026-10-24T10:05:00",
+              "iana_timezone": "Europe/Amsterdam",
+              "utc_instant": "2026-10-24T08:05:00Z"
+            },
+            "duration_minutes": 215
+          },
+          {
+            "direction": "INBOUND",
+            "operating_carrier": "TK",
+            "operating_flight_number": "1952",
+            "marketing_flight_references": [],
+            "carrier_model": "UNKNOWN",
+            "departure": {
+              "local_datetime": "2026-10-31T11:20:00",
+              "iana_timezone": "Europe/Amsterdam",
+              "utc_instant": "2026-10-31T10:20:00Z"
+            },
+            "arrival": {
+              "local_datetime": "2026-10-31T16:45:00",
+              "iana_timezone": "Europe/Istanbul",
+              "utc_instant": "2026-10-31T13:45:00Z"
+            },
+            "duration_minutes": 205
+          }
+        ]
+      },
+      "expect_v3_23": "valid"
+    },
+    {
+      "name": "one_way_proposed",
+      "expect_v3_4": "invalid",
+      "offer": {
+        "provider_offer_id": "off_ow_0001",
+        "journey_type": "ONE_WAY",
+        "state": "CURRENT",
+        "price": {
+          "value": {
+            "minor_units": 12500,
+            "currency": "EUR"
+          },
+          "certainty": "EXACT",
+          "completeness": "COMPLETE",
+          "known_lower_bound": null,
+          "unknown_components": [],
+          "fx_snapshot_id": null,
+          "input_refs": [],
+          "calculation_version": "offer-price-1",
+          "calculated_at": "2026-10-20T09:00:00Z"
+        },
+        "expires_at": null,
+        "baggage": null,
+        "bookable": false,
+        "sources": [
+          {
+            "provider_id": "duffel_flights",
+            "provider_offer_id": "off_ow_0001",
+            "provider_role": "UNKNOWN",
+            "distribution_channel": "UNKNOWN",
+            "fetched_at": "2026-10-20T09:00:00Z",
+            "verified_at": null,
+            "expires_at": null,
+            "verification_status": "UNVERIFIED"
+          }
+        ],
+        "segments": [
+          {
+            "direction": "OUTBOUND",
+            "operating_carrier": "TK",
+            "operating_flight_number": "1951",
+            "marketing_flight_references": [],
+            "carrier_model": "UNKNOWN",
+            "departure": {
+              "local_datetime": "2026-10-24T07:30:00",
+              "iana_timezone": "Europe/Istanbul",
+              "utc_instant": "2026-10-24T04:30:00Z"
+            },
+            "arrival": {
+              "local_datetime": "2026-10-24T10:05:00",
+              "iana_timezone": "Europe/Amsterdam",
+              "utc_instant": "2026-10-24T08:05:00Z"
+            },
+            "duration_minutes": 215
+          }
+        ]
+      },
+      "expect_v3_23": "valid"
+    },
+    {
+      "name": "legacy_v3_4_one_way_snapshot",
+      "note": "Bugün saklanan seçim görüntüsü biçimi. Önerilen şemaya normalizasyonsuz uymaz; D2 normalizasyonu bir sonraki örnekte.",
+      "expect_v3_4": "valid",
+      "offer": {
+        "provider_offer_id": "off_ow_legacy",
+        "state": "CURRENT",
+        "price": {
+          "value": {
+            "minor_units": 12500,
+            "currency": "EUR"
+          },
+          "certainty": "EXACT",
+          "completeness": "COMPLETE",
+          "known_lower_bound": null,
+          "unknown_components": [],
+          "fx_snapshot_id": null,
+          "input_refs": [],
+          "calculation_version": "offer-price-1",
+          "calculated_at": "2026-10-20T09:00:00Z"
+        },
+        "expires_at": null,
+        "baggage": null,
+        "bookable": false,
+        "sources": [
+          {
+            "provider_id": "duffel_flights",
+            "provider_offer_id": "off_ow_legacy",
+            "provider_role": "UNKNOWN",
+            "distribution_channel": "UNKNOWN",
+            "fetched_at": "2026-10-20T09:00:00Z",
+            "verified_at": null,
+            "expires_at": null,
+            "verification_status": "UNVERIFIED"
+          }
+        ],
+        "segments": [
+          {
+            "operating_carrier": "TK",
+            "operating_flight_number": "1951",
+            "marketing_flight_references": [],
+            "carrier_model": "UNKNOWN",
+            "departure": {
+              "local_datetime": "2026-10-24T07:30:00",
+              "iana_timezone": "Europe/Istanbul",
+              "utc_instant": "2026-10-24T04:30:00Z"
+            },
+            "arrival": {
+              "local_datetime": "2026-10-24T10:05:00",
+              "iana_timezone": "Europe/Amsterdam",
+              "utc_instant": "2026-10-24T08:05:00Z"
+            },
+            "duration_minutes": 215
+          }
+        ]
+      },
+      "expect_v3_23": "invalid"
+    },
+    {
+      "name": "legacy_v3_4_one_way_normalized_by_D2",
+      "note": "D2: okuma anında journey_type=ONE_WAY, her segmentte direction=OUTBOUND eklenir; başka alan değişmez.",
+      "expect_v3_4": "invalid",
+      "offer_patch": {
+        "base": "legacy_v3_4_one_way_snapshot",
+        "legacy_normalize": true
+      },
+      "expect_v3_23": "valid"
+    },
+    {
+      "name": "round_trip_starting_inbound_rejected",
+      "expect_v3_4": "invalid",
+      "offer_patch": {
+        "base": "round_trip_istanbul_amsterdam_dst",
+        "segment_directions": [
+          "INBOUND",
+          "OUTBOUND"
+        ]
+      },
+      "expect_v3_23": "invalid"
+    },
+    {
+      "name": "round_trip_without_inbound_rejected",
+      "note": "İki bağımsız tek yön teklifin birleştirilmesi veya tek slice'lı sağlayıcı yanıtı ROUND_TRIP olarak etiketlenemez.",
+      "expect_v3_4": "invalid",
+      "offer_patch": {
+        "base": "round_trip_istanbul_amsterdam_dst",
+        "segment_directions": [
+          "OUTBOUND",
+          "OUTBOUND"
+        ]
+      },
+      "expect_v3_23": "invalid"
+    },
+    {
+      "name": "one_way_with_inbound_rejected",
+      "expect_v3_4": "invalid",
+      "offer_patch": {
+        "base": "round_trip_istanbul_amsterdam_dst",
+        "journey_type": "ONE_WAY"
+      },
+      "expect_v3_23": "invalid"
+    }
+  ]
+}

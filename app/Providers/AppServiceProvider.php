@@ -119,6 +119,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(OutboxWriter::class, DatabaseOutboxWriter::class);
         // v3.16 plan increment reads stored canonical POIs through the Poi module contract (no provider call).
         $this->app->bind(PoiReader::class, DatabasePoiRepository::class);
+        // v3.22 EVT-001: plan increment reads stored canonical events through the Event module contract (no provider call).
+        $this->app->bind(\App\Modules\Event\Contracts\EventReader::class, \App\Modules\Event\Infrastructure\Persistence\DatabaseEventRepository::class);
         $this->app->bind(TravelerRepository::class, DatabaseTravelerRepository::class);
         $this->app->bind(TravelerService::class, TravelerApplicationService::class);
         $this->app->bind(SensitiveDataAccessLog::class, LogSensitiveDataAccessLog::class);

@@ -1,0 +1,12 @@
+version: 3.20.0-proposal
+status: PROPOSED
+reason_records:
+  - {id: RC-PRC-COHORT-MAPPING-UNRESOLVED, kind: REASON, message_tr: 'Karşılaştırılabilir fiyat grubu henüz yapılandırılmadı.'}
+  - {id: RC-PRC-SUFFICIENCY-CONFIG-UNRESOLVED, kind: REASON, message_tr: 'Veri yeterliliği ölçütleri henüz yapılandırılmadı.'}
+  - {id: RC-PRC-OUTLIER-CONFIG-UNRESOLVED, kind: REASON, message_tr: 'Aykırı değer değerlendirme kuralı henüz yapılandırılmadı.'}
+  - {id: RC-PRC-HISTORY-INSUFFICIENT, kind: REASON, message_tr: 'Bu teklif için karşılaştırılabilir geçmiş fiyat verisi yetersiz.'}
+reused_error_records:
+  - {id: RC-AUTHN-REQUIRED, http_status: 401}
+  - {id: RC-AUTHZ-DENIED, http_status: 403}
+  - {id: RC-RESOURCE-NOT-FOUND, http_status: 404}
+note: Configuration and data insufficiency are safe 200 domain states, not transport errors.

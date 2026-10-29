@@ -82,15 +82,35 @@ final readonly class DatabaseTripPlanRepository
         return $this->revision((object) $row);
     }
 
-    /** @return array<string, mixed>|null */
+    /**
+     * v3.20 representation. Older revisions have no day_assignment/planning_duration or moved/updated lists; defaults are
+     * added only to the read model and stored immutable JSON is never rewritten.
+     *
+     * @return array<string, mixed>|null
+     */
     private function revision(?object $row): ?array
     {
-        return $row === null ? null : [
+        if ($row === null) {
+            return null;
+        }
+        $change = json_decode((string) $row->change_json, true, flags: JSON_THROW_ON_ERROR);
+
+        return [
             'trip_id' => (string) $row->trip_id,
             'version' => (int) $row->version,
             'status' => (string) $row->status,
-            'items' => json_decode((string) $row->items_json, true, flags: JSON_THROW_ON_ERROR),
-            'change' => json_decode((string) $row->change_json, true, flags: JSON_THROW_ON_ERROR),
+            'items' => array_map(
+                fn (array $item): array => $item + ['day_assignment' => null, 'planning_duration' => null],
+                json_decode((string) $row->items_json, true, flags: JSON_THROW_ON_ERROR),
+            ),
+            'change' => [
+                'base_version' => $change['base_version'],
+                'added_item_ids' => $change['added_item_ids'],
+                'removed_item_ids' => $change['removed_item_ids'],
+                'moved_item_ids' => $change['moved_item_ids'] ?? [],
+                'updated_item_ids' => $change['updated_item_ids'] ?? [],
+                'reason_code' => $change['reason_code'],
+            ],
             'created_at' => $this->timestamp($row->created_at),
         ];
     }

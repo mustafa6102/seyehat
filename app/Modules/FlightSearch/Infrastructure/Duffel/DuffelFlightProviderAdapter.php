@@ -26,8 +26,11 @@ use Throwable;
  * The only place that knows Duffel's request/response shapes; everything leaving this class is canonical.
  *
  * Deliberately narrow, because the SSOT leaves these OPEN (OD-020/OD-021 traveler passenger semantics,
- * OD-022 cabin class and flexible-date selection, canonical FlightOffer without slices):
- *  - only ONE_WAY criteria with an EXACT outbound date are sent; anything else fails before any HTTP call;
+ * OD-022 cabin class and flexible-date selection):
+ *  - ONE_WAY (one slice) and, since v3.23 OD-022 D1, ROUND_TRIP (one request with an outbound and a reversed inbound
+ *    slice) are sent only with EXACT dates; anything else fails before any HTTP call. Independent one-way searches
+ *    are never combined into a round trip;
+ *  - an offer whose slice count, order or endpoints do not match the request is dropped (OD-022 D4);
  *  - explicit all-adult search composition is safe; child/infant counts without age are rejected;
  *  - legacy count-only requests require the explicit deploy-time policy ALL_ADULT;
  *  - no cabin class is sent.
@@ -77,9 +80,10 @@ final class DuffelFlightProviderAdapter extends AbstractFlightProviderAdapter im
 
         $fetchedAt = new DateTimeImmutable('now', new DateTimeZone('UTC'));
         $maxOffers = max(1, (int) $this->config->get('services.duffel.flights.max_offers'));
+        $expected = $this->expectedEndpoints($criteria, $slices);
         $parsed = [];
         foreach ($offers as $offer) {
-            $canonical = is_array($offer) ? $this->parseOffer($offer, $fetchedAt) : null;
+            $canonical = is_array($offer) ? $this->parseOffer($offer, $fetchedAt, $expected) : null;
             if ($canonical !== null) {
                 $parsed[] = $canonical;
             }
@@ -124,9 +128,12 @@ final class DuffelFlightProviderAdapter extends AbstractFlightProviderAdapter im
     {
         $origin = $criteria->originPlace['aviation_identity']['code'] ?? null;
         $destination = $criteria->destinationPlace['aviation_identity']['code'] ?? null;
-        $date = $criteria->outboundDate['date'] ?? null;
-        if ($criteria->journeyType !== 'ONE_WAY' || ($criteria->outboundDate['type'] ?? null) !== 'EXACT'
-            || ! is_string($date) || preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) !== 1
+        $exactDate = fn (?array $date): ?string => ($date['type'] ?? null) === 'EXACT' && is_string($date['date'] ?? null)
+            && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date['date']) === 1 ? $date['date'] : null;
+        $outbound = $exactDate($criteria->outboundDate);
+        $inbound = $criteria->journeyType === 'ROUND_TRIP' ? $exactDate($criteria->returnDate) : null;
+        if (! in_array($criteria->journeyType, ['ONE_WAY', 'ROUND_TRIP'], true) || $outbound === null
+            || ($criteria->journeyType === 'ROUND_TRIP' && $inbound === null)
             || ! is_string($origin) || preg_match('/^[A-Z]{3}$/', $origin) !== 1
             || ! is_string($destination) || preg_match('/^[A-Z]{3}$/', $destination) !== 1
             || $criteria->travelerCount < 1 || $criteria->travelerCount > 9 || $this->passengers($criteria) === null) {
@@ -134,7 +141,49 @@ final class DuffelFlightProviderAdapter extends AbstractFlightProviderAdapter im
             return null;
         }
 
-        return [['origin' => $origin, 'destination' => $destination, 'departure_date' => $date]];
+        $slices = [['origin' => $origin, 'destination' => $destination, 'departure_date' => $outbound]];
+        if ($inbound !== null) {
+            // OD-022 D1: the return travels the same endpoints reversed, in the same provider request.
+            $slices[] = ['origin' => $destination, 'destination' => $origin, 'departure_date' => $inbound];
+        }
+
+        return $slices;
+    }
+
+    /**
+     * OD-022 D4: the endpoints each returned slice must have, in request order. An IATA_AIRPORT identity must match
+     * the airport code; an IATA_CITY identity must match the airport's city code (or the city itself).
+     *
+     * @param  list<array{origin: string, destination: string, departure_date: string}>  $slices
+     * @return list<array{origin: array{type: string, code: string}, destination: array{type: string, code: string}}>
+     */
+    private function expectedEndpoints(FlightSearchCriteria $criteria, array $slices): array
+    {
+        $origin = ['type' => (string) ($criteria->originPlace['aviation_identity']['type'] ?? ''), 'code' => $slices[0]['origin']];
+        $destination = ['type' => (string) ($criteria->destinationPlace['aviation_identity']['type'] ?? ''), 'code' => $slices[0]['destination']];
+        $expected = [['origin' => $origin, 'destination' => $destination]];
+        if (count($slices) === 2) {
+            $expected[] = ['origin' => $destination, 'destination' => $origin];
+        }
+
+        return $expected;
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $place  a Duffel segment origin/destination
+     * @param  array{type: string, code: string}  $identity
+     */
+    private function placeMatches(mixed $place, array $identity): bool
+    {
+        if (! is_array($place)) {
+            return false;
+        }
+
+        return match ($identity['type']) {
+            'IATA_AIRPORT' => ($place['iata_code'] ?? null) === $identity['code'],
+            'IATA_CITY' => ($place['iata_city_code'] ?? null) === $identity['code'] || ($place['iata_code'] ?? null) === $identity['code'],
+            default => false,
+        };
     }
 
     /** @return list<array{type:string}>|null */
@@ -196,7 +245,8 @@ final class DuffelFlightProviderAdapter extends AbstractFlightProviderAdapter im
             .'?'.http_build_query(['return_available_services' => 'false']);
         $body = $this->send($url, $timeoutMs, null);
         $offer = $body['data'] ?? null;
-        $parsed = is_array($offer) ? $this->parseOffer($offer, new DateTimeImmutable('now', new DateTimeZone('UTC'))) : null;
+        // No search criteria here: the reprice service compares the returned itinerary with the stored one (OD-022 D3).
+        $parsed = is_array($offer) ? $this->parseOffer($offer, new DateTimeImmutable('now', new DateTimeZone('UTC')), null) : null;
         if ($parsed === null || $parsed['id'] !== $providerOfferId) {
             throw ProviderFailure::unavailable();
         }
@@ -264,32 +314,47 @@ final class DuffelFlightProviderAdapter extends AbstractFlightProviderAdapter im
 
     /**
      * Provider offer -> canonical building blocks, or null when any authoritative field is missing or malformed
-     * (an incomplete offer is dropped, never completed with a guess).
+     * (an incomplete offer is dropped, never completed with a guess). Slice 0 is OUTBOUND and slice 1 INBOUND
+     * (OD-022 D1). With $expected (a search), the slice count must equal the request's and every slice must start and
+     * end at the requested endpoints (D4); without it (a reprice) one or two slices are accepted.
      *
      * @param  array<array-key, mixed>  $offer
+     * @param  list<array{origin: array{type: string, code: string}, destination: array{type: string, code: string}}>|null  $expected
      * @return array{id: string, fetched_at: DateTimeImmutable, expires_at: ?DateTimeImmutable, price: Money, baggage: BaggageAllowance, segments: list<FlightSegment>}|null
      */
-    private function parseOffer(array $offer, DateTimeImmutable $fetchedAt): ?array
+    private function parseOffer(array $offer, DateTimeImmutable $fetchedAt, ?array $expected): ?array
     {
         try {
             $id = $offer['id'] ?? null;
             $slices = $offer['slices'] ?? null;
-            if (! is_string($id) || preg_match('/^[A-Za-z0-9_]{1,64}$/', $id) !== 1 || ! is_array($slices) || count($slices) !== 1) {
+            if (! is_string($id) || preg_match('/^[A-Za-z0-9_]{1,64}$/', $id) !== 1 || ! is_array($slices) || ! array_is_list($slices)
+                || count($slices) < 1 || count($slices) > 2 || ($expected !== null && count($slices) !== count($expected))) {
                 return null;
             }
             $price = $this->money($offer['total_amount'] ?? null, $offer['total_currency'] ?? null);
-            $rawSegments = $slices[0]['segments'] ?? null;
-            if ($price === null || ! is_array($rawSegments) || $rawSegments === []) {
+            if ($price === null) {
                 return null;
             }
 
             $segments = [];
-            foreach ($rawSegments as $rawSegment) {
-                $segment = is_array($rawSegment) ? $this->segment($rawSegment) : null;
-                if ($segment === null) {
+            $rawSegments = [];
+            foreach ($slices as $index => $slice) {
+                $sliceSegments = is_array($slice) ? ($slice['segments'] ?? null) : null;
+                if (! is_array($sliceSegments) || $sliceSegments === [] || ! array_is_list($sliceSegments)) {
                     return null;
                 }
-                $segments[] = $segment;
+                if ($expected !== null && (! $this->placeMatches($sliceSegments[0]['origin'] ?? null, $expected[$index]['origin'])
+                    || ! $this->placeMatches($sliceSegments[array_key_last($sliceSegments)]['destination'] ?? null, $expected[$index]['destination']))) {
+                    return null;
+                }
+                foreach ($sliceSegments as $rawSegment) {
+                    $segment = is_array($rawSegment) ? $this->segment($rawSegment, $index === 0 ? 'OUTBOUND' : 'INBOUND') : null;
+                    if ($segment === null) {
+                        return null;
+                    }
+                    $segments[] = $segment;
+                    $rawSegments[] = $rawSegment;
+                }
             }
 
             return [
@@ -306,7 +371,7 @@ final class DuffelFlightProviderAdapter extends AbstractFlightProviderAdapter im
     }
 
     /** @param array<array-key, mixed> $segment */
-    private function segment(array $segment): ?FlightSegment
+    private function segment(array $segment, string $direction): ?FlightSegment
     {
         $operating = $segment['operating_carrier']['iata_code'] ?? null;
         $operatingNumber = $segment['operating_carrier_flight_number'] ?? null;
@@ -326,7 +391,7 @@ final class DuffelFlightProviderAdapter extends AbstractFlightProviderAdapter im
             ? [$marketing.$marketingNumber]
             : [];
 
-        return new FlightSegment($operating, $operatingNumber, $references, 'UNKNOWN', $departure, $arrival);
+        return new FlightSegment($operating, $operatingNumber, $references, 'UNKNOWN', $departure, $arrival, $direction);
     }
 
     private function segmentTime(mixed $local, mixed $zone): ?SegmentTime
@@ -380,8 +445,9 @@ final class DuffelFlightProviderAdapter extends AbstractFlightProviderAdapter im
     }
 
     /**
-     * Included baggage as stated by the provider for the first passenger on every segment. A bag is "included" only
-     * when every segment lists it; absence is never read as "not included" (unknown stays unknown). Duffel has no
+     * Included baggage as stated by the provider for the first passenger on every segment of every direction. A bag is
+     * "included" only when every segment lists it, so a round trip whose directions differ stays unknown (AC-FLT-005-04);
+     * absence is never read as "not included" (unknown stays unknown). Duffel has no
      * personal-item concept, and search results carry no baggage fees.
      *
      * @param  list<mixed>  $rawSegments

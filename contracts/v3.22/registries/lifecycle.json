@@ -1,0 +1,32 @@
+{
+  "version": "3.22.0",
+  "inherits": "../../registries/lifecycle.yaml",
+  "records": [
+    {
+      "id": "LC-OPPORTUNITY-EVALUATION",
+      "kind": "COMPUTED_READ_MODEL",
+      "states": [
+        "MATCH",
+        "NO_MATCH",
+        "NOT_VERIFIED",
+        "CURRENCY_MISMATCH"
+      ],
+      "storage": "none",
+      "rules": [
+        "CURRENT selection and non-null verified_price plus valid verification/expiry window required",
+        "Status RECONFIRMATION_REQUIRED/EXPIRED -> NOT_VERIFIED",
+        "Existing FlightSelectionReader expiry semantics unchanged",
+        "No notification delivered state"
+      ]
+    },
+    {
+      "id": "LC-DECISION-SUPPORT",
+      "kind": "STATELESS_EVALUATION",
+      "storage": "none",
+      "plan_mutation": false,
+      "outbox": false,
+      "idempotency": "No mutation/replay store; deterministic for identical inputs and asOf",
+      "audit": "Outputs retain source references, calculation/configuration version and evaluation time where decision is temporal; persistent decision audit requires separately approved storage."
+    }
+  ]
+}

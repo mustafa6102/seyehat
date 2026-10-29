@@ -177,20 +177,29 @@ final class BoundedCandidateGeneratorTest extends TestCase
     public function the_shipped_budget_config_defines_no_value_and_incomplete_entries_fail_closed(): void
     {
         $shipped = require dirname(__DIR__, 2).'/config/search_budget.php';
-        self::assertSame(['providers' => []], $shipped);
+        // v3.22 ADR-006 (PARTIALLY_RESOLVED): only the versioned product ceiling is shipped; no provider quota exists.
+        self::assertSame(['product_cap' => 4, 'product_cap_version' => 'rcg-product-cap-3.22', 'providers' => []], $shipped);
         self::assertNull((new ConfigSearchBudgetPolicy(new Repository(['search_budget' => $shipped])))->limit('duffel_flights', 'search'));
 
-        $policy = new ConfigSearchBudgetPolicy(new Repository(['search_budget' => ['providers' => [
+        $providers = [
             'complete' => ['search' => ['version' => 'v-test', 'max_requests' => 4]],
+            'above-cap' => ['search' => ['version' => 'v-test', 'max_requests' => 9]],
             'no-version' => ['search' => ['max_requests' => 4]],
             'zero' => ['search' => ['version' => 'v-test', 'max_requests' => 0]],
             'numeric-string' => ['search' => ['version' => 'v-test', 'max_requests' => '4']],
-        ]]]));
+        ];
+        $policy = new ConfigSearchBudgetPolicy(new Repository(['search_budget' => [
+            'product_cap' => 4, 'product_cap_version' => 'cap-test', 'providers' => $providers,
+        ]]));
 
-        self::assertEquals(new SearchBudgetLimit(4, 'v-test'), $policy->limit('complete', 'search'));
+        // ADR-006 v3.22: min(provider-approved budget, product cap), both versions recorded.
+        self::assertEquals(new SearchBudgetLimit(4, 'v-test|cap-test'), $policy->limit('complete', 'search'));
+        self::assertEquals(new SearchBudgetLimit(4, 'v-test|cap-test'), $policy->limit('above-cap', 'search'));
         foreach ([['complete', 'reprice'], ['no-version', 'search'], ['zero', 'search'], ['numeric-string', 'search'], ['absent', 'search']] as [$provider, $operation]) {
             self::assertNull($policy->limit($provider, $operation));
         }
+        // Without a versioned product cap even a complete provider entry fails closed.
+        self::assertNull((new ConfigSearchBudgetPolicy(new Repository(['search_budget' => ['providers' => $providers]])))->limit('complete', 'search'));
     }
 
     #[Test]

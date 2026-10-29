@@ -1,0 +1,2477 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Backend eight draft 1 schema catalog",
+  "x-status": "PROPOSED_NON_NORMATIVE",
+  "$defs": {
+    "Money": {
+      "$ref": "../../../contracts/schemas/Money.schema.json",
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-Money-P8"
+    },
+    "Error": {
+      "$ref": "../../../contracts/schemas/ErrorEnvelope.schema.json",
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-Error-P8"
+    },
+    "TripPlan": {
+      "title": "TripPlan",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trip_request_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trip": {
+          "oneOf": [
+            {
+              "$ref": "../../../contracts/v3.16/schemas/Trip.schema.json"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "revision": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PlanRevision"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "day_frame": {
+          "$ref": "../../../contracts/v3.18/schemas/TripPlan.schema.json#/$defs/DayFrame"
+        }
+      },
+      "required": [
+        "trip_request_id",
+        "trip",
+        "revision",
+        "day_frame"
+      ],
+      "x-contract-id": "SCH-TripPlan-P8",
+      "x-version": "backend-eight-draft-1",
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-requirement-refs": [
+        "TRIP-BLD-001",
+        "DAY-001",
+        "RULE-DAY-001-01",
+        "AC-DAY-001-01"
+      ],
+      "x-open-decisions": [
+        "ADR-010",
+        "OD-031",
+        "OD-032",
+        "OD-033",
+        "OD-034",
+        "OD-035"
+      ]
+    },
+    "Principal": {
+      "$ref": "../../../contracts/v3.16/schemas/PrincipalRef.schema.json",
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-Principal-P8"
+    },
+    "PoiLocation": {
+      "$ref": "../../../contracts/v3.15/schemas/Poi.schema.json#/properties/location",
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-PoiLocation-P8"
+    },
+    "OpeningHours": {
+      "$ref": "../../../contracts/v3.15/schemas/Poi.schema.json#/properties/opening_hours",
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-OpeningHours-P8"
+    },
+    "Booking": {
+      "$ref": "../../../contracts/v3.15/schemas/Poi.schema.json#/properties/booking",
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-Booking-P8"
+    },
+    "BoolFact": {
+      "allOf": [
+        {
+          "$ref": "../../../contracts/schemas/Sourced.schema.json"
+        },
+        {
+          "properties": {
+            "value": {
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-BoolFact-P8"
+    },
+    "MinutesFact": {
+      "allOf": [
+        {
+          "$ref": "../../../contracts/schemas/Sourced.schema.json"
+        },
+        {
+          "properties": {
+            "value": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-MinutesFact-P8"
+    },
+    "InstantFact": {
+      "allOf": [
+        {
+          "$ref": "../../../contracts/schemas/Sourced.schema.json"
+        },
+        {
+          "properties": {
+            "value": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-InstantFact-P8"
+    },
+    "LinkFact": {
+      "allOf": [
+        {
+          "$ref": "../../../contracts/schemas/Sourced.schema.json"
+        },
+        {
+          "properties": {
+            "value": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "format": "uri",
+                  "pattern": "^https://"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-LinkFact-P8"
+    },
+    "TextFact": {
+      "allOf": [
+        {
+          "$ref": "../../../contracts/schemas/Sourced.schema.json"
+        },
+        {
+          "properties": {
+            "value": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-TextFact-P8"
+    },
+    "DerivedMinutes": {
+      "allOf": [
+        {
+          "$ref": "../../../contracts/schemas/Derived.schema.json"
+        },
+        {
+          "properties": {
+            "value": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-DerivedMinutes-P8"
+    },
+    "EvidenceSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "configuration_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "calculation_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "calculated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "evidence_refs",
+        "configuration_versions",
+        "calculation_version",
+        "calculated_at",
+        "expires_at"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-EvidenceSet-P8"
+    },
+    "TravelerInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "age_category": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nationalities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "travel_documents": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../contracts/schemas/TravelerDocument.schema.json"
+          }
+        },
+        "held_visas": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../contracts/v3.3/schemas/Visa.schema.json"
+          }
+        },
+        "residence_permits": {
+          "type": "array",
+          "items": {
+            "$ref": "../../../contracts/v3.3/schemas/ResidencePermit.schema.json"
+          }
+        }
+      },
+      "required": [
+        "age_category",
+        "nationalities",
+        "travel_documents",
+        "held_visas",
+        "residence_permits"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-TravelerInput-P8"
+    },
+    "TravelerProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trip_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "profile": {
+          "$ref": "#/$defs/TravelerInput"
+        }
+      },
+      "required": [
+        "id",
+        "trip_id",
+        "version",
+        "profile"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-TravelerProfile-P8"
+    },
+    "TravelerList": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "travelers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TravelerProfile"
+          }
+        }
+      },
+      "required": [
+        "travelers"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-TravelerList-P8"
+    },
+    "TravelerReadiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "traveler_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "NEEDS_VERIFICATION",
+            "INPUTS_COMPLETE"
+          ]
+        },
+        "missing_fields": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "requirement_profile_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "traveler_id",
+        "status",
+        "missing_fields",
+        "requirement_profile_version"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-TravelerReadiness-P8"
+    },
+    "TravelerBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "binding_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "traveler_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "PENDING",
+            "ACCEPTED",
+            "REVOKED"
+          ]
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "binding_id",
+        "traveler_id",
+        "status",
+        "version"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-TravelerBinding-P8"
+    },
+    "InviteCreate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "traveler_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "traveler_id"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-InviteCreate-P8"
+    },
+    "InviteResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "binding": {
+          "$ref": "#/$defs/TravelerBinding"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "binding",
+        "expires_at"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-InviteResult-P8",
+      "description": "Token is delivered only through the approved identity-proof channel. Never returned in API or idempotency response."
+    },
+    "InviteAccept": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_token": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "acceptance_token"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-InviteAccept-P8"
+    },
+    "GrantInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "actions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "READ_PROFILE",
+              "UPDATE_PROFILE",
+              "READ_DOCUMENTS",
+              "UPDATE_DOCUMENTS"
+            ]
+          }
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "grantee": {
+          "const": "TRIP_OWNER"
+        }
+      },
+      "required": [
+        "actions",
+        "expires_at",
+        "grantee"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-GrantInput-P8"
+    },
+    "Grant": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "grant_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "traveler_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "ACTIVE",
+            "REVOKED",
+            "EXPIRED"
+          ]
+        }
+      },
+      "required": [
+        "grant_id",
+        "traveler_id",
+        "version",
+        "actions",
+        "expires_at",
+        "status"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-Grant-P8"
+    },
+    "Empty": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {},
+      "required": [],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-Empty-P8"
+    },
+    "JobInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trip_request_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "trip_request_id"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-JobInput-P8"
+    },
+    "JobAccepted": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "QUEUED",
+            "RUNNING",
+            "SUCCEEDED",
+            "PARTIAL",
+            "FAILED"
+          ]
+        },
+        "poll_url": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "job_id",
+        "status",
+        "poll_url"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-JobAccepted-P8"
+    },
+    "CandidateLeg": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "leg_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "FLIGHT",
+            "GROUND"
+          ]
+        },
+        "origin_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "destination_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "offer_ref": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "leg_id",
+        "mode",
+        "origin_id",
+        "destination_id",
+        "offer_ref",
+        "evidence_refs"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-CandidateLeg-P8"
+    },
+    "PruningResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "check": {
+          "type": "string",
+          "enum": [
+            "SEED",
+            "CONNECTIVITY",
+            "DETOUR",
+            "PROVIDER_COVERAGE",
+            "SAVINGS",
+            "COMPLIANCE"
+          ]
+        },
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "PASS",
+            "FAIL",
+            "UNKNOWN"
+          ]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "check",
+        "verdict",
+        "evidence_refs",
+        "reason_codes"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-PruningResult-P8"
+    },
+    "Candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "DIRECT",
+            "ONE_HUB",
+            "ALTERNATIVE_ARRIVAL"
+          ]
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "OUTBOUND",
+            "RETURN"
+          ]
+        },
+        "legs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CandidateLeg"
+          }
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "PRUNED",
+            "UNRESOLVED",
+            "BUDGET_UNCONFIGURED",
+            "BUDGET_EXHAUSTED",
+            "QUERIED"
+          ]
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PruningResult"
+          }
+        }
+      },
+      "required": [
+        "candidate_id",
+        "kind",
+        "direction",
+        "legs",
+        "outcome",
+        "checks"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-Candidate-P8"
+    },
+    "BudgetUsage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "provider_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "limit": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attempted_requests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reserved_requests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "configuration_version": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "provider_id",
+        "operation",
+        "limit",
+        "attempted_requests",
+        "reserved_requests",
+        "configuration_version"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-BudgetUsage-P8"
+    },
+    "CandidateResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "QUEUED",
+            "RUNNING",
+            "SUCCEEDED",
+            "PARTIAL",
+            "FAILED"
+          ]
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          }
+        },
+        "budget_usage": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BudgetUsage"
+          }
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "COMPLETE",
+            "PARTIAL"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "job_id",
+        "status",
+        "candidates",
+        "budget_usage",
+        "completeness",
+        "reason_codes"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-CandidateResult-P8"
+    },
+    "TimelineStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "connection_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "DEPLANE",
+            "IMMIGRATION",
+            "BAGGAGE_RECLAIM",
+            "CHECK_IN",
+            "SECURITY",
+            "TERMINAL_TRANSFER",
+            "AIRPORT_TRANSFER"
+          ]
+        },
+        "required": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BoolFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "starts_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/InstantFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "duration": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/MinutesFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "connection_id",
+        "kind",
+        "required",
+        "starts_at",
+        "duration",
+        "evidence_refs"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-TimelineStep-P8"
+    },
+    "RiskConnection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "connection_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "protection": {
+          "type": "string",
+          "enum": [
+            "NOT_APPLICABLE",
+            "PROTECTED",
+            "PARTIALLY_PROTECTED",
+            "UNPROTECTED",
+            "UNKNOWN"
+          ]
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": [
+            "LOW",
+            "MEDIUM",
+            "HIGH",
+            "UNKNOWN"
+          ]
+        },
+        "decision_cap": {
+          "type": "string",
+          "enum": [
+            "SHOWN_WITH_WARNING",
+            "REJECTED",
+            "NO_ADDITIONAL_RESTRICTION"
+          ]
+        },
+        "timeline": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TimelineStep"
+          }
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "audit": {
+          "$ref": "#/$defs/EvidenceSet"
+        }
+      },
+      "required": [
+        "connection_id",
+        "protection",
+        "risk_level",
+        "decision_cap",
+        "timeline",
+        "reason_codes",
+        "audit"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-RiskConnection-P8"
+    },
+    "RiskAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "connections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RiskConnection"
+          }
+        }
+      },
+      "required": [
+        "candidate_id",
+        "connections"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-RiskAssessment-P8"
+    },
+    "TransferComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": [
+            "MCT",
+            "DEPLANE",
+            "IMMIGRATION",
+            "RECLAIM",
+            "GROUND",
+            "CHECK_IN_CUTOFF",
+            "SECURITY",
+            "BUFFER"
+          ]
+        },
+        "required": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BoolFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "included_in_mct": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BoolFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "duration": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/MinutesFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "required",
+        "included_in_mct",
+        "duration"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-TransferComponent-P8"
+    },
+    "TransferConnection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "connection_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "FEASIBLE",
+            "INFEASIBLE",
+            "UNKNOWN"
+          ]
+        },
+        "available_minutes": {
+          "$ref": "#/$defs/DerivedMinutes"
+        },
+        "required_minutes": {
+          "$ref": "#/$defs/DerivedMinutes"
+        },
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TransferComponent"
+          }
+        },
+        "fallback_used": {
+          "type": "boolean"
+        },
+        "decision_cap": {
+          "type": "string",
+          "enum": [
+            "SHOWN_WITH_WARNING",
+            "REJECTED",
+            "NO_ADDITIONAL_RESTRICTION"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "audit": {
+          "$ref": "#/$defs/EvidenceSet"
+        }
+      },
+      "required": [
+        "connection_id",
+        "status",
+        "available_minutes",
+        "required_minutes",
+        "components",
+        "fallback_used",
+        "decision_cap",
+        "reason_codes",
+        "audit"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-TransferConnection-P8"
+    },
+    "TransferAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "connections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TransferConnection"
+          }
+        }
+      },
+      "required": [
+        "candidate_id",
+        "connections"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-TransferAssessment-P8"
+    },
+    "PriceSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "snapshot_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trip_request_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "offer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_operation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_observation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cohort_key": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cohort_mapping_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "price": {
+          "$ref": "#/$defs/Money"
+        },
+        "source_reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fetched_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "captured_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "snapshot_id",
+        "trip_request_id",
+        "offer_id",
+        "source_operation_id",
+        "source_observation_id",
+        "cohort_key",
+        "cohort_mapping_version",
+        "price",
+        "source_reference",
+        "fetched_at",
+        "captured_at",
+        "expires_at"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-PriceSnapshot-P8"
+    },
+    "PriceEvaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "CONFIGURATION_UNRESOLVED",
+            "NON_COMPARABLE",
+            "INSUFFICIENT_DATA",
+            "AVAILABLE"
+          ]
+        },
+        "snapshot_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "excluded_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "included_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "observed_from": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observed_to": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "observed_minimum": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "observed_maximum": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Money"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "audit": {
+          "$ref": "#/$defs/EvidenceSet"
+        }
+      },
+      "required": [
+        "status",
+        "snapshot_count",
+        "excluded_count",
+        "included_count",
+        "observed_from",
+        "observed_to",
+        "sources",
+        "observed_minimum",
+        "observed_maximum",
+        "reason_codes",
+        "audit"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-PriceEvaluation-P8",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "CONFIGURATION_UNRESOLVED",
+                  "NON_COMPARABLE",
+                  "INSUFFICIENT_DATA"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "observed_minimum": {
+                "type": "null"
+              },
+              "observed_maximum": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "WatchInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trip_request_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        },
+        "threshold": {
+          "$ref": "#/$defs/Money"
+        }
+      },
+      "required": [
+        "trip_request_id",
+        "currency",
+        "threshold"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-WatchInput-P8"
+    },
+    "Watch": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "watch_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trip_request_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "ACTIVE",
+            "PAUSED",
+            "CANCELLED"
+          ]
+        },
+        "currency": {
+          "type": "string",
+          "minLength": 1
+        },
+        "threshold": {
+          "$ref": "#/$defs/Money"
+        }
+      },
+      "required": [
+        "watch_id",
+        "trip_request_id",
+        "version",
+        "status",
+        "currency",
+        "threshold"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-Watch-P8"
+    },
+    "WatchUpdate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "ACTIVE",
+            "PAUSED",
+            "CANCELLED"
+          ]
+        },
+        "threshold": {
+          "$ref": "#/$defs/Money"
+        }
+      },
+      "required": [
+        "status",
+        "threshold"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-WatchUpdate-P8"
+    },
+    "Notification": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "notification_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "watch_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "offer_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "observed_price": {
+          "$ref": "#/$defs/Money"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "read_at": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actionable": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "notification_id",
+        "watch_id",
+        "offer_id",
+        "observed_price",
+        "observed_at",
+        "expires_at",
+        "read_at",
+        "actionable"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-Notification-P8"
+    },
+    "NotificationList": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "notifications": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Notification"
+          }
+        },
+        "next_cursor": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "notifications",
+        "next_cursor"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-NotificationList-P8"
+    },
+    "FoodPrice": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "EXACT",
+            "RANGE",
+            "PRICE_LEVEL",
+            "UNKNOWN"
+          ]
+        },
+        "amount": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/MoneyFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "minimum": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/MoneyFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "maximum": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/MoneyFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "price_level": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/TextFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "kind",
+        "amount",
+        "minimum",
+        "maximum",
+        "price_level"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-FoodPrice-P8",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "EXACT"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "minimum": {
+                "type": "null"
+              },
+              "maximum": {
+                "type": "null"
+              },
+              "price_level": {
+                "type": "null"
+              },
+              "amount": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "RANGE"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "amount": {
+                "type": "null"
+              },
+              "price_level": {
+                "type": "null"
+              },
+              "minimum": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "maximum": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "PRICE_LEVEL"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "amount": {
+                "type": "null"
+              },
+              "minimum": {
+                "type": "null"
+              },
+              "maximum": {
+                "type": "null"
+              },
+              "price_level": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "UNKNOWN"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "amount": {
+                "type": "null"
+              },
+              "minimum": {
+                "type": "null"
+              },
+              "maximum": {
+                "type": "null"
+              },
+              "price_level": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "FoodPlace": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "food_place_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provider_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provider_place_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "location": {
+          "$ref": "#/$defs/PoiLocation"
+        },
+        "opening_hours": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/OpeningHours"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cuisines": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "price": {
+          "$ref": "#/$defs/FoodPrice"
+        },
+        "booking": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Booking"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reservation_link": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/LinkFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fetched_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reservation_actionable": {
+          "type": "boolean",
+          "readOnly": true
+        }
+      },
+      "required": [
+        "food_place_id",
+        "provider_id",
+        "provider_place_id",
+        "name",
+        "location",
+        "opening_hours",
+        "cuisines",
+        "price",
+        "booking",
+        "reservation_link",
+        "source_reference",
+        "fetched_at",
+        "reservation_actionable"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-FoodPlace-P8"
+    },
+    "FoodSearchInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trip_request_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "window_start": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "window_end": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "iana_timezone": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cuisines": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "trip_request_id",
+        "window_start",
+        "window_end",
+        "iana_timezone",
+        "cuisines"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-FoodSearchInput-P8"
+    },
+    "FoodResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "QUEUED",
+            "RUNNING",
+            "SUCCEEDED",
+            "PARTIAL",
+            "FAILED"
+          ]
+        },
+        "places": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FoodPlace"
+          }
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "COMPLETE",
+            "PARTIAL"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "job_id",
+        "status",
+        "places",
+        "completeness",
+        "reason_codes"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-FoodResult-P8"
+    },
+    "FoodSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "food_place_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_verified_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "food_place_id",
+        "expected_verified_at"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-FoodSelection-P8"
+    },
+    "FoodAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "food_place_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "window_status": {
+          "type": "string",
+          "enum": [
+            "OPEN",
+            "CLOSED",
+            "UNKNOWN"
+          ]
+        },
+        "extra_minutes": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DerivedMinutes"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "extra_cost": {
+          "oneOf": [
+            {
+              "$ref": "../../../contracts/schemas/CostBreakdown.schema.json"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "audit": {
+          "$ref": "#/$defs/EvidenceSet"
+        }
+      },
+      "required": [
+        "food_place_id",
+        "window_status",
+        "extra_minutes",
+        "extra_cost",
+        "audit"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-FoodAssessment-P8"
+    },
+    "Event": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provider_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provider_event_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "venue": {
+          "$ref": "#/$defs/PoiLocation"
+        },
+        "starts_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/InstantFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ends_at": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/InstantFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "iana_timezone": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "oneOf": [
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/TextFact"
+                },
+                {
+                  "properties": {
+                    "value": {
+                      "enum": [
+                        "SCHEDULED",
+                        "CANCELLED",
+                        "POSTPONED",
+                        "UNKNOWN"
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ticket_status": {
+          "oneOf": [
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/TextFact"
+                },
+                {
+                  "properties": {
+                    "value": {
+                      "enum": [
+                        "AVAILABLE",
+                        "SOLD_OUT",
+                        "UNKNOWN"
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ticket_link": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/LinkFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "price": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/MoneyFact"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fetched_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ticket_actionable": {
+          "type": "boolean",
+          "readOnly": true
+        }
+      },
+      "required": [
+        "event_id",
+        "provider_id",
+        "provider_event_id",
+        "name",
+        "venue",
+        "starts_at",
+        "ends_at",
+        "iana_timezone",
+        "status",
+        "ticket_status",
+        "ticket_link",
+        "price",
+        "source_reference",
+        "fetched_at",
+        "ticket_actionable"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-Event-P8"
+    },
+    "EventResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "QUEUED",
+            "RUNNING",
+            "SUCCEEDED",
+            "PARTIAL",
+            "FAILED"
+          ]
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Event"
+          }
+        },
+        "completeness": {
+          "type": "string",
+          "enum": [
+            "COMPLETE",
+            "PARTIAL"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "job_id",
+        "status",
+        "events",
+        "completeness",
+        "reason_codes"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-EventResult-P8"
+    },
+    "EventSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "event_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expected_verified_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "event_id",
+        "expected_verified_at"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-EventSelection-P8"
+    },
+    "FoodItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "item_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "item_type": {
+          "const": "FOOD"
+        },
+        "constraint_type": {
+          "const": "FLEXIBLE"
+        },
+        "food_snapshot": {
+          "$ref": "#/$defs/FoodPlace"
+        },
+        "day_assignment": {
+          "$ref": "../../../contracts/v3.20/schemas/ItineraryItem.schema.json#/properties/day_assignment"
+        },
+        "planning_duration": {
+          "$ref": "../../../contracts/v3.20/schemas/ItineraryItem.schema.json#/properties/planning_duration"
+        }
+      },
+      "required": [
+        "item_id",
+        "item_type",
+        "constraint_type",
+        "food_snapshot",
+        "day_assignment",
+        "planning_duration"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-FoodItem-P8"
+    },
+    "EventItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "item_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "item_type": {
+          "const": "EVENT"
+        },
+        "constraint_type": {
+          "const": "FIXED"
+        },
+        "event_snapshot": {
+          "$ref": "#/$defs/Event"
+        },
+        "fixed_start": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "fixed_end": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "iana_timezone": {
+          "type": "string",
+          "minLength": 1
+        },
+        "feasibility_status": {
+          "const": "NOT_EVALUATED"
+        }
+      },
+      "required": [
+        "item_id",
+        "item_type",
+        "constraint_type",
+        "event_snapshot",
+        "fixed_start",
+        "fixed_end",
+        "iana_timezone",
+        "feasibility_status"
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-EventItem-P8"
+    },
+    "MoneyFact": {
+      "allOf": [
+        {
+          "$ref": "../../../contracts/schemas/Sourced.schema.json"
+        },
+        {
+          "properties": {
+            "value": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/Money"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-MoneyFact-P8"
+    },
+    "PlanItem": {
+      "oneOf": [
+        {
+          "$ref": "../../../contracts/v3.20/schemas/ItineraryItem.schema.json"
+        },
+        {
+          "$ref": "#/$defs/FoodItem"
+        },
+        {
+          "$ref": "#/$defs/EventItem"
+        }
+      ],
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-contract-id": "SCH-PlanItem-P8"
+    },
+    "PlanRevision": {
+      "title": "PlanRevision",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "trip_id": {
+          "type": "string",
+          "minLength": 1,
+          "readOnly": true
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "readOnly": true
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "CURRENT",
+            "SUPERSEDED"
+          ],
+          "x-lifecycle": "PlanRevisionStatus",
+          "readOnly": true
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PlanItem"
+          }
+        },
+        "change": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "base_version": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1
+            },
+            "added_item_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "removed_item_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "moved_item_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "updated_item_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Items whose planning_duration was edited. Older revisions read as an empty list."
+            },
+            "reason_code": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "base_version",
+            "added_item_ids",
+            "removed_item_ids",
+            "moved_item_ids",
+            "updated_item_ids",
+            "reason_code"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "readOnly": true
+        }
+      },
+      "required": [
+        "trip_id",
+        "version",
+        "status",
+        "items",
+        "change",
+        "created_at"
+      ],
+      "x-contract-id": "SCH-PlanRevision-P8",
+      "x-version": "backend-eight-draft-1",
+      "x-status": "PROPOSED_NON_NORMATIVE",
+      "x-requirement-refs": [
+        "TRIP-BLD-001",
+        "FR-TRIP-BLD-001-02",
+        "AC-TRIP-BLD-001-02",
+        "DAY-001",
+        "RULE-DAY-001-01",
+        "AC-DAY-001-01",
+        "PLT-CONC-001",
+        "NFR-CONC-001"
+      ],
+      "x-open-decisions": [
+        "ADR-010",
+        "OD-013",
+        "ADR-008"
+      ]
+    }
+  }
+}

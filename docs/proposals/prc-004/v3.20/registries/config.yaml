@@ -1,0 +1,27 @@
+version: 3.20.0-proposal
+status: PROPOSED
+records:
+  - id: CFG-PRC-COHORT-MAPPING-PROPOSED
+    type: exact_canonical_mapping
+    value: OPEN
+    version: OPEN
+    owner: OPEN
+    fail_closed_when_missing: true
+    refs: [RULE-PRC-004-03, AC-PRC-004-01, AC-PRC-004-02]
+  - id: CFG-PRC-SUFFICIENCY-PROPOSED
+    type: policy
+    minimum_snapshot_count: OPEN
+    minimum_observation_span_value: OPEN
+    minimum_observation_span_unit: OPEN
+    version: OPEN
+    owner: OPEN
+    fail_closed_when_missing: true
+    refs: [RULE-PRC-004-01, RULE-PRC-004-03, AC-PRC-004-01, AC-PRC-004-02, NFR-AUD-001]
+  - id: CFG-PRC-OUTLIER-PROPOSED
+    type: policy
+    method: OPEN
+    parameters: OPEN
+    version: OPEN
+    owner: OPEN
+    fail_closed_when_missing: true
+    refs: [RULE-PRC-004-02, RULE-PRC-004-03, AC-PRC-004-03, NFR-AUD-001]

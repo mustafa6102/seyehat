@@ -1,0 +1,51 @@
+version: 3.18.0
+inherits: ../../v3.17/registries/od_impact.yaml
+new_decisions:
+  - id: OD-029
+    title: DAY-001 gün modeli, elle gün ataması ve gün içi sıralama
+    status: RESOLVED
+    impact_status: UNBLOCKED
+    decision_owner: user (2026-10-23)
+    decision: >-
+      APPROVED - Seçenek A. Günler TripRequest'in EXACT gidiş ve dönüş tarihlerinden (iki uç dahil) varış noktasının IANA saat
+      diliminde türetilir. Kullanıcı FLEXIBLE POI öğesini elle bir güne atar, gün içinde sıralar veya atamayı kaldırır; atama
+      uygulanabilirlik iddiası taşımaz. ONE_WAY veya FLEXIBLE tarihte gün türetilmez.
+    contract_surface: [SCH-ItineraryItem v3.18, SCH-PlanRevision v3.18, SCH-TripPlan v3.18, OP-assignTripPlanItemDay, RC-VALIDATION-DAY-FRAME-UNAVAILABLE, RC-VALIDATION-DAY-ASSIGNMENT-INVALID]
+    not_decided: Saat, süre, ulaşım, tampon, tempo, çalışma saati değerlendirmesi, uçuş/konaklama sınırları ve otomatik yerleştirme (OD-030..035).
+  - id: OD-030
+    title: Plan öğesi saati ve ziyaret süresi kaynağı
+    status: OPEN
+    impact_status: BLOCKED
+    options: ['A - kullanıcı girdisi süre (doğrulanmamış, kullanıcı kaynaklı)', 'B - onaylı süre tahmin kaynağı', 'C - UNKNOWN kalır']
+    blocks: [RULE-DAY-001-01, AC-DAY-001-01]
+  - id: OD-031
+    title: Çalışma saati ve müsaitlik kanıtının gate'te kullanımı (UNVERIFIED, iana_timezone null, özel günler)
+    status: OPEN
+    impact_status: BLOCKED
+    blocks: [AC-DAY-001-03, RULE-POI-001-02, RULE-POI-001-06]
+  - id: OD-032
+    title: Ulaşım süresi kaynağı ve coğrafi uygulanabilirlik
+    status: OPEN
+    impact_status: BLOCKED
+    related: [OD-003, AUD-003, RULE-M3-001]
+    blocks: [RULE-DAY-001-01, AC-DAY-001-01]
+  - id: OD-033
+    title: Gün içi tampon, pace_preference değerleri, temel tempo limiti ve gün penceresi
+    status: OPEN
+    impact_status: BLOCKED
+    blocks: [RULE-DAY-001-03, AC-DAY-001-04]
+  - id: OD-034
+    title: Uçuş ve konaklama seçimlerinin gün sınırı olarak kullanımı
+    status: OPEN
+    impact_status: BLOCKED
+    related: [OD-021, OD-022]
+  - id: OD-035
+    title: Feasibility gate sonucu, saklanması ve reason kodları
+    status: OPEN
+    impact_status: BLOCKED
+    blocks: [FR-DAY-001-01, FR-DAY-001-02, RULE-DAY-001-03]
+changes:
+  - id: OD-028
+    note: >-
+      Seçenek A kanal kuralı yeni TripRequest'e ait plan operasyonuna aynen uygulanır: OP-assignTripPlanItemDay ->
+      PUT /web-api/v1/trip-requests/{tripRequestId}/plan/items/{itemId}/day-assignment (oturum + CSRF, aynı işleyici). Karar değişmez.

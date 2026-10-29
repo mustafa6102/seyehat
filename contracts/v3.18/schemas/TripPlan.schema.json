@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:v3.18:TripPlan",
+  "title": "TripPlan",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trip_request_id": {"type": "string", "minLength": 1},
+    "trip": {"oneOf": [{"$ref": "../../v3.16/schemas/Trip.schema.json"}, {"type": "null"}]},
+    "revision": {"oneOf": [{"$ref": "./PlanRevision.schema.json"}, {"type": "null"}]},
+    "day_frame": {"$ref": "#/$defs/DayFrame"}
+  },
+  "required": ["trip_request_id", "trip", "revision", "day_frame"],
+  "$defs": {
+    "DayFrame": {
+      "type": "object",
+      "additionalProperties": false,
+      "readOnly": true,
+      "description": "RULE-DAY-001-04 (OD-029 A): TripRequest'ten her okumada türetilir, saklanmaz. AVAILABLE yalnız TripRequest SEARCHABLE, v3.9 yolculuk modeli, journey_type=ROUND_TRIP, outbound_date ve return_date EXACT ve varış noktasının iana_timezone değeri geçerli bir IANA kimliği ise. days = outbound_date.date ile return_date.date arası (iki uç dahil) her takvim günü; günler varış noktasının yerel takvim günleridir. Gün başlangıç/bitiş saati, varış/kalkış saatleri veya uygulanabilirlik türetilmez.",
+      "properties": {
+        "status": {"type": "string", "enum": ["AVAILABLE", "UNAVAILABLE"]},
+        "iana_timezone": {"type": ["string", "null"], "description": "AVAILABLE ise varış noktasının IANA saat dilimi; aksi halde null."},
+        "days": {"type": "array", "items": {"type": "string", "format": "date"}, "description": "Artan sırada; UNAVAILABLE ise boş."},
+        "unavailable_reason": {
+          "type": ["string", "null"],
+          "enum": [null, "TRIP_REQUEST_INCOMPLETE", "LEGACY_DATE_MODEL", "NOT_ROUND_TRIP", "DATES_NOT_EXACT", "DESTINATION_TIMEZONE_UNKNOWN"],
+          "description": "AVAILABLE ise null. ONE_WAY ve FLEXIBLE tarihlerden gün türetilmez (OD-029 A); tarih seçilmez veya uydurulmaz."
+        }
+      },
+      "required": ["status", "iana_timezone", "days", "unavailable_reason"]
+    }
+  },
+  "x-contract-id": "SCH-TripPlan",
+  "x-version": "3.18",
+  "x-status": "ACTIVE",
+  "x-replaces": "urn:ai-seyahat:v3.16:TripPlan",
+  "x-requirement-refs": ["TRIP-BLD-001", "FR-TRIP-BLD-001-03", "DAY-001", "RULE-DAY-001-04", "AC-DAY-001-05"],
+  "x-open-decisions": ["ADR-010", "OD-034"],
+  "description": "v3.16 plan görünümü + türetilmiş day_frame. Uçuş/konaklama seçimleri burada taşınmaz ve gün sınırı olarak kullanılmaz (OD-034 OPEN)."
+}

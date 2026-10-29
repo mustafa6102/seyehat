@@ -26,7 +26,8 @@ final class PlannerFlowPagesTest extends TestCase
     {
         $this->get('/planlar/trip-1')
             ->assertOk()
-            ->assertSee('Yolcu bilgileri şu anda bu arayüzden eklenemiyor')
+            ->assertSee('Yolcu bilgileri')
+            ->assertSee('Henüz eklenemiyor')
             ->assertDontSee('Yetişkin')
             ->assertDontSee('age_category');
         $this->get('/planlar/trip-1/yolcular')->assertNotFound();

@@ -1,0 +1,11 @@
+version: 3.19.0
+inherits: ../../registries/permissions.yaml
+records:
+  - id: HOW-GUIDE-OWNER
+    resource: TripRequest.CurrentPlanRevision.ItineraryItem.ContextualGuide
+    permissions:
+      owner: {read: ALLOW, refresh: ALLOW}
+      collaborator: {read: DENY, refresh: DENY}
+      anonymous: {read: DENY, refresh: DENY}
+    evaluation_order: [AUTHN_401, RESOURCE_404, OWNER_403, PRECONDITION_409, DOMAIN_422]
+    refs: [HOW-001, PLT-AUTH-001, OD-HOW-007, OD-HOW-008]

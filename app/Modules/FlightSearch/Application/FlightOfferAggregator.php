@@ -21,6 +21,10 @@ final class FlightOfferAggregator
 
         $result = array_values($deduplicated);
         usort($result, function (FlightOffer $a, FlightOffer $b): int {
+            // RULE-RANK-001-03 / AC-RANK-001-02: an incomplete cost must never
+            // outrank a complete cost, even when another offer attribute is stronger.
+            $completenessComparison = ($b->priceCompleteness === 'COMPLETE')
+                <=> ($a->priceCompleteness === 'COMPLETE');
             $qualityA = $this->preferenceQuality($a);
             $qualityB = $this->preferenceQuality($b);
 
@@ -28,7 +32,8 @@ final class FlightOfferAggregator
                 ? $a->price->minorUnits <=> $b->price->minorUnits
                 : 0;
 
-            return $qualityB <=> $qualityA
+            return $completenessComparison
+                ?: $qualityB <=> $qualityA
                 ?: $priceComparison
                 ?: $a->deduplicationKey() <=> $b->deduplicationKey();
         });

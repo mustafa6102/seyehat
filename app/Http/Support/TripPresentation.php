@@ -51,6 +51,8 @@ final readonly class TripPresentation
             'resolved' => $label !== null,
             'catalog_identity' => $catalogIdentity,
             'value' => $place['value'],
+            // Server-assigned aviation code (v3.8), only for flight catalog selections; never derived from a name.
+            'code' => $place['aviation_identity']['code'] ?? null,
         ];
     }
 
@@ -73,8 +75,30 @@ final readonly class TripPresentation
             };
         };
         $legacy = $tripRequest->dateWindow;
+        // Nights only between two exact dates of a round trip; flexible ranges never yield a count.
+        $outbound = TravelDate::fromContract($tripRequest->outboundDate);
+        $return = TravelDate::fromContract($tripRequest->returnDate);
+        $nights = $tripRequest->journeyType === TripJourney::ROUND_TRIP && $outbound?->type === TravelDate::EXACT && $return?->type === TravelDate::EXACT
+            ? (int) Carbon::parse($outbound->earliest)->diffInDays(Carbon::parse($return->earliest))
+            : null;
+
+        // Compact range for the summary bar, only from exact dates ("1 – 10 Oca 2027"); flexible dates keep the long text.
+        $short = fn (Carbon $date, string $pattern): string => $date->locale('tr')->translatedFormat($pattern);
+        $range = null;
+        if ($outbound?->type === TravelDate::EXACT) {
+            $from = Carbon::parse($outbound->earliest);
+            $to = $return?->type === TravelDate::EXACT ? Carbon::parse($return->earliest) : null;
+            $range = match (true) {
+                $to === null => $short($from, 'j M Y'),
+                $from->isSameMonth($to) => $short($from, 'j').' – '.$short($to, 'j M Y'),
+                $from->isSameYear($to) => $short($from, 'j M').' – '.$short($to, 'j M Y'),
+                default => $short($from, 'j M Y').' – '.$short($to, 'j M Y'),
+            };
+        }
 
         return [
+            'nights' => $nights,
+            'range' => $range,
             'type' => [TripJourney::ONE_WAY => 'Tek yön', TripJourney::ROUND_TRIP => 'Gidiş-dönüş'][$tripRequest->journeyType ?? ''] ?? null,
             'outbound' => $travelDate($tripRequest->outboundDate),
             'return' => $travelDate($tripRequest->returnDate),

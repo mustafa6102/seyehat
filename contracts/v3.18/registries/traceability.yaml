@@ -1,0 +1,24 @@
+version: 3.18.0
+inherits: ../../v3.17/registries/traceability.yaml
+requirement_to_contract:
+  - requirement: RULE-DAY-001-04
+    artifacts: [schema:TripPlan.schema.json#/$defs/DayFrame, reason_error:RC-VALIDATION-DAY-FRAME-UNAVAILABLE]
+    tests: [TS-DAY-001-05]
+    resolved_decisions: [OD-029]
+  - requirement: RULE-DAY-001-05
+    artifacts: [schema:ItineraryItem.schema.json, openapi:OP-assignTripPlanItemDay]
+    tests: [TS-DAY-001-06, TS-DAY-001-07]
+    resolved_decisions: [OD-029]
+  - requirement: FR-DAY-001-03
+    artifacts: [openapi:OP-assignTripPlanItemDay, schema:ItineraryItem.schema.json, schema:PlanRevision.schema.json, schema:TripPlan.schema.json, lifecycle:TRN-PLANREVISION-01, reason_error:RC-VALIDATION-DAY-ASSIGNMENT-INVALID]
+    tests: [TS-DAY-001-05, TS-DAY-001-06, TS-DAY-001-07, TS-DAY-001-08]
+    open_decisions: [ADR-010]
+  - requirement: FR-TRIP-BLD-001-02
+    artifacts: [schema:PlanRevision.schema.json]
+    tests: [TS-TRIP-BLD-001-03, TS-TRIP-BLD-001-06, TS-DAY-001-06]
+    note: v3.18 change.moved_item_ids.
+  - requirement: RULE-DAY-001-03
+    note: Gate girdileri hâlâ tanımsız (OD-030..035 OPEN); gün ataması uygulanabilirlik değildir.
+  - requirement: PLT-AUTH-001
+    artifacts: [registry:od_impact.OD-028]
+    note: OP-assignTripPlanItemDay web kanalı /web-api/v1 (OD-028 A kuralı).

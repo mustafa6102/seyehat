@@ -1,0 +1,36 @@
+{
+  "version": "3.22.0",
+  "inherits": "../../registries/permissions.yaml",
+  "records": [
+    {
+      "id": "PERM-SELECTED-FLIGHT-OPPORTUNITY",
+      "operation": "OP-getSelectedFlightOpportunity",
+      "resource": "TripRequest",
+      "action": "read",
+      "owner": "ALLOW",
+      "others": "DENY",
+      "identity": "v3.16 SCH-PrincipalRef",
+      "evaluation_order": [
+        "AUTHN_401",
+        "TRIP_REQUEST_404",
+        "OWNER_403",
+        "SCHEMA_400",
+        "SELECTION_404"
+      ],
+      "audit": "Reuse TripRequestOwnershipGuard access audit; never log threshold/profile/token payloads."
+    },
+    {
+      "id": "PERM-INTERNAL-DECISION-SUPPORT",
+      "operations": [
+        "INT-evaluateConnectionProtection",
+        "INT-evaluateTransfer",
+        "INT-projectFoodEvidence",
+        "INT-projectEventEvidence"
+      ],
+      "audience": "trusted domain caller only",
+      "http_routes": [],
+      "input_boundary": "server-normalized canonical evidence; no raw external/caller claims",
+      "owner_check": "Owning application flow authorizes before obtaining evidence. These services do not grant access or read DB."
+    }
+  ]
+}

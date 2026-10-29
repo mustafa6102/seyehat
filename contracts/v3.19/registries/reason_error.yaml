@@ -1,0 +1,13 @@
+version: 3.19.0
+inherits: ../../v3.18/registries/reason_error.yaml
+new_records:
+  - {id: RC-HOW-CONTEXT-UNSUPPORTED, kind: ERROR, category: VALIDATION, machine_code: HOW_CONTEXT_UNSUPPORTED, http_status: 422, message_key_tr: error.how_context_unsupported, default_message_tr: 'Bu plan öğesi için adım adım rehber henüz desteklenmiyor.', retryable: false}
+  - {id: RC-HOW-REVERIFY-UNAVAILABLE, kind: ERROR, category: PROVIDER, machine_code: HOW_REVERIFY_UNAVAILABLE, http_status: 503, message_key_tr: error.how_reverify_unavailable, default_message_tr: 'Kaynak bilgisi şu anda yeniden doğrulanamadı; mevcut bilgi eski olarak gösteriliyor.', retryable: true}
+  - {id: RC-CONFLICT-IDEMPOTENCY-IN-PROGRESS, kind: ERROR, category: CONFLICT, machine_code: IDEMPOTENCY_IN_PROGRESS, http_status: 409, message_key_tr: error.idempotency_in_progress, default_message_tr: 'Aynı yenileme isteği halen işleniyor. Lütfen kısa süre sonra yeniden deneyin.', retryable: true}
+reused_records:
+  - {id: RC-VALIDATION-SCHEMA, applies_to: [OP-getTripPlanItemGuide, OP-refreshTripPlanItemGuide]}
+  - {id: RC-AUTHN-REQUIRED, applies_to: [OP-getTripPlanItemGuide, OP-refreshTripPlanItemGuide]}
+  - {id: RC-AUTHZ-DENIED, applies_to: [OP-getTripPlanItemGuide, OP-refreshTripPlanItemGuide]}
+  - {id: RC-RESOURCE-NOT-FOUND, applies_to: [OP-getTripPlanItemGuide, OP-refreshTripPlanItemGuide]}
+  - {id: RC-CONFLICT-REVISION-STALE, applies_to: [OP-getTripPlanItemGuide, OP-refreshTripPlanItemGuide]}
+  - {id: RC-CONFLICT-IDEMPOTENCY-KEY, applies_to: [OP-refreshTripPlanItemGuide]}

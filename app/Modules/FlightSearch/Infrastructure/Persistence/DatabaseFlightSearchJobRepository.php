@@ -2,6 +2,7 @@
 
 namespace App\Modules\FlightSearch\Infrastructure\Persistence;
 
+use App\Modules\FlightSearch\Domain\FlightOffer;
 use App\Modules\FlightSearch\Domain\FlightSearchJobRecord;
 use App\Modules\FlightSearch\Domain\FlightSearchJobRepository;
 use DateTimeImmutable;
@@ -85,6 +86,24 @@ final readonly class DatabaseFlightSearchJobRepository implements FlightSearchJo
             return null;
         }
 
-        return new FlightSearchJobRecord($row->search_id, $row->idempotency_key, $row->status, $row->result_json === null ? null : json_decode($row->result_json, true, flags: JSON_THROW_ON_ERROR), $row->error_code, $row->error_message_tr, $row->expires_at === null ? null : new DateTimeImmutable($row->expires_at), $row->trip_request_id ?? null);
+        return new FlightSearchJobRecord($row->search_id, $row->idempotency_key, $row->status, $row->result_json === null ? null : self::normalizeResult(json_decode($row->result_json, true, flags: JSON_THROW_ON_ERROR)), $row->error_code, $row->error_message_tr, $row->expires_at === null ? null : new DateTimeImmutable($row->expires_at), $row->trip_request_id ?? null);
+    }
+
+    /**
+     * OD-022 D2: results stored before v3.23 hold v3.4 offers; they read as ONE_WAY/OUTBOUND without rewriting rows.
+     *
+     * @param  array<string, mixed>  $result
+     * @return array<string, mixed>
+     */
+    private static function normalizeResult(array $result): array
+    {
+        if (is_array($result['offers'] ?? null)) {
+            $result['offers'] = array_map(
+                fn (mixed $offer): mixed => is_array($offer) ? FlightOffer::normalizeLegacyContract($offer) : $offer,
+                $result['offers'],
+            );
+        }
+
+        return $result;
     }
 }

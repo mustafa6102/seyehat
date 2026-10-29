@@ -21,10 +21,16 @@ final readonly class ConfigSearchBudgetPolicy implements SearchBudgetPolicy
 
         $maxRequests = $entry['max_requests'] ?? null;
         $version = $entry['version'] ?? null;
-        if (! is_int($maxRequests) || $maxRequests < 1 || ! is_string($version) || $version === '') {
+        if (! is_int($maxRequests) || $maxRequests < 1 || ! is_string($version) || trim($version) === '') {
             return null;
         }
 
-        return new SearchBudgetLimit($maxRequests, $version);
+        $productCap = $this->config->get('search_budget.product_cap');
+        $productVersion = $this->config->get('search_budget.product_cap_version');
+        if (! is_int($productCap) || $productCap < 1 || ! is_string($productVersion) || trim($productVersion) === '') {
+            return null;
+        }
+
+        return new SearchBudgetLimit(min($maxRequests, $productCap), $version.'|'.$productVersion);
     }
 }
