@@ -45,6 +45,10 @@
         </div>
     </header>
 
+    @if ($planAccess === 'OWNER' && $poiPlan && $poiPlan['version'] !== null)
+        <p><a class="btn btn-secondary" href="{{ route('trip-plan.history', ['tripRequestId' => $tripRequestId]) }}">Plan değişiklik geçmişini gör</a></p>
+    @endif
+
     <h2 class="visually-hidden">Plan özeti</h2>
     <ul class="overview-grid">
         <li class="overview-card">
@@ -70,12 +74,7 @@
                 <span class="overview-label">{{ $plan['flight']['detail'] }}</span>
                 <x-ui.badge :variant="['current' => 'success', 'reconfirm' => 'warning', 'expired' => 'error'][$plan['flight']['state']]">{{ $plan['flight']['state_label'] }}</x-ui.badge>
                 <span class="overview-label">{{ $plan['flight']['verified'] }}</span>
-                <details>
-                    <summary>Seçim ve kaynak ayrıntıları</summary>
-                    <span class="overview-label">Sağlayıcı: {{ $plan['flight']['provider_id'] }}</span>
-                    <span class="overview-label">Teklif kimliği: {{ $plan['flight']['offer_id'] }}</span>
-                    <span class="overview-label">{{ $plan['flight']['expires'] }}</span>
-                </details>
+                <span class="overview-label">{{ $plan['flight']['expires'] }}</span>
                 <x-ui.button variant="secondary" size="sm" :href="$plan['flight']['manage_url']">{{ $plan['flight']['state'] === 'reconfirm' ? 'Uçuşu yeniden onayla' : ($plan['flight']['state'] === 'expired' ? 'Yeni uçuş ara' : 'Uçuş seçimini gözden geçir') }}</x-ui.button>
             @else
                 <span class="overview-value">Uçuş seçilmedi</span>
@@ -91,13 +90,7 @@
                 <span class="overview-label">{{ $plan['stay']['cancellation'] }}</span>
                 <x-ui.badge :variant="['current' => 'success', 'reconfirm' => 'warning', 'expired' => 'error'][$plan['stay']['state']]">{{ $plan['stay']['state_label'] }}</x-ui.badge>
                 <span class="overview-label">{{ $plan['stay']['verified'] }}</span>
-                <details>
-                    <summary>Seçim ve kaynak ayrıntıları</summary>
-                    <span class="overview-label">Sağlayıcı: {{ $plan['stay']['provider_id'] }}</span>
-                    <span class="overview-label">Teklif kimliği: {{ $plan['stay']['offer_id'] }}</span>
-                    <span class="overview-label">Tesis kimliği: {{ $plan['stay']['property_id'] }}</span>
-                    <span class="overview-label">{{ $plan['stay']['expires'] }}</span>
-                </details>
+                <span class="overview-label">{{ $plan['stay']['expires'] }}</span>
                 <x-ui.button variant="secondary" size="sm" data-dialog-open="add-stay">{{ $plan['stay']['state'] === 'reconfirm' ? 'Konaklamayı yeniden onayla' : ($plan['stay']['state'] === 'expired' ? 'Yeni konaklama ara' : 'Konaklama seçimini yönet') }}</x-ui.button>
             @else
                 <span class="overview-value">Henüz seçilmedi</span>
@@ -171,7 +164,7 @@
                         </div>
                     @endif
                     @if ($poiPlan['items'] === [])
-                        <p class="empty-note">Plana henüz gezilecek yer eklenmedi. "Gezilecek yer ekle" ile arayıp ekleyebilirsiniz.</p>
+                        <p class="empty-note">Plana henüz gezilecek yer veya etkinlik eklenmedi. Aşağıdaki keşif alanlarından arayıp ekleyebilirsiniz.</p>
                     @else
                         {{-- v3.18 DAY-001 (OD-029 A): day_frame days with their manually ordered items, then items without a day. --}}
                         <div class="stack" data-plan-days data-plan-version="{{ $poiPlan['version'] }}">
@@ -183,7 +176,7 @@
                                     <section class="stack" aria-labelledby="plan-day-{{ $day['date'] }}" data-plan-day="{{ $day['date'] }}">
                                         <h4 id="plan-day-{{ $day['date'] }}">{{ $day['label'] }}</h4>
                                         @if ($day['items'] === [])
-                                            <p class="empty-note">Bu güne henüz yer atanmadı.</p>
+                                            <p class="empty-note">Bu güne henüz plan öğesi atanmadı.</p>
                                         @else
                                             <ol class="offer-list">
                                                 @foreach ($day['items'] as $item)
@@ -197,9 +190,9 @@
                                 <p class="alert alert-info" data-plan-days-unavailable>{{ $poiPlan['frame']['message'] }}</p>
                             @endif
                             <section class="stack" aria-labelledby="plan-unassigned-title" data-plan-unassigned>
-                                <h4 id="plan-unassigned-title">Güne atanmamış yerler</h4>
+                                <h4 id="plan-unassigned-title">Güne atanmamış plan öğeleri</h4>
                                 @if ($poiPlan['unassigned'] === [])
-                                    <p class="empty-note">Güne atanmamış yer yok.</p>
+                                    <p class="empty-note">Güne atanmamış plan öğesi yok.</p>
                                 @else
                                     <ul class="offer-list">
                                         @foreach ($poiPlan['unassigned'] as $item)
@@ -305,6 +298,9 @@
     </div>
 
     <nav class="context-links" aria-label="Planla ilgili diğer seçenekler">
+        @if ($planAccess === 'OWNER')
+            <a href="{{ route('traveler-screens.index', ['tripRequestId' => $tripRequestId]) }}">Yolcularım</a>
+        @endif
         <a href="{{ route('ground-connections.show', ['tripRequestId' => $tripRequestId]) }}">Kara bağlantıları</a>
         <a href="{{ route('journey.category', ['categoryId' => 'gunluk-plan']) }}">Günlük plan araçları</a>
         <a href="{{ route('journey.category', ['categoryId' => 'hazirlik-yolculuk']) }}">Hazırlık ve yolculuk</a>

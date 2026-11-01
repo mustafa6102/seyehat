@@ -1072,6 +1072,25 @@ dialog.modal[open], dialog.drawer[open] { display: flex; flex-direction: column;
     @keyframes pulse { 50% { opacity: .55; } }
 }
 
+/* TRV-001 yolcu ve gizlilik ekranları */
+.legal-text { max-width: 46rem; }
+.legal-text p { line-height: 1.6; }
+.legal-placeholder { padding: 0 var(--space-1); color: var(--color-warning-text); background: var(--color-warning-subtle); border: var(--border-width) dashed var(--color-warning-border); border-radius: var(--radius-sm); }
+.traveler-filters { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
+.traveler-badges { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: var(--space-2) 0 0; }
+.traveler-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.traveler-form .traveler-actions { margin-top: var(--space-4); }
+.traveler-check { margin: var(--space-3) 0 0; }
+.traveler-check:empty { display: none; }
+.traveler-rule { margin-bottom: var(--space-5); }
+.traveler-repeat { display: grid; justify-items: start; gap: var(--space-2); padding-top: var(--space-4); border-top: var(--border-width) solid var(--color-border-subtle); }
+.traveler-repeat-title { margin: 0; font-size: var(--text-base); }
+.traveler-repeat-list { display: grid; gap: var(--space-2); width: 100%; margin: 0; padding: 0; list-style: none; }
+.traveler-repeat-list:empty { display: none; }
+.traveler-repeat-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-2) var(--space-3); }
+.traveler-repeat-row .field { flex: 1 1 14rem; }
+.traveler-repeat-name { margin: 0; flex: 1 1 14rem; }
+
 @media (forced-colors: active) {
     .btn, .chip, .choice, .card, .offer-card, .panel, .capability-card, .badge { border-color: CanvasText; }
     .hero, .intro { border: var(--border-width) solid CanvasText; }

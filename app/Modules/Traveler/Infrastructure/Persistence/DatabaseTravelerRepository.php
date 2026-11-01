@@ -2,25 +2,32 @@
 
 namespace App\Modules\Traveler\Infrastructure\Persistence;
 
+use App\Modules\Traveler\Contracts\TravelerStorageClosed;
 use App\Modules\Traveler\Domain\Traveler;
 use App\Modules\Traveler\Domain\TravelerRepository;
 use Illuminate\Support\Facades\DB;
 
 final class DatabaseTravelerRepository implements TravelerRepository
 {
+    /**
+     * Last gate before storage, independent of the matrix and of any caller: these columns are plaintext JSON, so there
+     * is deliberately no switch here. Only ADR-010 encrypted storage may replace this check.
+     */
     public function save(Traveler $traveler): Traveler
     {
-        DB::table('travelers')->updateOrInsert(
-            ['id' => $traveler->id],
-            [
-                'trip_id' => $traveler->tripId,
-                'age_category' => $traveler->ageCategory,
-                'nationalities' => json_encode($traveler->nationalities, JSON_THROW_ON_ERROR),
-                'travel_documents' => json_encode($traveler->travelDocuments, JSON_THROW_ON_ERROR),
-                'held_visas' => json_encode($traveler->heldVisas, JSON_THROW_ON_ERROR),
-                'residence_permits' => json_encode($traveler->residencePermits, JSON_THROW_ON_ERROR),
-            ],
-        );
+        if ($traveler->requiresProtectedStorage()) {
+            throw new TravelerStorageClosed;
+        }
+
+        DB::table('travelers')->insert([
+            'id' => $traveler->id,
+            'trip_id' => $traveler->tripId,
+            'age_category' => $traveler->ageCategory,
+            'nationalities' => json_encode($traveler->nationalities, JSON_THROW_ON_ERROR),
+            'travel_documents' => json_encode($traveler->travelDocuments, JSON_THROW_ON_ERROR),
+            'held_visas' => json_encode($traveler->heldVisas, JSON_THROW_ON_ERROR),
+            'residence_permits' => json_encode($traveler->residencePermits, JSON_THROW_ON_ERROR),
+        ]);
 
         return $traveler;
     }

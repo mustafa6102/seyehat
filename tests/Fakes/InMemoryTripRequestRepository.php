@@ -4,6 +4,7 @@ namespace Tests\Fakes;
 
 use App\Modules\Api\Domain\TripRequest\TripRequest;
 use App\Modules\Api\Domain\TripRequest\TripRequestRepository;
+use App\Modules\Authorization\Contracts\PrincipalRef;
 
 final class InMemoryTripRequestRepository implements TripRequestRepository
 {
@@ -23,6 +24,15 @@ final class InMemoryTripRequestRepository implements TripRequestRepository
     public function find(string $id): ?TripRequest
     {
         return $this->tripRequests[$id] ?? null;
+    }
+
+    /** @return list<TripRequest> */
+    public function ownedBy(PrincipalRef $owner): array
+    {
+        return array_values(array_filter(
+            $this->tripRequests,
+            fn (TripRequest $tripRequest): bool => $tripRequest->owner()?->equals($owner) ?? false,
+        ));
     }
 
     /** @return list<TripRequest> */

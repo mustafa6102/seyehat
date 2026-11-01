@@ -1,0 +1,31 @@
+{
+  "status": "PROPOSED_INACTIVE",
+  "lifecycle": {
+    "RouteSearchJob": ["QUEUED", "RUNNING", "PARTIAL", "COMPLETED", "FAILED", "EXPIRED"],
+    "RouteSelection": ["CURRENT", "RECONFIRMATION_REQUIRED", "UNAVAILABLE"],
+    "rules": [
+      "Budget exhaustion produces PARTIAL and stops new provider work.",
+      "Any changed, expired or unverifiable constituent offer prevents CURRENT selection.",
+      "TripPlan stores references only after atomic reprice of every constituent offer."
+    ]
+  },
+  "permissions": [
+    {"resource": "TripRequest.RouteSearch", "actions": ["create", "read"], "decision": "owner only via existing (issuer, subject) binding"},
+    {"resource": "TripRequest.RouteSelection", "actions": ["read", "update"], "decision": "owner only via existing (issuer, subject) binding"},
+    {"resource": "TripPlan.Route", "actions": ["create"], "decision": "owner only; existing revision precondition and idempotency required"}
+  ],
+  "reason_error_codes": [
+    {"code": "RC-SEARCH-BUDGET-EXHAUSTED", "message_tr": "Arama bütçesi dolduğu için sonuçlar kısmi olabilir."},
+    {"code": "RC-CONFIG-SEARCH-BUDGET-UNAVAILABLE", "message_tr": "Bu sağlayıcı için onaylı arama bütçesi bulunmuyor."},
+    {"code": "RC-EVIDENCE-ROUTE-INCOMPLETE", "message_tr": "Rota için gerekli doğrulanmış bilgi eksik."},
+    {"code": "RC-DECISION-ROUTE-RECONFIRMATION-REQUIRED", "message_tr": "Rotadaki tüm uçuşlar yeniden doğrulanmadan seçim kaydedilemez."},
+    {"code": "RC-DECISION-ROUTE-NOT-SELECTABLE", "message_tr": "Bu rota seçime uygun değil."}
+  ],
+  "approval_required": [
+    {"decision": "ADR-006", "owner": "Tech + provider operations", "scope": "provider-specific request budget and version"},
+    {"decision": "OD-003", "owner": "Product + Tech", "scope": "ground provider, cost and airport-transfer evidence"},
+    {"decision": "OD-004", "owner": "Product + Tech", "scope": "production connection components and buffer evidence"},
+    {"decision": "OD-017", "owner": "Product + Data + Legal", "scope": "risk thresholds; UNKNOWN remains the default until approved"},
+    {"decision": "v3.24 contract activation", "owner": "Contract Authority / Project Owner", "scope": "new schemas, operations, lifecycle, permissions and persistence"}
+  ]
+}

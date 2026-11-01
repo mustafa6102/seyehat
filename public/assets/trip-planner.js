@@ -105,11 +105,12 @@
         kindLabels = {};
     }
 
-    const createCombobox = ({ input, listbox, announce, search, describe, onSelect, onClear, minLength = 0, openOnFocus = false }) => {
+    const createCombobox = ({ input, listbox, announce, search, describe, onSelect, onClear, findTyped, emptyMessage = 'Sonuç bulunamadı.', minLength = 0, openOnFocus = false }) => {
         let items = [];
         let activeIndex = -1;
         let requestId = 0;
         let debounce;
+        let committed = false;
 
         const close = () => {
             listbox.hidden = true;
@@ -140,9 +141,31 @@
             }
 
             input.value = item.display ?? item.label;
+            committed = true;
             close();
             announce('', true);
             onSelect(item);
+        };
+
+        // Typed text that identifies exactly one entry counts as choosing it; anything else stays unselected.
+        const commitTyped = async () => {
+            const query = input.value.trim();
+
+            if (!findTyped || committed || query === '') {
+                return;
+            }
+
+            const item = await findTyped(query).catch(() => null);
+
+            if (item && !committed && input.value.trim() === query) {
+                clearTimeout(debounce);
+                requestId++;
+                input.value = item.label;
+                committed = true;
+                close();
+                announce('', true);
+                onSelect(item, { typed: true });
+            }
         };
 
         const render = (results) => {
@@ -177,7 +200,7 @@
             input.removeAttribute('aria-activedescendant');
 
             if (results.length === 0) {
-                announce('Sonuç bulunamadı.', true);
+                announce(emptyMessage, true);
             } else {
                 announce(`${results.length} sonuç bulundu. Seçmek için ok tuşlarını kullanın.`, false);
             }
@@ -210,6 +233,7 @@
         };
 
         input.addEventListener('input', () => {
+            committed = false;
             onClear();
             clearTimeout(debounce);
             debounce = setTimeout(runSearch, 200);
@@ -232,9 +256,16 @@
             } else if (event.key === 'ArrowUp') {
                 event.preventDefault();
                 open && setActive(Math.max(activeIndex - 1, 0));
-            } else if (event.key === 'Enter' && open && activeIndex >= 0) {
+            } else if (event.key === 'Enter' && (open || (!committed && input.value.trim() !== ''))) {
+                // Enter while choosing never submits the half-filled form; a lone suggestion is taken as the choice.
                 event.preventDefault();
-                select(activeIndex);
+                if (open && (activeIndex >= 0 || items.length === 1)) {
+                    select(Math.max(activeIndex, 0));
+                } else {
+                    commitTyped();
+                }
+            } else if (event.key === 'Tab') {
+                commitTyped();
             } else if (event.key === 'Escape') {
                 if (open) {
                     event.preventDefault();
@@ -246,15 +277,24 @@
             }
         });
 
-        input.addEventListener('blur', close);
+        input.addEventListener('blur', () => {
+            close();
+            commitTyped();
+        });
 
         return {
             clear: () => {
                 clearTimeout(debounce);
                 requestId++;
+                committed = false;
                 input.value = '';
                 close();
                 announce('', true);
+            },
+            // A selection restored from the catalog is already chosen; leaving the field must not choose it again.
+            restore: (label) => {
+                input.value = label;
+                committed = true;
             },
         };
     };
@@ -332,6 +372,8 @@
             listbox: group.querySelector('[data-combobox="location"] [role="listbox"]'),
             announce: announcer('location'),
             minLength: MIN_QUERY_LENGTH,
+            // The flight catalog is English: Turkish exonyms such as "Londra" have no entry there.
+            emptyMessage: catalog.flight ? 'Sonuç bulunamadı. Şehrin İngilizce adını veya havalimanı kodunu deneyin.' : undefined,
             search: async (query) => {
                 const results = countryCode === null ? [] : await catalog.searchLocations(countryCode, query);
 
@@ -351,15 +393,17 @@
             setCountry(country);
         };
 
-        createCombobox({
+        const country = createCombobox({
             input: countryInput,
             listbox: group.querySelector('[data-combobox="country"] [role="listbox"]'),
             announce: announcer('country'),
             openOnFocus: true,
             search: async (query) => (await catalog.searchCountries(query)).filter((item) => item?.code && item?.label),
-            onSelect: (country) => {
+            findTyped: catalog.findCountry,
+            onSelect: (country, { typed = false } = {}) => {
                 resetLocation(country);
-                if (!locationInput.disabled) {
+                // Leaving the field with a typed country keeps focus wherever the user moved it.
+                if (!typed && !locationInput.disabled) {
                     locationInput.focus();
                 }
             },
@@ -384,9 +428,9 @@
                     return;
                 }
 
-                countryInput.value = resolved.country.label;
+                country.restore(resolved.country.label);
                 setCountry(resolved.country);
-                locationInput.value = catalog.flight ? flightLabel(resolved.location) : resolved.location.label;
+                location.restore(catalog.flight ? flightLabel(resolved.location) : resolved.location.label);
                 setLocation(resolved.location);
             })
             .catch(clearLocation);
@@ -413,14 +457,25 @@
 
             return countries;
         };
-        const normalize = (text) => text.toLocaleLowerCase('tr');
-        const findCountry = async (code) => (await loadCountries()).find((item) => item.code === code);
+        // Turkish-aware and accent-insensitive, so "turkiye", "irak" and "Turkiye" all find their country.
+        const normalize = (text) => text.toLocaleLowerCase('tr').normalize('NFD').replace(/\p{M}/gu, '').replace(/ı/g, 'i');
+        // Everyday Turkish names that the official labels ("Birleşik Krallık", "Amerika Birleşik Devletleri") do not contain.
+        const countryAliases = { GB: 'ingiltere', US: 'abd' };
+        const countryNames = (country) => [country.label, countryAliases[country.code] ?? ''].map(normalize);
+        const searchCountries = async (query) => (await loadCountries())
+            .filter((country) => countryNames(country).some((name) => name.includes(normalize(query))));
+        const countryByCode = async (code) => (await loadCountries()).find((item) => item.code === code);
 
         return {
             flight,
             searchable: flight || Boolean(locationSearchUrl),
-            searchCountries: async (query) => (await loadCountries())
-                .filter((country) => normalize(country.label).includes(normalize(query))),
+            searchCountries,
+            // An exact name wins ("Nijer" over "Nijerya"); otherwise the text must match a single country.
+            findCountry: async (query) => {
+                const matches = await searchCountries(query);
+
+                return matches.find((country) => countryNames(country).includes(normalize(query))) ?? (matches.length === 1 ? matches[0] : null);
+            },
             // Minimum query length and result limit are enforced server-side from config.
             searchLocations: async (countryCode, query) => (await getJson(
                 withQuery(flight ? flightLocationSearchUrl : locationSearchUrl, { ulke: countryCode, q: query }),
@@ -428,12 +483,12 @@
             resolve: async (kindOrToken, id) => {
                 if (flight) {
                     const location = (await getJson(withQuery(locationResolveUrl, { secim: kindOrToken }))).location;
-                    const country = await findCountry(location?.country_code);
+                    const country = await countryByCode(location?.country_code);
 
                     return country ? { country, location } : null;
                 }
                 const location = (await getJson(withQuery(locationResolveUrl, { kimlik: id }))).location;
-                const country = await findCountry(location?.country_code);
+                const country = await countryByCode(location?.country_code);
 
                 return location?.kind === kindOrToken && country ? { country, location } : null;
             },

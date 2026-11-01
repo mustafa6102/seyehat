@@ -6,6 +6,9 @@ use App\Modules\ProviderAcl\Contracts\AviationIdentity;
 
 final readonly class LocationRef
 {
+    /** RULE-TRIP-001-01: a place is a city, airport, station or supported location. */
+    public const KINDS = ['city', 'airport', 'station', 'supported_location'];
+
     public function __construct(
         public string $kind,
         public string $value,

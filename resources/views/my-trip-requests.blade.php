@@ -11,7 +11,13 @@
         <div>
             <p class="eyebrow">Seyahat talepleri</p>
             <h1 class="page-title">Taleplerim</h1>
-            <p class="page-lead">Bu tarayıcı oturumunda oluşturduğunuz talepler, en yenisi üstte. Oturum sona erdiğinde liste temizlenir; talepler bir hesaba bağlı değildir.</p>
+            <p class="page-lead">
+                @if ($accountScoped)
+                    Hesabınıza bağlı seyahat talepleri, en yenisi üstte. Farklı bir oturumdan giriş yaptığınızda da planlarınıza buradan ulaşabilirsiniz.
+                @else
+                    Bu tarayıcı oturumunda oluşturduğunuz talepler, en yenisi üstte. Giriş yaptığınızda hesabınıza bağlı kalıcı planlar burada listelenir.
+                @endif
+            </p>
         </div>
         @if ($cards !== [])
             <a class="btn btn-secondary" href="{{ route('trip-planner.index') }}">Yeni seyahat planı oluştur</a>
@@ -52,6 +58,9 @@
                                 <a class="btn btn-primary" href="{{ route('flights.search', ['tripRequestId' => $card['id']]) }}" data-request-action>Uçuş ara</a>
                             @endif
                             <a class="btn btn-secondary" href="{{ route('trip-plan.show', ['tripRequestId' => $card['id']]) }}">Seyahat Planım</a>
+                            @if ($accountScoped)
+                                <a class="btn btn-secondary" href="{{ route('traveler-screens.index', ['tripRequestId' => $card['id']]) }}">Yolcular</a>
+                            @endif
                             <a class="btn btn-secondary" href="{{ route('ground-connections.show', ['tripRequestId' => $card['id']]) }}">Kara bağlantıları</a>
                             <a class="btn btn-link" href="{{ route('trip-planner.show', ['tripRequestId' => $card['id']]) }}">Talep özeti</a>
                         </div>

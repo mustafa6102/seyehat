@@ -34,4 +34,12 @@ final readonly class TripRequestApplicationService implements TripRequestService
 
         return $tripRequest?->toView();
     }
+
+    public function ownedBy(PrincipalRef $owner): array
+    {
+        return array_map(
+            fn (TripRequest $tripRequest): array => ['id' => (string) $tripRequest->id, 'trip_request' => $tripRequest->toView()],
+            $this->tripRequests->ownedBy($owner),
+        );
+    }
 }

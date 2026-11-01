@@ -121,6 +121,11 @@ final class ProductionDiagnosticsTest extends TestCase
             {
                 return null;
             }
+
+            public function ownedBy(\App\Modules\Authorization\Contracts\PrincipalRef $owner): array
+            {
+                return [];
+            }
         });
 
         $failure = $this->post('/planla', $this->validForm())
@@ -190,6 +195,11 @@ final class ProductionDiagnosticsTest extends TestCase
             {
                 return null;
             }
+
+            public function ownedBy(\App\Modules\Authorization\Contracts\PrincipalRef $owner): array
+            {
+                return [];
+            }
         });
 
         try {
@@ -221,6 +231,11 @@ final class ProductionDiagnosticsTest extends TestCase
             }
 
             public function get(string $id): ?TripRequestView
+            {
+                throw new RuntimeException('summary-secret');
+            }
+
+            public function ownedBy(\App\Modules\Authorization\Contracts\PrincipalRef $owner): array
             {
                 throw new RuntimeException('summary-secret');
             }
@@ -312,5 +327,10 @@ final class RecordingDiagnosticTripRequestService implements TripRequestService
     public function get(string $id): ?TripRequestView
     {
         return null;
+    }
+
+    public function ownedBy(\App\Modules\Authorization\Contracts\PrincipalRef $owner): array
+    {
+        return [];
     }
 }

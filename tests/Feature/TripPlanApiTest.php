@@ -37,34 +37,6 @@ final class TripPlanApiTest extends TestCase
         config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:']);
         DB::purge('sqlite');
         $this->artisan('migrate', ['--force' => true])->assertSuccessful();
-        Schema::table('trip_requests', function ($table): void {
-            $table->string('owner_issuer', 255)->nullable();
-            $table->string('owner_subject', 255)->nullable();
-        });
-        Schema::create('pois', function ($table): void {
-            $table->char('poi_id', 36)->primary();
-            $table->string('provider_id', 64);
-            $table->string('provider_place_id', 64);
-            $table->longText('poi_json');
-            $table->timestamps(6);
-        });
-        Schema::create('trips', function ($table): void {
-            $table->char('trip_id', 36)->primary();
-            $table->string('trip_request_id', 255)->unique();
-            $table->timestamp('created_at', 6);
-        });
-        Schema::create('plan_revisions', function ($table): void {
-            $table->char('trip_id', 36);
-            $table->unsignedInteger('version');
-            $table->string('status', 16);
-            $table->longText('items_json');
-            $table->longText('change_json');
-            $table->string('idempotency_key', 255);
-            $table->char('request_fingerprint', 64);
-            $table->timestamp('created_at', 6);
-            $table->primary(['trip_id', 'version']);
-            $table->unique(['trip_id', 'idempotency_key']);
-        });
         Http::fake();
 
         $repository = new DatabaseTripRequestRepository(DB::connection());
@@ -75,6 +47,8 @@ final class TripPlanApiTest extends TestCase
         $this->draft = $repository->save($this->tripRequest('DRAFT')->ownedBy($me))->id;
         $this->storePoi('poi-1', 'Kolezyum');
         $this->storePoi('poi-2', 'Pantheon');
+        $this->storeEvent('event-1', 'Roma Caz Gecesi', 'SCHEDULED', 'AVAILABLE');
+        $this->storeEvent('event-cancelled', 'İptal Edilen Konser', 'CANCELLED', null);
     }
 
     #[Test]
@@ -124,6 +98,32 @@ final class TripPlanApiTest extends TestCase
             DB::table('outbox_events')->get()->map(fn ($row) => (array) $row)->all());
         Http::assertNothingSent();
         $this->plan($this->owned)->assertOk()->assertHeader('ETag', '"1"')->assertJsonPath('revision.version', 1);
+    }
+
+    #[Test]
+    public function verified_event_is_persisted_as_fixed_while_cancelled_event_fails_closed(): void
+    {
+        $response = $this->addEvent($this->owned, 'event-1', 'event-key-1', ['If-None-Match' => '*'])
+            ->assertCreated()->assertHeader('ETag', '"1"');
+
+        self::assertSame('EVENT', $response->json('revision.items.0.item_type'));
+        self::assertSame('FIXED', $response->json('revision.items.0.constraint_type'));
+        self::assertSame('Roma Caz Gecesi', $response->json('revision.items.0.event_snapshot.name'));
+
+        $this->addEvent($this->owned, 'event-cancelled', 'event-key-2', ['If-Match' => '"1"'])
+            ->assertStatus(404)->assertJsonPath('error.code', 'RESOURCE_NOT_FOUND');
+        self::assertSame(1, DB::table('plan_revisions')->count());
+    }
+
+    #[Test]
+    public function event_plan_mutation_enforces_owner_and_authentication(): void
+    {
+        $this->addEvent($this->foreign, 'event-1', 'foreign-event', ['If-None-Match' => '*'])->assertStatus(403);
+        $this->flushHeaders();
+        $this->withHeaders(['Idempotency-Key' => 'anonymous-event', 'If-None-Match' => '*'])
+            ->postJson("/api/v1/trip-requests/{$this->owned}/plan/events", ['event_id' => 'event-1'])
+            ->assertStatus(401);
+        $this->assertNothingPersisted();
     }
 
     #[Test]
@@ -259,6 +259,14 @@ final class TripPlanApiTest extends TestCase
             ->deleteJson("/api/v1/trip-requests/{$tripRequestId}/plan/items/{$itemId}");
     }
 
+    private function addEvent(string $tripRequestId, string $eventId, string $key, array $headers): TestResponse
+    {
+        $this->flushHeaders();
+
+        return $this->withToken(FixedBearerAuthenticator::TOKEN)->withHeaders(['Idempotency-Key' => $key] + $headers)
+            ->postJson("/api/v1/trip-requests/{$tripRequestId}/plan/events", ['event_id' => $eventId]);
+    }
+
     private function plan(string $tripRequestId): TestResponse
     {
         $this->flushHeaders();
@@ -284,8 +292,27 @@ final class TripPlanApiTest extends TestCase
 
     private function storePoi(string $poiId, string $name): void
     {
-        DB::table('pois')->insert(['poi_id' => $poiId, 'provider_id' => 'osm_overpass', 'provider_place_id' => 'node/'.strlen($name),
+        DB::table('pois')->insert(['poi_id' => $poiId, 'provider_id' => 'osm_overpass', 'provider_place_id' => 'node/'.$poiId,
             'poi_json' => json_encode($this->poi($poiId, $name), JSON_PRESERVE_ZERO_FRACTION), 'created_at' => now(), 'updated_at' => now()]);
+    }
+
+    private function storeEvent(string $eventId, string $name, string $status, ?string $ticketStatus): void
+    {
+        $fact = static fn (mixed $value): array => [
+            'value' => $value, 'certainty' => 'EXACT', 'source_reference' => 'https://www.ticketmaster.com/event/1',
+            'verified_at' => now()->toAtomString(), 'expires_at' => '2099-12-16T00:00:00+00:00', 'verification_status' => 'FRESH',
+        ];
+        $event = [
+            'event_id' => $eventId, 'provider_ref' => ['provider_id' => 'ticketmaster', 'provider_event_id' => 'tm-'.$eventId],
+            'name' => $name, 'venue' => ['name' => 'Auditorium'], 'location' => ['latitude' => 41.9, 'longitude' => 12.5, 'iana_timezone' => 'Europe/Rome'],
+            'categories' => ['Music'], 'status' => $fact($status), 'ticket_status' => $ticketStatus === null ? null : $fact($ticketStatus),
+            'starts_at' => $fact('2099-12-15T19:00:00+00:00'), 'ends_at' => null, 'iana_timezone' => 'Europe/Rome',
+            'ticket_link' => $ticketStatus === 'AVAILABLE' ? $fact('https://www.ticketmaster.com/event/1') : null, 'price_ranges' => null,
+        ];
+        DB::table('events')->insert([
+            'event_id' => $eventId, 'provider_id' => 'ticketmaster', 'provider_event_id' => 'tm-'.$eventId,
+            'event_json' => json_encode($event, JSON_THROW_ON_ERROR), 'created_at' => now(), 'updated_at' => now(),
+        ]);
     }
 
     /** @return array<string, mixed> SCH-Poi with UNKNOWN / UNVERIFIED facts */
@@ -297,7 +324,7 @@ final class TripPlanApiTest extends TestCase
 
         return [
             'poi_id' => $poiId,
-            'provider_ref' => ['provider_id' => 'osm_overpass', 'provider_place_id' => 'node/1'],
+            'provider_ref' => ['provider_id' => 'osm_overpass', 'provider_place_id' => 'node/'.$poiId],
             'name' => $name,
             'categories' => [],
             'location' => ['latitude' => 41.89, 'longitude' => 12.49, 'address' => null, 'iana_timezone' => null],

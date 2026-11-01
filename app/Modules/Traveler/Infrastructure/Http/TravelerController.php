@@ -5,7 +5,10 @@ namespace App\Modules\Traveler\Infrastructure\Http;
 use App\Modules\Authorization\Contracts\AccessControl;
 use App\Modules\Authorization\Contracts\AccessDenied;
 use App\Modules\Authorization\Contracts\AccessRequest;
+use App\Modules\Authorization\Contracts\AuditIdentity;
+use App\Modules\Authorization\Contracts\PrincipalRef;
 use App\Modules\Traveler\Contracts\TravelerService;
+use App\Modules\Traveler\Domain\Traveler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -28,11 +31,12 @@ final readonly class TravelerController
     public function __construct(
         private TravelerService $travelers,
         private AccessControl $access,
+        private AuditIdentity $auditIdentity,
     ) {}
 
     public function store(Request $request): JsonResponse
     {
-        if ($denied = $this->authorize('create')) {
+        if ($denied = $this->authorize($request, 'create')) {
             return $denied;
         }
 
@@ -68,15 +72,15 @@ final readonly class TravelerController
             ]);
         }
 
-        $traveler = $this->travelers->create($validator->validated());
+        $traveler = $this->travelers->create(Traveler::withoutClaimedVerification($validator->validated()));
 
         return response()->json($traveler->toContract())
             ->header('Location', route('travelers.show', ['travelerId' => $traveler->id], false));
     }
 
-    public function show(string $travelerId): JsonResponse
+    public function show(Request $request, string $travelerId): JsonResponse
     {
-        if ($denied = $this->authorize('read')) {
+        if ($denied = $this->authorize($request, 'read')) {
             return $denied;
         }
 
@@ -89,16 +93,21 @@ final readonly class TravelerController
         return response()->json($traveler->toContract());
     }
 
-    private function authorize(string $action): ?JsonResponse
+    private function authorize(Request $request, string $action): ?JsonResponse
     {
         // POLICY-TRAVELER-001 / POLICY-PII-VIEW-001 require a trusted Trip/Traveler binding.
         // OD-013 and the v3.16 OD-021 scope do not define that binding. Neither a bearer
         // principal nor caller-supplied trip_id/id establishes membership or consent.
         // Evaluate the existing matrix with no granted scope before touching PII storage.
-        // PrincipalRef and caller-supplied document/profile values must not enter the audit log.
+        // Raw PrincipalRef parts and caller-supplied document/profile values must not enter the audit log.
+        $principal = $request->attributes->get(PrincipalRef::class);
+
         try {
             $this->access->ensure(new AccessRequest(
-                subjectId: '',
+                // Without an audit key the route still answers 403: this request is always denied, only unattributed.
+                subjectId: $principal instanceof PrincipalRef && $this->auditIdentity->isAvailable()
+                    ? $this->auditIdentity->subjectId($principal)
+                    : '',
                 rolesInTrip: [],
                 resource: 'Traveler.basic',
                 action: $action,

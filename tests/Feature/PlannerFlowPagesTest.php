@@ -166,6 +166,11 @@ final class FixedTripRequestService implements TripRequestService
             outboundDate: ['type' => 'EXACT', 'date' => '2026-10-15'],
         );
     }
+
+    public function ownedBy(\App\Modules\Authorization\Contracts\PrincipalRef $owner): array
+    {
+        return [];
+    }
 }
 
 final class AvailableSearchExecutor implements FlightSearchExecutor

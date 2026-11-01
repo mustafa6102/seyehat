@@ -4,6 +4,7 @@ namespace App\Modules\CandidateGenerator\Application;
 
 use App\Modules\CandidateGenerator\Contracts\CandidateEvaluation;
 use App\Modules\CandidateGenerator\Contracts\CandidateGenerationResult;
+use App\Modules\CandidateGenerator\Contracts\BudgetedCandidateLegSearch;
 use App\Modules\CandidateGenerator\Contracts\CandidateGenerator;
 use App\Modules\CandidateGenerator\Contracts\CandidateKind;
 use App\Modules\CandidateGenerator\Contracts\CandidateLegSearch;
@@ -93,8 +94,16 @@ final readonly class BoundedCandidateGenerator implements CandidateGenerator
             }
 
             $legs = $candidate->legs();
-            // Once the budget refuses a candidate no further provider work is started (AC-RCG-001-02).
-            if ($exhausted || ! $ledger->tryReserve(count($legs))) {
+            $requestCounts = array_map(
+                fn ($leg): int => $this->legSearch instanceof BudgetedCandidateLegSearch
+                    ? $this->legSearch->requestCount($leg)
+                    : 1,
+                $legs,
+            );
+            $requiredRequests = array_sum($requestCounts);
+            $invalidRequestCount = array_filter($requestCounts, static fn (int $requests): bool => $requests < 0) !== [];
+            // A multi-leg candidate is atomic: reserve its complete provider cost before starting any leg.
+            if ($invalidRequestCount || ($requiredRequests > 0 && ($exhausted || ! $ledger->tryReserve($requiredRequests)))) {
                 $exhausted = true;
                 $evaluations[] = new CandidateEvaluation($candidate, CandidateOutcome::BUDGET_EXHAUSTED, $checks);
 
@@ -105,7 +114,12 @@ final readonly class BoundedCandidateGenerator implements CandidateGenerator
             foreach ($legs as $leg) {
                 $legResults[] = $this->legSearch->search($leg, $providerId);
             }
-            $evaluations[] = new CandidateEvaluation($candidate, CandidateOutcome::QUERIED, $checks, $legResults);
+            $evaluations[] = new CandidateEvaluation(
+                $candidate,
+                CandidateOutcome::QUERIED,
+                $checks,
+                $legResults,
+            );
         }
 
         return new CandidateGenerationResult($evaluations, $ledger?->used() ?? 0, $limit, array_values(array_unique($blockers)));

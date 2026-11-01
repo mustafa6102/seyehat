@@ -289,6 +289,11 @@ final class ProviderResilienceTest extends TestCase
                 // v3.9 round trip whose return ends before the outbound starts (RULE-TRIP-001-05).
                 return new TripRequestView('SEARCHABLE', $place, $place, null, 1, null, 'ROUND_TRIP', ['type' => 'EXACT', 'date' => '2026-10-20'], ['type' => 'EXACT', 'date' => '2026-10-15']);
             }
+
+            public function ownedBy(\App\Modules\Authorization\Contracts\PrincipalRef $owner): array
+            {
+                return [];
+            }
         });
         $adapter = new ScriptedProviderAdapter('provider-a', fn (): array => []);
         $gated = new LocationGatedFlightSearchExecutor(new ResilientFlightSearchExecutor([$adapter], app(ProviderCallGuard::class), new FlightOfferAggregator));
@@ -339,6 +344,11 @@ final class ProviderResilienceTest extends TestCase
 
                 // SEARCHABLE but without a traveler: not representable as SCH-FlightSearchCriteria.
                 return new TripRequestView('SEARCHABLE', $place, $place, null, 0, null, 'ONE_WAY', ['type' => 'EXACT', 'date' => '2026-10-15']);
+            }
+
+            public function ownedBy(\App\Modules\Authorization\Contracts\PrincipalRef $owner): array
+            {
+                return [];
             }
         });
         $adapter = new ScriptedProviderAdapter('provider-a', fn (): array => []);

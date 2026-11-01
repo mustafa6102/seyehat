@@ -1,0 +1,10 @@
+{
+  "status": "PROPOSED_INACTIVE",
+  "records": [
+    {"id": "CFG-RCG-PROVIDER-SEARCH-BUDGET", "type": "integer", "unit": "request", "scope": "provider_id + operation", "version_required": true, "default": null},
+    {"id": "CFG-STF-MIN-CONNECTION", "type": "integer", "unit": "second", "scope": "airport/terminal/baggage applicability", "version_required": true, "default": null},
+    {"id": "CFG-RCG-MAX-RESULTS", "type": "integer", "unit": "route", "scope": "route search", "version_required": true, "default": null},
+    {"id": "CFG-RCG-HUB-SEED-SOURCE", "type": "evidence source reference", "scope": "provider/market", "version_required": true, "default": null}
+  ],
+  "rule": "Missing or stale configuration is fail-closed and cannot be replaced by a code default."
+}

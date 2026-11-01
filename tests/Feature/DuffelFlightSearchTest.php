@@ -548,6 +548,11 @@ final class DuffelFlightSearchTest extends TestCase
             {
                 return $id === 'trip-duffel' ? $this->view : null;
             }
+
+            public function ownedBy(\App\Modules\Authorization\Contracts\PrincipalRef $owner): array
+            {
+                return [];
+            }
         };
     }
 

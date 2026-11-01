@@ -2,6 +2,7 @@
 
 namespace App\Logging;
 
+use Closure;
 use Monolog\LogRecord;
 use Throwable;
 
@@ -18,13 +19,17 @@ final class RedactSensitiveContext
         'authorization' => true,
         'birth_date' => true,
         'bot_user_oauth_token' => true,
+        'ciphertext' => true,
         'client_secret' => true,
         'cookie' => true,
         'date_of_birth' => true,
         'document_number' => true,
+        'encrypted_dek' => true,
         // PLT-PII-001: SENSITIVE_PII traveler document/visa/residence permit data (TravelerDocument, Visa, ResidencePermit).
         'document_type' => true,
         'held_visas' => true,
+        'nationalities' => true,
+        'nationality' => true,
         'residence_permits' => true,
         'travel_documents' => true,
         'email' => true,
@@ -45,6 +50,11 @@ final class RedactSensitiveContext
         'x_diagnostics_token' => true,
     ];
 
+    /** Normalized context keys written as a stable pseudonym, so records stay joinable without the raw id. */
+    private const PSEUDONYMIZED_KEYS = [
+        'traveler_id' => true,
+    ];
+
     /** Values shorter than this are not scrubbed by value (too likely to match ordinary text). */
     private const MIN_SECRET_LENGTH = 4;
 
@@ -54,8 +64,9 @@ final class RedactSensitiveContext
     /**
      * @param  list<mixed>  $secretValues  configured credentials (provider tokens, usernames used as API keys, ...)
      *                                     that must not appear anywhere in a record, whatever key or text carries them
+     * @param  (Closure(string): ?string)|null  $pseudonym  null result or no closure redacts the value instead
      */
-    public function __construct(array $secretValues = [])
+    public function __construct(array $secretValues = [], private readonly ?Closure $pseudonym = null)
     {
         $values = array_values(array_unique(array_filter(
             $secretValues,
@@ -82,6 +93,11 @@ final class RedactSensitiveContext
     private function redact(array $values): array
     {
         foreach ($values as $key => $value) {
+            if (is_string($key) && isset(self::PSEUDONYMIZED_KEYS[str_replace('-', '_', strtolower($key))])) {
+                $values[$key] = $value === null ? null : $this->pseudonymize($value);
+
+                continue;
+            }
             if (is_string($key) && isset(self::SENSITIVE_KEYS[str_replace('-', '_', strtolower($key))])) {
                 $values[$key] = self::REDACTED;
 
@@ -97,6 +113,13 @@ final class RedactSensitiveContext
         }
 
         return $values;
+    }
+
+    private function pseudonymize(mixed $value): string
+    {
+        $pseudonym = is_string($value) && $this->pseudonym !== null ? ($this->pseudonym)($value) : null;
+
+        return $pseudonym ?? self::REDACTED;
     }
 
     private function scrub(string $text): string

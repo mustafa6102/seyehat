@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:proposal:v3.24:rcg-stf",
+  "status": "PROPOSED_INACTIVE",
+  "$defs": {
+    "RouteOfferReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sequence", "provider_id", "provider_offer_id", "origin_id", "destination_id", "offer_state"],
+      "properties": {
+        "sequence": {"type": "integer", "minimum": 1},
+        "provider_id": {"type": "string", "minLength": 1},
+        "provider_offer_id": {"type": "string", "minLength": 1},
+        "origin_id": {"type": "string", "minLength": 1},
+        "destination_id": {"type": "string", "minLength": 1},
+        "offer_state": {"type": "string", "enum": ["CURRENT", "CHANGED", "EXPIRED", "UNVERIFIED"]}
+      }
+    },
+    "PruningEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["check", "verdict", "evidence_ref", "evidence_version", "evaluated_at"],
+      "properties": {
+        "check": {"type": "string", "enum": ["SEED", "CONNECTIVITY", "DETOUR", "PROVIDER_COVERAGE", "SAVINGS", "COMPLIANCE"]},
+        "verdict": {"type": "string", "enum": ["PASS", "FAIL", "UNKNOWN"]},
+        "evidence_ref": {"type": ["string", "null"]},
+        "evidence_version": {"type": ["string", "null"]},
+        "evaluated_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "RoutePrice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["currency", "known_minor_units", "classification", "unknown_components"],
+      "properties": {
+        "currency": {"type": ["string", "null"], "pattern": "^[A-Z]{3}$"},
+        "known_minor_units": {"type": ["integer", "null"], "minimum": 0},
+        "classification": {"type": "string", "enum": ["COMPLETE", "PARTIAL", "UNKNOWN"]},
+        "unknown_components": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "SelfTransferRoute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["route_id", "kind", "offers", "price", "total_duration_seconds", "risk_level", "protection", "decision", "reason_codes", "pruning_evidence"],
+      "properties": {
+        "route_id": {"type": "string", "minLength": 1},
+        "kind": {"type": "string", "enum": ["DIRECT", "SELF_TRANSFER", "ALTERNATIVE_ARRIVAL"]},
+        "offers": {"type": "array", "items": {"$ref": "#/$defs/RouteOfferReference"}, "minItems": 1, "maxItems": 2},
+        "price": {"$ref": "#/$defs/RoutePrice"},
+        "total_duration_seconds": {"type": ["integer", "null"], "minimum": 0},
+        "risk_level": {"type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "UNKNOWN"]},
+        "protection": {"type": "string", "enum": ["PROTECTED", "UNPROTECTED", "UNKNOWN"]},
+        "decision": {"type": "string", "enum": ["RECOMMENDED", "SHOWN_WITH_WARNING", "REJECTED"]},
+        "reason_codes": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "pruning_evidence": {"type": "array", "items": {"$ref": "#/$defs/PruningEvidence"}}
+      }
+    },
+    "RouteSelection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trip_request_id", "route_id", "offers", "selected_at", "selection_state"],
+      "properties": {
+        "trip_request_id": {"type": "string", "minLength": 1},
+        "route_id": {"type": "string", "minLength": 1},
+        "offers": {"type": "array", "items": {"$ref": "#/$defs/RouteOfferReference"}, "minItems": 1, "maxItems": 2},
+        "selected_at": {"type": "string", "format": "date-time"},
+        "selection_state": {"type": "string", "enum": ["CURRENT", "RECONFIRMATION_REQUIRED", "UNAVAILABLE"]}
+      }
+    }
+  }
+}

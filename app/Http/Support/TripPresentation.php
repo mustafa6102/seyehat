@@ -20,6 +20,23 @@ final readonly class TripPresentation
         'supported_location' => 'Diğer konum',
     ];
 
+    /** Approved TripRequest states rendered for ordinary users; unknown internal values fail closed. */
+    public function status(string $status): string
+    {
+        return match ($status) {
+            'SEARCHABLE' => 'Uçuş aramaya hazır',
+            'DRAFT' => 'Taslak',
+            default => 'Durum bilgisi kullanılamıyor',
+        };
+    }
+
+    /** Stored plan transition reasons rendered without exposing internal reason codes. */
+    public function planReason(string $reason): string
+    {
+        return $reason === 'RC-DECISION-TRANSITION-APPLIED'
+            ? 'Kullanıcı değişikliği'
+            : 'Değişiklik gerekçesi ayrıntılı olarak gösterilemiyor';
+    }
     public function __construct(private LocationCatalog $locationCatalog) {}
 
     /**

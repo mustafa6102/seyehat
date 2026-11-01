@@ -58,7 +58,7 @@ final class TripPlannerController extends Controller
             ];
         }
 
-        return $this->plannerView(['recentTrips' => $recentTrips]);
+        return $this->plannerView(['recentTrips' => $recentTrips, 'signedIn' => $this->principals->resolve($request) !== null]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -173,6 +173,9 @@ final class TripPlannerController extends Controller
         if ($journeyErrors !== []) {
             throw ValidationException::withMessages($journeyErrors);
         }
+        if ($this->isSamePlace($input['origin_place'], $input['destination_place'])) {
+            throw ValidationException::withMessages(['destination_value' => 'Başlangıç ve varış aynı konum olamaz; farklı bir varış seçin.']);
+        }
 
         try {
             $created = $this->tripRequests->create($input, $owner);
@@ -231,6 +234,7 @@ final class TripPlannerController extends Controller
             'origin' => $this->presentation->place($tripRequest->originPlace),
             'destination' => $this->presentation->place($tripRequest->destinationPlace),
             'journey' => $this->presentation->journey($tripRequest),
+            'statusLabel' => $this->presentation->status($tripRequest->status),
             'flightSearchAvailable' => $flightSearch->isAvailable(),
         ]);
     }
@@ -252,8 +256,8 @@ final class TripPlannerController extends Controller
             'tripRequestId' => $tripRequestId,
             'origin' => $this->presentation->place($tripRequest->originPlace)['label'],
             'destination' => $this->presentation->place($tripRequest->destinationPlace)['label'],
-            'groundStatus' => 'UNKNOWN',
-            'costCompleteness' => 'PARTIAL',
+            'groundStatus' => 'Doğrulanmış veri bulunamadı',
+            'costCompleteness' => 'Kısmi; kara ulaşımı maliyetleri eksik',
             'unknownComponents' => [
                 'Kara bağlantısının ücreti ve süresi',
                 'İstasyona erişim ve bekleme süresi',
@@ -321,7 +325,7 @@ final class TripPlannerController extends Controller
         return view('trip-plan', ['plan' => [
             'destination' => $this->presentation->place($tripRequest->destinationPlace)['label'],
             'dates' => $dates,
-            'status' => ['SEARCHABLE' => 'Aramaya hazır', 'DRAFT' => 'Taslak'][$tripRequest->status] ?? $tripRequest->status,
+            'status' => $this->presentation->status($tripRequest->status),
             'travelers' => $travelers,
             'flight' => $flight,
             'stay' => $stay,
@@ -340,6 +344,47 @@ final class TripPlannerController extends Controller
         ]);
     }
 
+    /** Immutable TRIP-BLD-001 revision history; only the TripRequest owner may view it. */
+    public function planHistory(Request $request, string $tripRequestId, TripRequestOwnership $ownership, TripPlanService $tripPlans): View
+    {
+        $principal = $this->principals->resolve($request);
+        abort_if($principal === null, 401);
+        $access = $ownership->check($principal, $tripRequestId);
+        abort_if($access === OwnershipDecision::NOT_FOUND, 404);
+        abort_unless($access === OwnershipDecision::ALLOWED, 403);
+
+        $revisions = $tripPlans->history($tripRequestId);
+        $knownNames = [];
+        foreach (array_reverse($revisions) as $revision) {
+            foreach ($revision['items'] as $item) {
+                $knownNames[$item['item_id']] = $item['poi_snapshot']['name']
+                    ?? $item['event_snapshot']['name']
+                    ?? 'Adı bilinmeyen plan öğesi';
+            }
+        }
+
+        $history = array_map(function (array $revision) use ($knownNames): array {
+            $names = static fn (array $ids): array => array_values(array_map(
+                fn (string $id): string => is_string($knownNames[$id] ?? null) ? $knownNames[$id] : 'Adı bilinmeyen plan öğesi',
+                $ids,
+            ));
+
+            return [
+                'version' => $revision['version'],
+                'current' => $revision['status'] === 'CURRENT',
+                'created_at' => Carbon::parse($revision['created_at'])->locale('tr')->translatedFormat('j F Y, H:i'),
+                'reason' => $this->presentation->planReason($revision['change']['reason_code']),
+                'added' => $names($revision['change']['added_item_ids']),
+                'removed' => $names($revision['change']['removed_item_ids']),
+                'moved' => $names($revision['change']['moved_item_ids']),
+                'updated' => $names($revision['change']['updated_item_ids'] ?? []),
+                'item_count' => count($revision['items']),
+            ];
+        }, $revisions);
+
+        return view('trip-plan-history', compact('tripRequestId', 'history'));
+    }
+
     /**
      * The owner's unscheduled FLEXIBLE POI items of the CURRENT PlanRevision (v3.16), read through TripPlanService (never
      * creates a Trip). version is null before the first revision; it is the OD-027 precondition of the web forms.
@@ -354,22 +399,44 @@ final class TripPlannerController extends Controller
         $body = $tripPlans->read($tripRequestId)['body'];
         $revision = $body['revision'];
         $frame = $body['day_frame'];
-        $items = array_map(fn (array $item): array => [
-            'item_id' => $item['item_id'],
-            'poi' => PoiPresentation::describe($item['poi_snapshot']),
-            'identity' => [
-                'poi_id' => (string) $item['poi_snapshot']['poi_id'],
-                'provider_id' => (string) $item['poi_snapshot']['provider_ref']['provider_id'],
-                'provider_place_id' => (string) $item['poi_snapshot']['provider_ref']['provider_place_id'],
-            ],
-            'date' => $item['day_assignment']['date'] ?? null,
-            'position' => $item['day_assignment']['position'] ?? null,
-            'url' => route('web-api.trip-plan.items.day-assignment', ['tripRequestId' => $tripRequestId, 'itemId' => $item['item_id']]),
-            'duration' => $item['planning_duration'] ?? null,
-            'duration_url' => route('web-api.trip-plan.items.duration', ['tripRequestId' => $tripRequestId, 'itemId' => $item['item_id']]),
-            'guide_url' => route('web-api.trip-plan.items.guide.show', ['tripRequestId' => $tripRequestId, 'itemId' => $item['item_id']]),
-            'guide_refresh_url' => route('web-api.trip-plan.items.guide.refresh', ['tripRequestId' => $tripRequestId, 'itemId' => $item['item_id']]),
-        ], $revision['items'] ?? []);
+        $items = array_map(function (array $item) use ($tripRequestId): array {
+            if (($item['item_type'] ?? null) === 'EVENT') {
+                $event = $item['event_snapshot'] ?? [];
+                $start = $event['starts_at']['value'] ?? null;
+
+                return [
+                    'item_id' => $item['item_id'],
+                    'item_type' => 'EVENT',
+                    'event' => [
+                        'name' => is_string($event['name'] ?? null) ? $event['name'] : 'İsimsiz etkinlik',
+                        'starts_at' => is_string($start) ? $start : null,
+                        'iana_timezone' => is_string($event['iana_timezone'] ?? null) ? $event['iana_timezone'] : null,
+                        'venue' => is_array($event['venue'] ?? null) ? ($event['venue']['name'] ?? null) : null,
+                    ],
+                    'date' => null,
+                    'position' => null,
+                    'duration' => null,
+                ];
+            }
+
+            return [
+                'item_id' => $item['item_id'],
+                'item_type' => 'POI',
+                'poi' => PoiPresentation::describe($item['poi_snapshot']),
+                'identity' => [
+                    'poi_id' => (string) $item['poi_snapshot']['poi_id'],
+                    'provider_id' => (string) $item['poi_snapshot']['provider_ref']['provider_id'],
+                    'provider_place_id' => (string) $item['poi_snapshot']['provider_ref']['provider_place_id'],
+                ],
+                'date' => $item['day_assignment']['date'] ?? null,
+                'position' => $item['day_assignment']['position'] ?? null,
+                'url' => route('web-api.trip-plan.items.day-assignment', ['tripRequestId' => $tripRequestId, 'itemId' => $item['item_id']]),
+                'duration' => $item['planning_duration'] ?? null,
+                'duration_url' => route('web-api.trip-plan.items.duration', ['tripRequestId' => $tripRequestId, 'itemId' => $item['item_id']]),
+                'guide_url' => route('web-api.trip-plan.items.guide.show', ['tripRequestId' => $tripRequestId, 'itemId' => $item['item_id']]),
+                'guide_refresh_url' => route('web-api.trip-plan.items.guide.refresh', ['tripRequestId' => $tripRequestId, 'itemId' => $item['item_id']]),
+            ];
+        }, $revision['items'] ?? []);
 
         $days = [];
         foreach ($frame['days'] as $index => $date) {
@@ -415,7 +482,7 @@ final class TripPlannerController extends Controller
      */
     private function revisionChange(array $revision, array $items): array
     {
-        $names = array_column(array_map(fn (array $item): array => ['id' => $item['item_id'], 'name' => $item['poi']['name']], $items), 'name', 'id');
+        $names = array_column(array_map(fn (array $item): array => ['id' => $item['item_id'], 'name' => $item['poi']['name'] ?? $item['event']['name'] ?? 'Adı bilinmeyen plan öğesi'], $items), 'name', 'id');
         $reason = $revision['change']['reason_code'];
 
         return [
@@ -426,8 +493,7 @@ final class TripPlannerController extends Controller
             'moved' => array_values(array_map(fn (string $id): string => $names[$id] ?? 'Adı bilinmeyen yer', $revision['change']['moved_item_ids'])),
             'updated' => array_values(array_map(fn (string $id): string => $names[$id] ?? 'Adı bilinmeyen yer', $revision['change']['updated_item_ids'] ?? [])),
             'removed_count' => count($revision['change']['removed_item_ids']),
-            // v3.16: RC-DECISION-TRANSITION-APPLIED is the user add/remove reason; any other stored code is shown unchanged.
-            'reason' => $reason === TripPlanService::REASON_CODE ? 'Kullanıcı değişikliği' : $reason,
+            'reason' => $this->presentation->planReason($reason),
         ];
     }
 
@@ -604,6 +670,20 @@ final class TripPlannerController extends Controller
         }
 
         return $errors;
+    }
+
+    /**
+     * The form's check for one place chosen on both sides: the same catalog entry, or a city and airport sharing an IATA code.
+     *
+     * @param  array<string, mixed>  $origin
+     * @param  array<string, mixed>  $destination
+     */
+    private function isSamePlace(array $origin, array $destination): bool
+    {
+        $code = $origin['aviation_identity']['code'] ?? null;
+
+        return ($origin['kind'] === $destination['kind'] && $origin['value'] === $destination['value'])
+            || ($code !== null && $code === ($destination['aviation_identity']['code'] ?? null));
     }
 
     /** @param  array<string, mixed>  $data */

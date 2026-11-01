@@ -41,18 +41,6 @@ final class RoundTripFlightOfferTest extends TestCase
         config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:']);
         DB::purge('sqlite');
         $this->artisan('migrate', ['--force' => true])->assertSuccessful();
-        Schema::create('trip_request_flight_selections', function ($table): void {
-            $table->string('trip_request_id', 255)->primary();
-            $table->string('status', 32);
-            $table->longText('offer_snapshot');
-            $table->string('provider_id', 64);
-            $table->string('provider_offer_id', 255);
-            $table->bigInteger('verified_price_minor_units')->nullable();
-            $table->char('verified_price_currency', 3)->nullable();
-            $table->dateTime('verified_at');
-            $table->dateTime('expires_at');
-            $table->timestamps();
-        });
         $this->now = new DateTimeImmutable('now');
     }
 
@@ -206,6 +194,11 @@ final class RoundTripFlightOfferTest extends TestCase
                     preferences: null, journeyType: $this->journeys[$id], outboundDate: ['type' => 'EXACT', 'date' => '2026-10-24'],
                     returnDate: $this->journeys[$id] === 'ROUND_TRIP' ? ['type' => 'EXACT', 'date' => '2026-10-31'] : null,
                 );
+            }
+
+            public function ownedBy(\App\Modules\Authorization\Contracts\PrincipalRef $owner): array
+            {
+                return [];
             }
         };
 

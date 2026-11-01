@@ -5,6 +5,7 @@ namespace App\Modules\FlightSearch\Contracts;
 use App\Modules\Api\Contracts\TripJourney;
 use App\Modules\Api\Contracts\TripRequestView;
 use App\Modules\ProviderAcl\Contracts\AviationIdentity;
+use DateTimeImmutable;
 use InvalidArgumentException;
 
 /**
@@ -61,6 +62,40 @@ final readonly class FlightSearchCriteria
             $tripRequest->travelerCount,
             $tripRequest->passengerComposition,
         );
+    }
+
+    /**
+     * Internal RCG leg mapping. It preserves the original passenger semantics and accepts only an explicit EXACT
+     * date plus canonical LocationRef values; no range date, cabin, currency or passenger type is inferred.
+     *
+     * @param array{kind: string, value: string, iana_timezone: string, aviation_identity?: array{type: string, code: string}} $originPlace
+     * @param array{kind: string, value: string, iana_timezone: string, aviation_identity?: array{type: string, code: string}} $destinationPlace
+     */
+    public static function forOneWayLeg(
+        self $original,
+        array $originPlace,
+        array $destinationPlace,
+        string $date,
+    ): self {
+        if (DateTimeImmutable::createFromFormat('!Y-m-d', $date) === false) {
+            throw new InvalidArgumentException('An independent leg requires an explicit exact date.');
+        }
+
+        $criteria = new self(
+            tripRequestId: $original->tripRequestId,
+            originPlace: $originPlace,
+            destinationPlace: $destinationPlace,
+            journeyType: 'ONE_WAY',
+            outboundDate: ['type' => 'EXACT', 'date' => $date],
+            returnDate: null,
+            travelerCount: $original->travelerCount,
+            passengerComposition: $original->passengerComposition,
+        );
+        if ($criteria->locationBlockerTr() !== null) {
+            throw new InvalidArgumentException('Independent leg locations require canonical aviation identities.');
+        }
+
+        return $criteria;
     }
 
     /**

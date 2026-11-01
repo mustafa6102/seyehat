@@ -156,7 +156,7 @@ final readonly class TicketmasterEventAdapter
 
         // Ticket link: HTTPS only, approved host only (CFG-INVENTORY-CTA, OD-P8-002).
         $ticketLink = null;
-        if (is_string($url) && str_starts_with($url, 'https://')) {
+        if ($eventStatus === 'SCHEDULED' && $ticketStatusValue === 'AVAILABLE' && is_string($url) && str_starts_with($url, 'https://')) {
             $host = strtolower((string) parse_url($url, PHP_URL_HOST));
             if (in_array($host, array_map('strtolower', $approvedHosts), true)) {
                 $ticketLink = $fact($url, 'EXACT');

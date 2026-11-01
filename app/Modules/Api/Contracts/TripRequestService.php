@@ -16,4 +16,7 @@ interface TripRequestService
     public function create(array $input, PrincipalRef $owner): CreatedTripRequest;
 
     public function get(string $id): ?TripRequestView;
+
+    /** @return list<array{id: string, trip_request: TripRequestView}> */
+    public function ownedBy(PrincipalRef $owner): array;
 }

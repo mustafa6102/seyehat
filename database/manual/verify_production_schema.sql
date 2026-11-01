@@ -257,3 +257,26 @@ WHERE parent.TABLE_SCHEMA = DATABASE()
   )
 ORDER BY parent.TABLE_NAME, child.TABLE_NAME;
 
+-- EVT-001 v3.22 storage (read-only). Both result sets must be empty after an approved deployment.
+SELECT expected.table_name
+FROM (
+    SELECT 'events' AS table_name
+    UNION ALL SELECT 'event_discovery_jobs'
+) AS expected
+LEFT JOIN information_schema.TABLES AS actual
+  ON actual.TABLE_SCHEMA = DATABASE() AND actual.TABLE_NAME = expected.table_name
+WHERE actual.TABLE_NAME IS NULL;
+
+SELECT expected.table_name, expected.index_name
+FROM (
+    SELECT 'events' AS table_name, 'uq_events_provider' AS index_name
+    UNION ALL SELECT 'event_discovery_jobs', 'uq_event_discovery_jobs_key'
+    UNION ALL SELECT 'event_discovery_jobs', 'idx_event_discovery_jobs_trip'
+) AS expected
+LEFT JOIN information_schema.STATISTICS AS actual
+  ON actual.TABLE_SCHEMA = DATABASE()
+ AND actual.TABLE_NAME = expected.table_name
+ AND actual.INDEX_NAME = expected.index_name
+WHERE actual.INDEX_NAME IS NULL
+GROUP BY expected.table_name, expected.index_name;
+

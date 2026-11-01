@@ -27,7 +27,7 @@
                     badge.className = slot.verification_status === 'STALE' ? 'badge badge-warning' : 'badge badge-unverified';
                     badge.textContent = slot.knowledge_status === 'UNKNOWN' ? 'Bilgi mevcut değil' : ({
                         UNVERIFIED: 'Doğrulanamadı', STALE: 'Güncelliğini yitirmiş', EXPIRED: 'Süresi doldu',
-                    }[slot.verification_status] ?? slot.verification_status);
+                    }[slot.verification_status] ?? 'Bilginin doğrulama durumu bilinmiyor');
                     article.append(badge);
                 }
                 const source = safeUrl(slot.source_reference);

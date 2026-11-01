@@ -20,7 +20,6 @@ use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\Fakes\InMemoryTripRequestRepository;
 use Tests\TestCase;
@@ -289,11 +288,6 @@ final class OidcBearerAuthenticationTest extends TestCase
         config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:']);
         DB::purge('sqlite');
         $this->artisan('migrate', ['--force' => true])->assertSuccessful();
-        // Mirrors the manually applied v3.16 SQL (owner columns are not created by a migration in this project).
-        Schema::table('trip_requests', function ($table): void {
-            $table->string('owner_issuer', 255)->nullable();
-            $table->string('owner_subject', 255)->nullable();
-        });
 
         return new DatabaseTripRequestRepository(DB::connection());
     }

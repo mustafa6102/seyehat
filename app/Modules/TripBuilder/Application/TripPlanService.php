@@ -52,12 +52,25 @@ final readonly class TripPlanService
     }
 
     /**
+     * Immutable revision history for the already-authorized owner. Reading history never creates or mutates a Trip.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function history(string $tripRequestId): array
+    {
+        $trip = $this->plans->tripFor($tripRequestId);
+
+        return $trip === null ? [] : $this->plans->revisions($trip['trip_id']);
+    }
+
+    /**
      * OP-addTripPlanPoiItem: the snapshot is the stored canonical SCH-Poi, unchanged (ADR-005); no provider call.
      *
      * @return array{body: array<string, mixed>, etag: string|null}
      *
      * @throws PlanMutationRejected
      */
+
     public function addPoi(string $tripRequestId, string $idempotencyKey, PlanPrecondition $precondition, string $poiId): array
     {
         $fingerprint = $this->fingerprint('add', $tripRequestId, $poiId, $precondition);
@@ -69,20 +82,18 @@ final readonly class TripPlanService
         if ($poi === null) {
             throw PlanMutationRejected::notFound('Gezilecek yer bulunamadı.');
         }
+
+        $businessStatus = $poi['business_status']['value'] ?? 'UNKNOWN';
+        if (in_array($businessStatus, ['CLOSED_TEMPORARILY', 'CLOSED_PERMANENTLY'], true)) {
+            throw PlanMutationRejected::notFound('Kapalı olarak bildirilen gezilecek yer plana eklenemez.');
+        }
+
         $item = ['item_id' => (string) Str::uuid(), 'item_type' => 'POI', 'constraint_type' => 'FLEXIBLE', 'poi_snapshot' => $poi, 'day_assignment' => null, 'planning_duration' => null];
 
         return $this->commit($tripRequestId, $idempotencyKey, $fingerprint, $precondition, true,
             fn (array $items): array => [[...$items, $item], [$item['item_id']], [], [], []]);
     }
 
-    /**
-     * OP-addTripPlanEventItem (EVT-001 v3.22): the snapshot is the stored canonical SCH-Event; constraint is FIXED.
-     * No provider call is made here — the event must already exist in canonical storage (RunEventDiscovery).
-     *
-     * @return array{body: array<string, mixed>, etag: string|null}
-     *
-     * @throws PlanMutationRejected
-     */
     public function addEvent(string $tripRequestId, string $idempotencyKey, PlanPrecondition $precondition, string $eventId): array
     {
         $fingerprint = $this->fingerprint('add-event', $tripRequestId, $eventId, $precondition);
@@ -94,6 +105,28 @@ final readonly class TripPlanService
         if ($event === null) {
             throw PlanMutationRejected::notFound('Etkinlik bulunamadı.');
         }
+
+        $status = $event['status'] ?? null;
+        $ticketStatus = $event['ticket_status'] ?? null;
+        $startsAt = $event['starts_at'] ?? null;
+        $timezone = $event['iana_timezone'] ?? null;
+        $isFreshFact = static fn (mixed $fact): bool => is_array($fact)
+            && ($fact['verification_status'] ?? null) === 'FRESH'
+            && is_string($fact['expires_at'] ?? null)
+            && strtotime($fact['expires_at']) !== false
+            && strtotime($fact['expires_at']) > time();
+
+        if (! $isFreshFact($status) || ($status['value'] ?? null) !== 'SCHEDULED') {
+            throw PlanMutationRejected::notFound('İptal edilmiş veya güncelliği doğrulanamayan etkinlik plana eklenemez.');
+        }
+        if (! $isFreshFact($ticketStatus) || ($ticketStatus['value'] ?? null) !== 'AVAILABLE') {
+            throw PlanMutationRejected::notFound('Bilet uygunluğu doğrulanamayan etkinlik plana eklenemez.');
+        }
+        if (! $isFreshFact($startsAt) || ! is_string($startsAt['value'] ?? null) || strtotime($startsAt['value']) === false
+            || ! is_string($timezone) || ! in_array($timezone, \DateTimeZone::listIdentifiers(), true)) {
+            throw PlanMutationRejected::notFound('Başlangıç zamanı ve saat dilimi doğrulanamayan etkinlik plana eklenemez.');
+        }
+
         $item = ['item_id' => (string) Str::uuid(), 'item_type' => 'EVENT', 'constraint_type' => 'FIXED', 'event_snapshot' => $event, 'day_assignment' => null, 'planning_duration' => null];
 
         return $this->commit($tripRequestId, $idempotencyKey, $fingerprint, $precondition, true,

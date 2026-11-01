@@ -42,7 +42,7 @@ final readonly class DuffelPlacesAviationLocationCatalog implements AviationLoca
         return $this->token() !== '' && $this->policies->for(self::PROVIDER_ID) !== null;
     }
 
-    public function search(string $query): array
+    public function search(string $query, ?string $countryCode = null): array
     {
         $query = trim($query);
         $length = mb_strlen($query);
@@ -58,10 +58,16 @@ final readonly class DuffelPlacesAviationLocationCatalog implements AviationLoca
             throw ProviderFailure::unavailable();
         }
 
-        return array_slice(array_values(array_filter(array_map(
+        $locations = array_filter(array_map(
             fn (mixed $row): ?LocationOption => is_array($row) ? $this->location($row) : null,
             $rows,
-        ))), 0, $maxResults);
+        ));
+        // Suggestions are global: the country narrows them before the limit, so other countries never crowd out its entries.
+        if ($countryCode !== null) {
+            $locations = array_filter($locations, fn (LocationOption $location): bool => $location->countryCode === $countryCode);
+        }
+
+        return array_slice(array_values($locations), 0, $maxResults);
     }
 
     /** @return array<array-key, mixed> */

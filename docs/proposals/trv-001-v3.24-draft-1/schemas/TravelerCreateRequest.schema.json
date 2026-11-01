@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ai-seyahat:proposed:v3.24:TravelerCreateRequest",
+  "title": "TravelerCreateRequest",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "age_category": {"type": "string"},
+    "nationalities": {"type": "array", "items": {"type": "string"}},
+    "travel_documents": {"type": "array", "items": {"$ref": "../../../../contracts/schemas/TravelerDocument.schema.json"}},
+    "held_visas": {"type": "array", "items": {"$ref": "../../../../contracts/v3.3/schemas/Visa.schema.json"}},
+    "residence_permits": {"type": "array", "items": {"$ref": "../../../../contracts/v3.3/schemas/ResidencePermit.schema.json"}}
+  },
+  "required": ["age_category", "nationalities", "travel_documents", "held_visas", "residence_permits"],
+  "x-contract-id": "SCH-TravelerCreateRequest-PROPOSED",
+  "x-version": "3.24-draft-1",
+  "x-status": "PROPOSED_NON_NORMATIVE",
+  "x-notes": [
+    "id sunucuda üretilir.",
+    "trip_id path parametresinden ve yetkili Trip kaydından bağlanır.",
+    "Kullanıcı girdili verification_status UNVERIFIED değerini aşamaz; kesin kural aktivasyon kararında tanımlanır."
+  ]
+}
+

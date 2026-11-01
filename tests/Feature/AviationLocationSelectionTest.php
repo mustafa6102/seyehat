@@ -9,6 +9,7 @@ use App\Modules\Api\Contracts\TripRequestView;
 use App\Modules\Api\Domain\TripRequest\LocationRef;
 use App\Modules\Api\Domain\TripRequest\TripRequest;
 use App\Modules\Api\Domain\TripRequest\TripRequestRepository;
+use App\Modules\Authorization\Contracts\PrincipalRef;
 use App\Modules\FlightSearch\Application\FlightOfferAggregator;
 use App\Modules\FlightSearch\Application\LocationGatedFlightSearchExecutor;
 use App\Modules\FlightSearch\Application\ResilientFlightSearchExecutor;
@@ -242,11 +243,12 @@ final class AviationLocationSelectionTest extends TestCase
         self::assertSame(['type' => 'IATA_AIRPORT', 'code' => 'IST'], $adapter->received[0]->originPlace['aviation_identity']);
         self::assertSame(['type' => 'IATA_CITY', 'code' => 'ROM'], $adapter->received[0]->destinationPlace['aviation_identity']);
 
-        // The visible title uses the aviation codes; catalog ids only appear inside the collapsed technical details.
+        // The visible title keeps useful aviation codes; ordinary users never receive catalog/provider identities.
         $summary = $this->get('/planlar/'.$stored->id)->assertOk()->getContent();
         self::assertMatchesRegularExpression('/<h1 class="page-title">IST <span aria-hidden="true">→<\/span><span class="visually-hidden">ile<\/span> ROM<\/h1>/', $summary);
-        self::assertSame(1, substr_count($summary, 'duffel:arp_ist_tr'));
-        self::assertMatchesRegularExpression('/<details class="technical">.*duffel:arp_ist_tr.*<\/details>/s', $summary);
+        self::assertStringNotContainsString('duffel:arp_ist_tr', $summary);
+        self::assertStringNotContainsString('duffel:cit_rom_it', $summary);
+        self::assertStringNotContainsString('Teknik ayrıntılar', $summary);
     }
 
     #[Test]
@@ -394,6 +396,8 @@ final class InMemoryTripRequestRepository implements TripRequestRepository
             'return_date' => $stored->returnDate,
             'traveler_count' => $stored->travelerCount,
             'preferences' => $stored->preferences,
+            'owner_issuer' => $stored->ownerIssuer,
+            'owner_subject' => $stored->ownerSubject,
         ], JSON_THROW_ON_ERROR);
 
         return $stored;
@@ -406,7 +410,16 @@ final class InMemoryTripRequestRepository implements TripRequestRepository
         }
         $row = json_decode($this->rows[$id], true, 512, JSON_THROW_ON_ERROR);
 
-        return new TripRequest($id, $row['status'], LocationRef::fromNullable($row['origin_place']), LocationRef::fromNullable($row['destination_place']), $row['date_window'], $row['traveler_count'], $row['preferences'], $row['journey_type'], $row['outbound_date'], $row['return_date']);
+        return new TripRequest($id, $row['status'], LocationRef::fromNullable($row['origin_place']), LocationRef::fromNullable($row['destination_place']), $row['date_window'], $row['traveler_count'], $row['preferences'], $row['journey_type'], $row['outbound_date'], $row['return_date'], ownerIssuer: $row['owner_issuer'], ownerSubject: $row['owner_subject']);
+    }
+
+    /** @return list<TripRequest> */
+    public function ownedBy(PrincipalRef $owner): array
+    {
+        return array_values(array_filter(
+            array_map(fn (string $id): ?TripRequest => $this->find($id), array_keys($this->rows)),
+            fn (?TripRequest $tripRequest): bool => $tripRequest?->owner()?->equals($owner) ?? false,
+        ));
     }
 
     public function count(): int

@@ -12,7 +12,7 @@
 
     <header class="page-header">
         <div>
-            <p class="eyebrow">GND-001 · Kara ulaşımı</p>
+            <p class="eyebrow">Kara ulaşımı</p>
             <h1 class="page-title">{{ $origin }} → {{ $destination }}</h1>
             <p class="page-lead">Alternatif havaalanı, tren, otobüs ve son kilometre bağlantıları yalnız doğrulanmış kaynak bulunduğunda hesaplanır.</p>
         </div>
@@ -49,7 +49,7 @@
     <section class="card" aria-labelledby="blocked-title">
         <h2 class="card-title" id="blocked-title">Henüz kullanılamayan işlemler</h2>
         <p>Doğrulanmış sağlayıcı sözleşmesi bulunmadığından kara ulaşımı araması başlatılamaz ve tren ya da otobüs teklifi seçilemez.</p>
-        <p class="field-hint">GND-001’in sağlayıcı destekli fiyat, süre, kaynak, rezervasyon bağlantısı ve geçerlilik dilimi tamamlanmış sayılmaz.</p>
+        <p class="field-hint">Sağlayıcı destekli fiyat, süre, kaynak, rezervasyon bağlantısı ve geçerlilik bilgileri henüz doğrulanmadı.</p>
         <a class="btn btn-secondary" href="{{ route('door-to-door-comparison.show', ['tripRequestId' => $tripRequestId]) }}">Kapıdan kapıya karşılaştırma durumunu gör</a>
     </section>
 @endsection

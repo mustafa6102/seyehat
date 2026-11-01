@@ -76,7 +76,7 @@ return [
     'ticketmaster' => [
         'api_key' => env('TICKETMASTER_API_KEY'),
         'base_url' => env('TICKETMASTER_BASE_URL', 'https://app.ticketmaster.com/discovery/v2'),
-        'approved_hosts' => array_filter(array_map('trim', explode(',', (string) env('TICKETMASTER_APPROVED_HOSTS', 'www.ticketmaster.com,ticketmaster.com')))),
+        'approved_hosts' => array_values(array_filter(array_map('trim', explode(',', (string) env('TICKETMASTER_APPROVED_HOSTS', ''))))),
         'max_results' => (int) env('TICKETMASTER_MAX_RESULTS', 20),
         'freshness_seconds' => (int) env('TICKETMASTER_FRESHNESS_SECONDS', 86400),
     ],

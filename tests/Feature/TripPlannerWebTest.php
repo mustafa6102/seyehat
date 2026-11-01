@@ -275,7 +275,7 @@ final class TripPlannerWebTest extends TestCase
             ->assertOk()
             ->assertSee('İstanbul')
             ->assertSee('NRT')
-            ->assertSee('Aramaya hazır')
+            ->assertSee('Uçuş aramaya hazır')
             ->assertSee('Tek yön')
             ->assertSee('Gidiş')
             ->assertSee('15 Ekim 2026')
@@ -488,5 +488,10 @@ final class RecordingTripRequestService implements TripRequestService
     public function get(string $id): ?TripRequestView
     {
         return $id === 'trip-ui-1' ? $this->stored : null;
+    }
+
+    public function ownedBy(\App\Modules\Authorization\Contracts\PrincipalRef $owner): array
+    {
+        return [];
     }
 }

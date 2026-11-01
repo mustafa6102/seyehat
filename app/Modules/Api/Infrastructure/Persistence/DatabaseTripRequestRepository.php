@@ -5,6 +5,7 @@ namespace App\Modules\Api\Infrastructure\Persistence;
 use App\Modules\Api\Domain\TripRequest\LocationRef;
 use App\Modules\Api\Domain\TripRequest\TripRequest;
 use App\Modules\Api\Domain\TripRequest\TripRequestRepository;
+use App\Modules\Authorization\Contracts\PrincipalRef;
 use Illuminate\Database\ConnectionInterface;
 
 final readonly class DatabaseTripRequestRepository implements TripRequestRepository
@@ -60,6 +61,23 @@ final readonly class DatabaseTripRequestRepository implements TripRequestReposit
             return null;
         }
 
+        return $this->hydrate($record);
+    }
+
+    public function ownedBy(PrincipalRef $owner): array
+    {
+        return $this->database->table('trip_requests')
+            ->where('owner_issuer', $owner->issuer)
+            ->where('owner_subject', $owner->subject)
+            ->where('status', 'SEARCHABLE')
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn (object $record): TripRequest => $this->hydrate($record))
+            ->all();
+    }
+
+    private function hydrate(object $record): TripRequest
+    {
         return new TripRequest(
             id: (string) $record->id,
             status: $record->status,

@@ -4,7 +4,9 @@ use App\Http\Controllers\FlightPagesController;
 use App\Http\Controllers\LocationCatalogController;
 use App\Http\Controllers\MyTripRequestsController;
 use App\Http\Controllers\OidcLoginController;
+use App\Http\Controllers\PrivacyNoticeController;
 use App\Http\Controllers\ProductionDiagnosticsController;
+use App\Http\Controllers\TravelerWebController;
 use App\Http\Controllers\TripPlannerController;
 use App\Http\Controllers\TripPlanWebController;
 use App\Http\Middleware\RequireProductionDiagnosticsAccess;
@@ -43,13 +45,26 @@ Route::post('/cikis', [OidcLoginController::class, 'logout'])->name('auth.logout
 // tripRequestId is an opaque string (SCH-TripRequest / OpenAPI); the database store rejects non-digit ids itself.
 Route::get('/planlar/{tripRequestId}',[TripPlannerController::class, 'show'])->name('trip-planner.show');
 Route::get('/planlar/{tripRequestId}/plan', [TripPlannerController::class, 'plan'])->name('trip-plan.show');
+Route::get('/planlar/{tripRequestId}/plan/gecmis', [TripPlannerController::class, 'planHistory'])->name('trip-plan.history');
 Route::get('/planlar/{tripRequestId}/kara-baglantilari', [TripPlannerController::class, 'groundConnections'])->name('ground-connections.show');
 Route::get('/planlar/{tripRequestId}/kapidan-kapiya-karsilastirma', [TripPlannerController::class, 'doorToDoorComparison'])->name('door-to-door-comparison.show');
 // v3.16 unscheduled FLEXIBLE POI plan items for the signed-in owner (session + CSRF; same guard and TripPlanService as the API).
 Route::post('/planlar/{tripRequestId}/plan/gezilecek-yerler', [TripPlanWebController::class, 'store'])->name('trip-plan.pois.store');
+Route::delete('/planlar/{tripRequestId}/plan/ogeler/{itemId}', [TripPlanWebController::class, 'destroy'])->name('trip-plan.items.destroy');
 Route::delete('/planlar/{tripRequestId}/plan/gezilecek-yerler/{itemId}', [TripPlanWebController::class, 'destroy'])->name('trip-plan.pois.destroy');
 // v3.22 EVT-001 web channel: signed-in owner adds EVENT/FIXED item (session + CSRF, same service as API).
 Route::post('/planlar/{tripRequestId}/plan/etkinlikler', [TripPlanWebController::class, 'storeEvent'])->name('trip-plan.events.store');
+// TRV-001 owner screens never write or read PII; only the gated Basic Traveler store/record routes touch Traveler rows.
+Route::post('/planlar/{tripRequestId}/yolcular', [TravelerWebController::class, 'store'])->middleware('traveler.basic')->name('traveler-screens.store');
+Route::get('/planlar/{tripRequestId}/yolcular/kayit/{travelerId}', [TravelerWebController::class, 'record'])->middleware('traveler.basic')->name('traveler-screens.record');
+Route::post('/planlar/{tripRequestId}/yolcular/kayit/{travelerId}/basvuru', [TravelerWebController::class, 'subjectRequest'])->middleware('traveler.basic')->name('traveler-screens.subject-request');
+Route::get('/planlar/{tripRequestId}/yolcular', [TravelerWebController::class, 'index'])->name('traveler-screens.index');
+Route::get('/planlar/{tripRequestId}/yolcular/yeni', [TravelerWebController::class, 'create'])->name('traveler-screens.create');
+Route::get('/planlar/{tripRequestId}/yolcular/{slot}', [TravelerWebController::class, 'show'])->whereNumber('slot')->name('traveler-screens.show');
+Route::get('/planlar/{tripRequestId}/yolcular/{slot}/duzenle', [TravelerWebController::class, 'edit'])->whereNumber('slot')->name('traveler-screens.edit');
+Route::get('/planlar/{tripRequestId}/yolcular/{slot}/belgeler', [TravelerWebController::class, 'documents'])->whereNumber('slot')->name('traveler-screens.documents');
+Route::get('/gizlilik/yolcu-profili', [PrivacyNoticeController::class, 'notice'])->name('privacy.traveler-notice');
+Route::get('/gizlilik/yolcu-profili/acik-riza', [PrivacyNoticeController::class, 'consent'])->name('privacy.traveler-consent');
 Route::get('/planlar/{tripRequestId}/ucuslar', [FlightPagesController::class, 'search'])->name('flights.search');
 Route::get('/teklifler/{offerId}', [FlightPagesController::class, 'offer'])->name('flights.offer');
 // OD-028 (v3.17, option A): web channel of the TripRequest-owned operations for the signed-in browser session. Same paths,

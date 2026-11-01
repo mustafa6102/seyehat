@@ -77,13 +77,22 @@ final readonly class MatrixAccessControl implements AccessControl
             // Role is held in the requested trip, which is the membership condition.
             'POLICY-TRIP-001' => $allow(),
             'POLICY-SYSTEM-001' => ($request->systemWorkflow ?? '') !== '' ? $allow() : $deny(AccessDecision::SYSTEM_WORKFLOW_REQUIRED),
-            'POLICY-TRAVELER-001' => $this->travelerScope($request, $role === TripRole::TRAVELER, $allow, $deny),
+            'POLICY-TRAVELER-001' => $this->ownerCreatesTraveler($request, $role)
+                ? $allow()
+                : $this->travelerScope($request, $role === TripRole::TRAVELER, $allow, $deny),
             'POLICY-PII-VIEW-001', 'POLICY-SUBJECT-DELETE-001' => $request->travelerIsMinor
                 ? $deny(AccessDecision::DECISION_OPEN, 'OD-013')
                 : $this->travelerScope($request, true, $allow, $deny, openForOthers: true),
             'POLICY-MINOR-001' => $deny(AccessDecision::DECISION_OPEN, 'OD-013'),
             default => $deny(AccessDecision::UNKNOWN_PERMISSION),
         };
+    }
+
+    /** A record that does not exist has no traveler scope: the OWNER's role in the trip is the whole condition (D5). */
+    private function ownerCreatesTraveler(AccessRequest $request, TripRole $role): bool
+    {
+        return $request->creatingTraveler && $role === TripRole::OWNER && $request->travelerId === null
+            && $request->resource === 'Traveler.basic' && $request->action === 'create';
     }
 
     /**

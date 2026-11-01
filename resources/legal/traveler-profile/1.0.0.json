@@ -1,0 +1,37 @@
+{
+    "notice_id": "traveler-profile",
+    "version": "1.0.0",
+    "status": "PENDING_APPROVAL",
+    "prepared_on": "2026-11-01",
+    "source": "Veri sorumlusunun 2026-11-01 tarihli bilgileri; docs/legal/TRV001_KVKK_Taslak_Metinleri.md",
+    "title": "Yolcu kaydı aydınlatma metni",
+    "status_note": "ONAY BEKLİYOR — metin tamamlandı; veri sorumlusunun veya hukuk danışmanının onayı olmadan yürürlüğe girmez. Hesap girişi için yurt dışı aktarım mekanizması, saklama süresi ve onay bilgisi tamamlanmalıdır.",
+    "contact_email": "info@netsolutione.com",
+    "notice": [
+        "Veri sorumlusu: Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) m.10 kapsamında veri sorumlusu Mustafa Abdurrahman Çiçek (gerçek kişi; marka: NetSolutione) tarafından hazırlanmıştır. İletişim: info@netsolutione.com.",
+        "Kapsam: Bu metin yalnız yetişkin yolcu kaydını kapsar. Çocuk ve bebek yolcu kaydı, vatandaşlık, pasaport, vize ve oturum izni bilgileri bu özellikte toplanmaz.",
+        "İşlenen veriler: Yolcu kaydı için yaş kategorisi (Yetişkin), sistemin ürettiği kayıt numarası, kaydın bağlı olduğu seyahat ve eklenme zamanı işlenir. Ad, kimlik numarası, iletişim ve sağlık bilgisi istenmez. Seyahat sahibinin hesabı için giriş hizmetinin verdiği hesap tanımlayıcısı ve oturum bilgisi işlenir. Erişim ve başvuru işlemleri için takma kimlik içeren denetim kayıtları tutulur. Başvurularda başvuru türü, sonucu ve iletişim yazışmaları işlenir.",
+        "Toplama yöntemi: Veriler, web sitesindeki formlar ve işlemler aracılığıyla otomatik yollarla, e-posta başvurularında ise yazışma yoluyla elektronik ortamda toplanır. Yolcu kaydını seyahat sahibi oluşturur; bu kayıt yolcunun kimliğini içermez.",
+        "İşleme amaçları ve hukuki sebepler: Seyahat planında yetişkin yolcu sayısını yönetmek ve kayıtları göstermek KVKK m.5/2(c) kapsamında sözleşmenin kurulması veya ifasıyla doğrudan ilgilidir. Seyahat sahibi dışındaki yetişkin yolcuya ilişkin kimlik içermeyen kayıt ile hizmet güvenliği, yetkisiz erişimin önlenmesi ve işlemlerin denetlenmesi m.5/2(f) kapsamında meşru menfaate dayanır. Başvuruların yanıtlanması m.5/2(ç) kapsamında hukuki yükümlülüğün yerine getirilmesi için gereklidir. Uyuşmazlıklarda kayıtların kullanılması m.5/2(e) kapsamında bir hakkın tesisi, kullanılması veya korunmasına dayanır. Bu özellik için açık rıza istenmez.",
+        "Alıcı grupları: Veriler, barındırma hizmeti sağlayıcısı Natro (Natro Web Hosting/cPanel), hesap girişi hizmeti sağlayıcısı Auth0 ve hukuken yetkili kamu kurum ve kuruluşlarıyla, yalnız gerekli olduğu ölçüde paylaşılabilir. Yolcu kaydı uçuş, konaklama, etkinlik veya harita sağlayıcılarına gönderilmez.",
+        "Saklama yeri ve yurt dışı aktarım: Uygulama verileri Natro altyapısında, Türkiye'de (İstanbul) saklanır. Hesap girişi ABD bölgesindeki Auth0 hizmetiyle yapıldığından, giriş sırasında işlenen hesap bilgileri Türkiye dışına aktarılır. Yolcu kaydı bu hizmete gönderilmez. Bu aktarım için dayanılan KVKK m.9 mekanizması doğrulanmadan bu metin yürürlüğe alınmaz.",
+        "Saklama ilkeleri: Veriler, KVKK m.4'teki ilkelere uygun olarak işleme amacının gerektirdiği süre boyunca saklanır. Yolcu kaydı silme başvurusu üzerine yetkili kişinin kararıyla silinir; otomatik silme yapılmaz. Denetim ve başvuru kayıtları, işlemlerin kanıtı olduğundan yolcu kaydı silinse de korunur. Takvimsel saklama süresi henüz belirlenmemiştir.",
+        "KVKK m.11 kapsamındaki haklarınız: Kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenmişse bilgi talep etme, işlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme, yurt içinde veya yurt dışında aktarıldığı üçüncü kişileri bilme, eksik veya yanlış işlenmişse düzeltilmesini isteme, KVKK m.7 çerçevesinde silinmesini veya yok edilmesini isteme, bu işlemlerin aktarılan üçüncü kişilere bildirilmesini isteme, münhasıran otomatik sistemlerle analiz sonucunda aleyhinize bir sonucun çıkmasına itiraz etme ve kanuna aykırı işleme nedeniyle zarara uğramanız hâlinde zararın giderilmesini talep etme haklarına sahipsiniz.",
+        "Başvuru: Başvurularınızı info@netsolutione.com adresine iletebilirsiniz. Başvuru için hesabınızın olması gerekmez. Yolcu kaydı kimlik içermediğinden, ilgili kaydın bulunabilmesi için seyahat sahibini veya seyahati tanımlayan bilgi istenebilir. Başvurular KVKK m.13 uyarınca en geç otuz gün içinde sonuçlandırılır. Seyahat sahibi hesabıyla giriş yaparak yolcu kaydı ekranından da başvurabilir."
+    ],
+    "consent": {
+        "title": "Açık rıza",
+        "required": false,
+        "text": "Yetişkin yolcu kaydı için açık rıza istenmez. İleride açık rızaya dayanan isteğe bağlı bir işleme eklenirse, amacı, veri kategorileri ve alıcıları bu ekranda ayrı olarak belirtilir."
+    },
+    "traveler_access": {
+        "adult": "Başka yetişkin yolcu kendi hesabıyla kimliğini doğrular ve kendi hassas verilerini yönetir. Seyahat sahibinin otomatik belge okuma yetkisi yoktur.",
+        "minor": "Çocuk yolcu için veli/vasi ilişkisi doğrulanmadan hassas belge işleme yetkisi verilmez. Seyahat sahibi olmak tek başına veli/vasi kanıtı değildir."
+    },
+    "sources": [
+        {"label": "KVKK Aydınlatma Yükümlülüğü", "url": "https://www.kvkk.gov.tr/Icerik/2033/Aydinlatma-Yukumlulugu-"},
+        {"label": "KVKK Aydınlatma Tebliği", "url": "https://www.kvkk.gov.tr/Icerik/4132/aydinlatma-yukumlulugunun-yerine-getirilmesinde-uyulacak-usul-ve-esaslar-hakkinda-teblig"},
+        {"label": "KVKK Kişisel Veriler ve işleme şartları", "url": "https://www.kvkk.gov.tr/Icerik/2050/Kisisel-Veriler"},
+        {"label": "KVKK Yurt Dışına Aktarım", "url": "https://www.kvkk.gov.tr/Icerik/2053/Yurtdisina-Aktarim"}
+    ]
+}

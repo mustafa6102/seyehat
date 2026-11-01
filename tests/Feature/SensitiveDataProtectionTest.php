@@ -32,10 +32,11 @@ final class SensitiveDataProtectionTest extends TestCase
     }
 
     #[Test]
-    public function ts_plt_pii_001_03_access_log_records_subject_action_resource_time_without_sensitive_values(): void
+    public function ts_plt_pii_001_03_application_service_audits_sensitive_access_without_values(): void
     {
-        $this->postJson('/api/v1/travelers', $this->payload())->assertOk();
-        $this->getJson('/api/v1/travelers/traveler-pii-1')->assertOk();
+        $service = app(TravelerService::class);
+        $service->create($this->payload());
+        $service->get('traveler-pii-1');
 
         $access = [];
         foreach ($this->logged as $event) {

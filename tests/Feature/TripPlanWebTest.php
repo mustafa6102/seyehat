@@ -37,34 +37,6 @@ final class TripPlanWebTest extends TestCase
         config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:']);
         DB::purge('sqlite');
         $this->artisan('migrate', ['--force' => true])->assertSuccessful();
-        Schema::table('trip_requests', function ($table): void {
-            $table->string('owner_issuer', 255)->nullable();
-            $table->string('owner_subject', 255)->nullable();
-        });
-        Schema::create('pois', function ($table): void {
-            $table->char('poi_id', 36)->primary();
-            $table->string('provider_id', 64);
-            $table->string('provider_place_id', 64);
-            $table->longText('poi_json');
-            $table->timestamps(6);
-        });
-        Schema::create('trips', function ($table): void {
-            $table->char('trip_id', 36)->primary();
-            $table->string('trip_request_id', 255)->unique();
-            $table->timestamp('created_at', 6);
-        });
-        Schema::create('plan_revisions', function ($table): void {
-            $table->char('trip_id', 36);
-            $table->unsignedInteger('version');
-            $table->string('status', 16);
-            $table->longText('items_json');
-            $table->longText('change_json');
-            $table->string('idempotency_key', 255);
-            $table->char('request_fingerprint', 64);
-            $table->timestamp('created_at', 6);
-            $table->primary(['trip_id', 'version']);
-            $table->unique(['trip_id', 'idempotency_key']);
-        });
         Http::fake();
         $this->app->instance(FlightSelectionReader::class, new class implements FlightSelectionReader
         {
@@ -277,8 +249,12 @@ final class TripPlanWebTest extends TestCase
 
         $this->get("/planlar/{$this->owned}/kara-baglantilari")->assertOk()
             ->assertSee('Istanbul → Roma')
-            ->assertSee('UNKNOWN')
-            ->assertSee('PARTIAL')
+            ->assertSee('Doğrulanmış veri bulunamadı')
+            ->assertSee('Kısmi; kara ulaşımı maliyetleri eksik')
+            ->assertDontSee('UNKNOWN')
+            ->assertDontSee('PARTIAL')
+            ->assertDontSee('GND-001')
+            ->assertSee('Sağlayıcı destekli fiyat, süre, kaynak, rezervasyon bağlantısı ve geçerlilik bilgileri henüz doğrulanmadı.')
             ->assertSee('Kara bağlantısının ücreti ve süresi')
             ->assertSee('İstasyona erişim ve bekleme süresi')
             ->assertSee('Son kilometre ulaşımı')
@@ -376,6 +352,9 @@ final class TripPlanWebTest extends TestCase
         foreach (['web-user', 'issuer.test', 'owner_issuer', 'owner_subject', 'someone-else'] as $secret) {
             self::assertStringNotContainsString($secret, $html);
         }
+        foreach (['Plan öğesi ve kaynak ayrıntıları', 'Yer kimliği', 'Kaynak: osm_overpass', 'Kaynak: node/1'] as $technicalLabel) {
+            self::assertStringNotContainsString($technicalLabel, $html);
+        }
     }
 
     #[Test]
@@ -424,7 +403,7 @@ final class TripPlanWebTest extends TestCase
 
     private function storePoi(string $poiId, string $name): void
     {
-        DB::table('pois')->insert(['poi_id' => $poiId, 'provider_id' => 'osm_overpass', 'provider_place_id' => 'node/'.strlen($name),
+        DB::table('pois')->insert(['poi_id' => $poiId, 'provider_id' => 'osm_overpass', 'provider_place_id' => 'node/'.$poiId,
             'poi_json' => json_encode($this->poi($poiId, $name), JSON_PRESERVE_ZERO_FRACTION), 'created_at' => now(), 'updated_at' => now()]);
     }
 
@@ -437,7 +416,7 @@ final class TripPlanWebTest extends TestCase
 
         return [
             'poi_id' => $poiId,
-            'provider_ref' => ['provider_id' => 'osm_overpass', 'provider_place_id' => 'node/1'],
+            'provider_ref' => ['provider_id' => 'osm_overpass', 'provider_place_id' => 'node/'.$poiId],
             'name' => $name,
             'categories' => [],
             'location' => ['latitude' => 41.89, 'longitude' => 12.49, 'address' => null, 'iana_timezone' => null],

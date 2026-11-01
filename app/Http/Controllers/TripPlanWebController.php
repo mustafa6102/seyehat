@@ -76,7 +76,7 @@ final readonly class TripPlanWebController
             return $this->back($tripRequestId, error: 'İstek geçerli değil. Sayfayı yenileyip yeniden deneyin.');
         }
 
-        return $this->mutate($tripRequestId, fn () => $this->plans->removeItem($tripRequestId, $key, $precondition, $itemId), 'Gezilecek yer plandan çıkarıldı.');
+        return $this->mutate($tripRequestId, fn () => $this->plans->removeItem($tripRequestId, $key, $precondition, $itemId), 'Plan öğesi plandan çıkarıldı.');
     }
 
     /** Authentication and ownership before anything else; the browser never supplies the owner. */

@@ -1,0 +1,59 @@
+openapi: 3.1.0
+info:
+  title: TRV-001 Traveler create delta
+  version: 3.24-draft-1
+  description: PROPOSED_NON_NORMATIVE; ACTIVE v3.23 sözleşmesini değiştirmez.
+paths:
+  /trips/{tripId}/travelers:
+    post:
+      operationId: createTripTravelerV2
+      x-contract-id: OP-createTripTraveler-V2-PROPOSED
+      x-status: PROPOSED_NON_NORMATIVE
+      x-activation-gates: [ADR-010, OD-013, OD-014, MINOR-GUARDIAN-DECISION]
+      description: >-
+        Var olan ve yetkilendirilmiş Trip içinde insert-only Traveler oluşturur. ID sunucuda üretilir;
+        istemci id, trip_id, owner veya principal gönderemez. Bu operasyon taslak halinde çağrılamaz.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema: {type: string, minLength: 1}
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema: {type: string, minLength: 1, maxLength: 255}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./schemas/TravelerCreateRequest.schema.json
+      responses:
+        '201':
+          description: Server-generated ID ile Traveler oluşturuldu.
+          headers:
+            Location:
+              required: true
+              schema: {type: string}
+          content:
+            application/json:
+              schema:
+                $ref: ../../../contracts/v3.3/schemas/Traveler.schema.json
+        '400': {description: Şema doğrulaması başarısız.}
+        '401': {description: Bearer kimlik doğrulaması gerekli.}
+        '403': {description: Trip/Traveler action grant yok veya PII kapısı kapalı.}
+        '404': {description: Trip bulunamadı.}
+        '409': {description: Idempotency uyuşmazlığı veya server ID collision; mevcut Traveler overwrite edilmez.}
+        '422': {description: Onaylı age/document politikası girdiyi desteklemiyor.}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+x-compatibility:
+  existing_operation: OP-createTraveler değişmeden kalır ve ayrıca aktive edilmez.
+  migration: Consumer envanteri ve deprecation takvimi onaylanmadan eski operasyon kaldırılmaz.
+

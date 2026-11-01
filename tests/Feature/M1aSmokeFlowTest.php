@@ -83,7 +83,7 @@ final class M1aSmokeFlowTest extends TestCase
         $this->app->instance(ProviderCapabilityRepository::class, new InMemoryProviderCapabilityRepository);
         $this->adapter = new SmokeAdapter;
         $this->app->instance(FlightSearchExecutor::class, new LocationGatedFlightSearchExecutor(
-            new ResilientFlightSearchExecutor([$this->adapter], new PassThroughCallGuard, new FlightOfferAggregator),
+            new ResilientFlightSearchExecutor([$this->adapter], new SmokePassThroughCallGuard, new FlightOfferAggregator),
         ));
     }
 
@@ -108,7 +108,7 @@ final class M1aSmokeFlowTest extends TestCase
         $tripRequestId = basename($summaryUrl);
 
         $this->get($summaryUrl)->assertOk()
-            ->assertSee('Aramaya hazır')->assertSee('Tek yön')->assertSee('IST')->assertSee('ROM')
+            ->assertSee('Uçuş aramaya hazır')->assertSee('Tek yön')->assertSee('IST')->assertSee('ROM')
             ->assertSee('Uçuşları ara');
         $this->get("/planlar/{$tripRequestId}/ucuslar")->assertOk()
             ->assertSee('data-search-start', false)
@@ -182,5 +182,14 @@ final class SmokeAdapter implements FlightProviderAdapter
             )],
             bookable: false,
         )];
+    }
+}
+
+
+final class SmokePassThroughCallGuard implements ProviderCallGuard
+{
+    public function call(string $providerId, callable $operation): mixed
+    {
+        return $operation(1000);
     }
 }

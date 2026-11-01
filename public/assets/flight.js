@@ -14,8 +14,6 @@
     ];
     const TERMINAL = ['COMPLETED', 'FAILED', 'EXPIRED'];
     const CARRIER_MODELS = { FULL_SERVICE: 'Tam hizmet', LCC: 'Düşük maliyetli', HYBRID: 'Hibrit', UNKNOWN: 'Taşıyıcı modeli bilinmiyor' };
-    const PROVIDER_ROLES = { AGGREGATOR: 'Toplayıcı', GDS: 'GDS', DIRECT_SUPPLIER: 'Doğrudan tedarikçi', AFFILIATE: 'Satış ortağı', UNKNOWN: 'bilinmiyor' };
-    const CHANNELS = { NDC: 'NDC', GDS_EDIFACT: 'GDS (EDIFACT)', DIRECT_API: 'Doğrudan API', OTHER: 'Diğer', UNKNOWN: 'bilinmiyor' };
 
     const el = (tag, className, text) => {
         const node = document.createElement(tag);
@@ -271,9 +269,9 @@
         section.append(el('p', 'summary-meta', offer.bookable
             ? 'Satın alınabilir kaynak mevcut; yönlendirme adımı henüz kullanıma açılmadı.'
             : 'Yalnız arama sonucu; satın alınabilir olarak işaretlenmez.'));
-        (offer.sources ?? []).forEach((source) => {
-            section.append(el('p', 'summary-meta', `Kaynak: ${source.provider_id} · Rol: ${PROVIDER_ROLES[source.provider_role] ?? source.provider_role} · Kanal: ${CHANNELS[source.distribution_channel] ?? source.distribution_channel}`));
-        });
+        if ((offer.sources ?? []).length > 0) {
+            section.append(el('p', 'summary-meta', 'Teklif bilgileri kayıtlı sağlayıcı kaynağından alınmıştır.'));
+        }
 
         return section;
     };
@@ -291,7 +289,7 @@
             ? described.map((leg) => leg.itinerary.flights.join(' · ')).join(' / ')
             : 'Uçuş teklifi'));
         if (offer.state !== 'CURRENT') {
-            title.append(el('span', `badge badge-state-${String(offer.state).toLowerCase()}`, STATE_LABELS[offer.state] ?? offer.state));
+            title.append(el('span', `badge badge-state-${String(offer.state).toLowerCase()}`, STATE_LABELS[offer.state] ?? 'Teklif durumu doğrulanamadı'));
         }
         header.append(title, renderPrice(offer.price));
         card.append(header);
@@ -425,6 +423,81 @@
         return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
     };
 
+    const formatSeconds = (seconds) => {
+        const safe = Math.max(0, Number(seconds) || 0);
+
+        return `${Math.floor(safe / 3600)} sa ${Math.floor((safe % 3600) / 60)} dk`;
+    };
+
+    const renderSelfTransferRoute = (route) => {
+        const card = el('article', 'offer-card self-transfer-card');
+        const header = el('header', 'offer-card-header');
+        const heading = el('div', 'offer-heading');
+        heading.append(
+            el('h3', 'offer-title', 'Kendin aktarmalı rota'),
+            el('span', 'badge badge-warning', 'Doğrulama gerekli'),
+        );
+        const summary = el('div');
+        summary.append(heading, el('p', 'offer-date', `Toplam süre: ${formatSeconds(route.total_duration_seconds)}`));
+        const price = route.price;
+        header.append(
+            summary,
+            el('p', 'offer-price', price
+                ? `${price.minor_units} ${price.currency} (minor birim)`
+                : 'Toplam fiyat doğrulanamadı'),
+        );
+        card.append(header);
+
+        const timeline = el('ol', 'timeline');
+        timeline.setAttribute('aria-label', 'Bağımsız uçuşlar ve aktarma');
+        (Array.isArray(route.segments) ? route.segments : []).forEach((segment, index) => {
+            const item = el('li', 'timeline-item');
+            item.append(
+                el('strong', '', `${segment.origin_id} → ${segment.destination_id}`),
+                el('span', '', `Bağımsız teklif ${index + 1}`),
+            );
+            if (Array.isArray(segment.offer?.segments) && segment.offer.segments.length > 0) {
+                item.append(renderSegmentList(segment.offer.segments));
+            }
+            timeline.append(item);
+        });
+        card.append(timeline);
+
+        const footer = el('footer', 'offer-card-footer');
+        const facts = el('ul', 'facts');
+        facts.append(
+            el('li', 'fact', `Aktarma: ${formatSeconds(route.connection_duration_seconds)}`),
+            el('li', 'fact', `Risk: ${route.risk_level === 'UNKNOWN' ? 'Doğrulama gerekli' : route.risk_level}`),
+        );
+        (Array.isArray(route.unknown_costs) ? route.unknown_costs : []).forEach((cost) => {
+            facts.append(el('li', 'fact', `Bilinmeyen ek maliyet: ${cost}`));
+        });
+        footer.append(
+            facts,
+            el('p', 'form-help', 'Biletler ayrıdır; kaçırılan bağlantı koruması, bagaj yeniden teslimi ve transit/giriş koşulları doğrulanmadan garanti verilmez.'),
+        );
+        card.append(footer);
+
+        return card;
+    };
+
+    const renderSelfTransferRoutes = (container, routes) => {
+        if (!container) {
+            return;
+        }
+        if (routes.length === 0) {
+            const empty = el('div', 'card empty-state');
+            empty.append(
+                el('h4', 'card-title', 'Uygun kendin aktarmalı rota bulunamadı'),
+                el('p', 'card-subtitle', 'Mevcut, doğrulanmış uçuş teklifleri geçerli bir bağımsız bağlantı oluşturmuyor.'),
+            );
+            container.replaceChildren(empty);
+
+            return;
+        }
+        container.replaceChildren(...routes.map(renderSelfTransferRoute));
+    };
+
     const initSearch = (root) => {
         const status = root.querySelector('[data-search-status]');
         const startButton = root.querySelector('[data-search-start]');
@@ -432,6 +505,8 @@
         const restartButton = root.querySelector('[data-search-restart]');
         const results = document.querySelector('[data-search-results]');
         const list = document.querySelector('[data-offer-list]');
+        const selfTransferResults = document.querySelector('[data-self-transfer-results]');
+        const selfTransferList = document.querySelector('[data-self-transfer-list]');
         const startLabel = startButton.textContent;
         const storageKey = root.dataset.storageKey;
         const interval = Number(root.dataset.pollInterval ?? 0);
@@ -444,8 +519,9 @@
         };
 
         const renderResults = (job, offers) => {
-            // A completed search without offers is reported in the status line only.
-            const visible = job.status === 'PARTIAL' || (job.status === 'COMPLETED' && offers.length > 0);
+            const hasSelfTransferResult = Object.hasOwn(job.result ?? {}, 'self_transfer');
+            const visible = job.status === 'PARTIAL'
+                || (job.status === 'COMPLETED' && (offers.length > 0 || hasSelfTransferResult));
             results.hidden = !visible;
             if (!visible) {
                 return;
@@ -458,6 +534,16 @@
             }));
             if (offers.length === 0) {
                 list.append(el('li', 'empty-note', 'Henüz teklif yok.'));
+            }
+            if (selfTransferResults) {
+                selfTransferResults.hidden = !(
+                    job.status === 'COMPLETED'
+                    || (job.status === 'PARTIAL' && Boolean(job.error))
+                );
+                const routes = Array.isArray(job.result?.self_transfer?.routes)
+                    ? job.result.self_transfer.routes
+                    : [];
+                renderSelfTransferRoutes(selfTransferList, routes);
             }
         };
 

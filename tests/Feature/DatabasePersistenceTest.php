@@ -9,7 +9,10 @@ use App\Modules\FlightSearch\Application\FlightSearchDispatcher;
 use App\Modules\FlightSearch\Application\FlightSearchService;
 use App\Modules\FlightSearch\Domain\FlightSearchJobRecord;
 use App\Modules\FlightSearch\Infrastructure\Persistence\DatabaseFlightSearchJobRepository;
+use App\Modules\Traveler\Domain\Traveler;
+use App\Modules\Traveler\Infrastructure\Persistence\DatabaseTravelerRepository;
 use DateTimeImmutable;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -27,6 +30,39 @@ final class DatabasePersistenceTest extends TestCase
         config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:', 'database.connections.sqlite.foreign_key_constraints' => true]);
         DB::purge('sqlite');
         $this->artisan('migrate', ['--force' => true])->assertSuccessful();
+    }
+
+    #[Test]
+    public function traveler_insert_is_append_only_and_duplicate_id_cannot_overwrite_existing_pii(): void
+    {
+        $repository = new DatabaseTravelerRepository;
+        $original = new Traveler(
+            id: 'traveler-server-id',
+            tripId: 'trip-1',
+            ageCategory: 'ADULT',
+            nationalities: ['TR'],
+            travelDocuments: [['document_type' => 'PASSPORT', 'verification_status' => 'UNVERIFIED']],
+            heldVisas: [],
+            residencePermits: [],
+        );
+
+        $repository->save($original);
+
+        try {
+            $repository->save(new Traveler(
+                id: $original->id,
+                tripId: 'trip-attacker',
+                ageCategory: 'INFANT',
+                nationalities: ['DE'],
+                travelDocuments: [],
+                heldVisas: [],
+                residencePermits: [],
+            ));
+
+            self::fail('Duplicate Traveler id must be rejected.');
+        } catch (UniqueConstraintViolationException) {
+            self::assertSame($original->toContract(), $repository->find($original->id)?->toContract());
+        }
     }
 
     #[Test]

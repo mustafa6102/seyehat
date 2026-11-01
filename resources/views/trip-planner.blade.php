@@ -175,6 +175,10 @@
                 @error('pace_preference') <span class="field-error">{{ $message }}</span> @enderror
             </details>
 
+            @unless ($signedIn)
+                <p class="alert alert-info" data-sign-in-required>Seyahat talebi hesabınıza kaydedilir. Formu doldurmadan önce <a href="{{ route('auth.login', ['donus' => '/']) }}">giriş yapın</a>; gönderim sırasında girişe yönlendirilirseniz bilgiler korunmaz.</p>
+            @endunless
+
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary btn-cta">Seyahat talebi oluştur</button>
             </div>

@@ -15,9 +15,14 @@
 |
 */
 
+$providerBudgets = env('RCG_PROVIDER_SEARCH_BUDGETS_JSON');
+$providerBudgets = is_string($providerBudgets) && trim($providerBudgets) !== ''
+    ? json_decode($providerBudgets, true)
+    : null;
+
 return [
     // v3.22 delegated product ceiling; a provider-specific approved entry is still mandatory.
     'product_cap' => 4,
     'product_cap_version' => 'rcg-product-cap-3.22',
-    'providers' => [],
+    'providers' => is_array($providerBudgets) ? $providerBudgets : [],
 ];

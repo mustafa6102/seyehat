@@ -41,7 +41,7 @@ final readonly class TripRequest
     /**
      * @param  array<string, mixed>  $input
      *
-     * @throws InvalidTripRequest when present journey/date fields violate RULE-TRIP-001-04/05
+     * @throws InvalidTripRequest when present fields violate SCH-TripRequest or RULE-TRIP-001-01/04/05/06
      */
     public static function draft(array $input): self
     {
@@ -49,12 +49,22 @@ final readonly class TripRequest
         $outboundDate = $input['outbound_date'] ?? null;
         $returnDate = $input['return_date'] ?? null;
         $invalid = TripJourney::invalidFields($journeyType, $outboundDate, $returnDate);
+        foreach (['origin_place', 'destination_place'] as $place) {
+            $kind = $input[$place]['kind'] ?? null;
+            if (is_string($kind) && ! in_array($kind, LocationRef::KINDS, true)) {
+                $invalid[] = $place;
+            }
+        }
         if ($invalid !== []) {
             throw new InvalidTripRequest($invalid);
         }
+        // A non-integer count would otherwise be coerced after skipping the RULE-TRIP-001-06 total check.
         $travelerCount = $input['traveler_count'] ?? null;
+        if ($travelerCount !== null && ! is_int($travelerCount)) {
+            throw new InvalidTripRequest(['traveler_count']);
+        }
         $compositionInput = $input['passenger_composition'] ?? null;
-        $composition = PassengerComposition::fromContract($compositionInput, is_int($travelerCount) ? $travelerCount : null);
+        $composition = PassengerComposition::fromContract($compositionInput, $travelerCount);
         if ($compositionInput !== null && $composition === null) {
             throw new InvalidTripRequest(['passenger_composition']);
         }
@@ -71,13 +81,35 @@ final readonly class TripRequest
             destinationPlace: LocationRef::fromNullable($input['destination_place'] ?? null),
             dateWindow: null,
             travelerCount: $travelerCount,
-            preferences: $input['preferences'] ?? null,
+            preferences: self::canonicalPreferences($input['preferences'] ?? null),
             journeyType: $journeyType,
             outboundDate: TravelDate::fromContract($outboundDate)?->toContract(),
             returnDate: TravelDate::fromContract($returnDate)?->toContract(),
             passengerComposition: $composition?->toContract(),
             roomCount: $roomCount,
         );
+    }
+
+    /**
+     * SCH-TripRequest.preferences is an object or null: a list is rejected, and a blank pace or empty object means "no preference".
+     *
+     * @return array<string, mixed>|null
+     *
+     * @throws InvalidTripRequest
+     */
+    private static function canonicalPreferences(mixed $preferences): ?array
+    {
+        if ($preferences === null || $preferences === []) {
+            return null;
+        }
+        $pace = is_array($preferences) ? ($preferences['pace_preference'] ?? null) : null;
+        if (! is_array($preferences) || array_is_list($preferences) || ($pace !== null && ! is_string($pace))) {
+            throw new InvalidTripRequest(['preferences']);
+        }
+        unset($preferences['pace_preference']);
+        $pace = trim((string) $pace);
+
+        return ($pace === '' ? $preferences : ['pace_preference' => $pace] + $preferences) ?: null;
     }
 
     /** @return list<string> */

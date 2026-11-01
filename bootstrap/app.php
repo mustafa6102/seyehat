@@ -3,6 +3,7 @@
 use App\Diagnostics\PlanlaFailureRecorder;
 use App\Modules\Authorization\Infrastructure\Http\AuthenticateBearer;
 use App\Modules\Authorization\Infrastructure\Http\AuthenticateWebSession;
+use App\Modules\Traveler\Infrastructure\Http\EnsureBasicTravelerActive;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -26,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth.bearer' => AuthenticateBearer::class,
             'auth.web-session' => AuthenticateWebSession::class,
+            'traveler.basic' => EnsureBasicTravelerActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

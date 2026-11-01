@@ -51,6 +51,11 @@ return [
     |
     */
 
+    // Keys the audit subject and trip pseudonyms; rotating it starts a new pseudonym series. APP_KEY is accepted only in
+    // local and testing: anywhere else, including an unset APP_ENV, a missing key keeps every audited Traveler path closed.
+    'audit_pseudonym_key' => env('AUDIT_PSEUDONYM_KEY')
+        ?: (in_array(env('APP_ENV', 'production'), ['local', 'testing'], true) ? env('APP_KEY') : null),
+
     'channels' => [
 
         'stack' => [
@@ -105,6 +110,16 @@ return [
             'handler_with' => [
                 'stream' => env('PII_ACCESS_LOG_STREAM', 'php://stderr'),
             ],
+            'tap' => [ConfigureSensitiveDataRedaction::class],
+        ],
+
+        // RULE-PLT-AUTH-001 access.decision records. Own level and owner/group-only file outside the web root, so LOG_LEVEL
+        // cannot drop them. Retention stays OPEN (OD-013): no rotation or deletion is configured here.
+        'access_audit' => [
+            'driver' => 'single',
+            'path' => env('ACCESS_AUDIT_LOG_PATH', storage_path('logs/access-audit.log')),
+            'level' => 'info',
+            'permission' => 0640,
             'tap' => [ConfigureSensitiveDataRedaction::class],
         ],
 

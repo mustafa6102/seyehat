@@ -90,6 +90,24 @@
                 <p class="summary-meta">Tam maliyeti bilinmeyen teklifler, tam maliyetli tekliflerin önüne alınmaz ve “en ucuz” sayılmaz. Teklif ayrıntısındaki maliyet kapsamı, bilinen alt sınırı ve bilinmeyen zorunlu kalemleri ayrı gösterir. Sıralama kişiselleştirilmiş bir öneri değildir.</p>
             </div>
             <ol class="offer-list" data-offer-list></ol>
+
+            <section class="results" aria-labelledby="self-transfer-results-title" data-self-transfer-results hidden>
+                <div class="results-header">
+                    <h3 id="self-transfer-results-title" class="card-title">Kendin aktarmalı alternatifler</h3>
+                    <p class="summary-meta">Yalnız aynı para biriminde fiyatlanan, gerçek ve bağımsız teklif referansları güvenli bir UTC bağlantı penceresi oluşturduğunda gösterilir. Ayrı biletlerde bağlantı koruması yoktur.</p>
+                </div>
+                <div data-self-transfer-list>
+                    @forelse (($selfTransferRoutes ?? []) as $selfTransferRoute)
+                        <x-travel.self-transfer-route :route="$selfTransferRoute" />
+                    @empty
+                        <div class="card empty-state" data-self-transfer-empty>
+                            <h4 class="card-title">Uygun kendin aktarmalı alternatif bulunamadı</h4>
+                            <p>Bu aramanın doğrulanmış teklifleri, bağımsız uçuşları güvenli biçimde eşleştirmek için yeterli rota bilgisi içermiyor.</p>
+                            <p class="summary-meta">Yeni sağlayıcı araması yapılmadı; mevcut direkt ve gidiş-dönüş teklifleriniz değişmeden korunur.</p>
+                        </div>
+                    @endforelse
+                </div>
+            </section>
         </section>
     @endif
 @endsection

@@ -18,7 +18,11 @@ use App\Modules\Authorization\Contracts\WebPrincipalResolver;
 use App\Modules\Authorization\Domain\AccessAuditLog;
 use App\Modules\Authorization\Infrastructure\LogAccessAuditLog;
 use App\Modules\Authorization\Infrastructure\Web\SessionWebPrincipalResolver;
+use App\Modules\CandidateGenerator\Contracts\CandidateSeedSource;
+use App\Modules\CandidateGenerator\Contracts\PruningEvidence;
 use App\Modules\CandidateGenerator\Contracts\SearchBudgetPolicy;
+use App\Modules\CandidateGenerator\Infrastructure\ConfigCandidateSeedSource;
+use App\Modules\CandidateGenerator\Infrastructure\ConfigPruningEvidence;
 use App\Modules\CandidateGenerator\Infrastructure\ConfigSearchBudgetPolicy;
 use App\Modules\FlightSearch\Application\FlightOfferAggregator;
 use App\Modules\FlightSearch\Application\FlightSearchDispatcher;
@@ -111,10 +115,14 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(AviationLocationCatalog::class, DuffelPlacesAviationLocationCatalog::class);
         $this->app->bind(AccessControl::class, MatrixAccessControl::class);
         $this->app->bind(AccessAuditLog::class, LogAccessAuditLog::class);
+        $this->app->bind(\App\Modules\Authorization\Contracts\AuditIdentity::class, \App\Modules\Authorization\Infrastructure\HmacAuditIdentity::class);
+        $this->app->bind(\App\Modules\Authorization\Contracts\AccessOutcomeLog::class, \App\Modules\Authorization\Infrastructure\LogAccessOutcomeLog::class);
         $this->app->bind(ProviderCapabilityRepository::class, DatabaseProviderCapabilityRepository::class);
         $this->app->bind(ProviderCapabilityMatrix::class, ProviderCapabilityMatrixService::class);
-        // RCG-001: only the budget policy has a valid implementation. CandidateGenerator itself stays unbound:
-        // no hub/alternative seed source, pruning evidence or leg-level provider search exists yet.
+        // RCG-001: deployment-supplied seeds, pruning evidence and budgets are fail-closed. CandidateGenerator itself
+        // stays unbound until an active contract defines leg criteria (date/passengers) and authorizes provider calls.
+        $this->app->bind(CandidateSeedSource::class, ConfigCandidateSeedSource::class);
+        $this->app->bind(PruningEvidence::class, ConfigPruningEvidence::class);
         $this->app->bind(SearchBudgetPolicy::class, ConfigSearchBudgetPolicy::class);
         $this->app->bind(OutboxWriter::class, DatabaseOutboxWriter::class);
         // v3.16 plan increment reads stored canonical POIs through the Poi module contract (no provider call).
@@ -123,12 +131,39 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(\App\Modules\Event\Contracts\EventReader::class, \App\Modules\Event\Infrastructure\Persistence\DatabaseEventRepository::class);
         $this->app->bind(TravelerRepository::class, DatabaseTravelerRepository::class);
         $this->app->bind(TravelerService::class, TravelerApplicationService::class);
+        // TRV-001 Basic Traveler (D1-D6): reachable only behind the default-closed BasicTravelerActivation.
+        $this->app->bind(\App\Modules\Traveler\Contracts\BasicTravelerActivation::class, \App\Modules\Traveler\Application\BasicTravelerActivationGate::class);
+        $this->app->bind(\App\Modules\Traveler\Domain\TravelerEnrollmentStore::class, \App\Modules\Traveler\Infrastructure\Persistence\DatabaseTravelerEnrollmentStore::class);
+        $this->app->bind(\App\Modules\Traveler\Contracts\TripTravelerEnrollment::class, \App\Modules\Traveler\Application\TripTravelerEnrollmentService::class);
+        $this->app->bind(\App\Modules\Traveler\Contracts\TravelerSubjectRequests::class, \App\Modules\Traveler\Application\TravelerSubjectRequestService::class);
+        $this->app->bind(\App\Modules\Traveler\Domain\TravelerSubjectRequestStore::class, \App\Modules\Traveler\Infrastructure\Persistence\DatabaseTravelerSubjectRequestStore::class);
+        // TRV-001 sensitive profile: no route uses it; the KEK and binding defaults keep it closed until ADR-010 is approved.
+        $this->app->bind(\App\Modules\Traveler\Contracts\SensitiveTravelerActivation::class, \App\Modules\Traveler\Application\SensitiveTravelerActivationGate::class);
+        $this->app->bind(\App\Modules\Traveler\Contracts\SensitiveTravelerProfiles::class, \App\Modules\Traveler\Application\SensitiveTravelerProfileService::class);
+        $this->app->bind(\App\Modules\Traveler\Contracts\TravelerSubjectBinder::class, \App\Modules\Traveler\Application\TravelerSubjectBindingService::class);
+        $this->app->bind(\App\Modules\Traveler\Domain\Encryption\KeyEncryptionKeys::class, fn ($app) => $this->configuredProvider(
+            $app, 'traveler_sensitive.key_provider', \App\Modules\Traveler\Domain\Encryption\KeyEncryptionKeys::class, \App\Modules\Traveler\Infrastructure\Encryption\UnconfiguredKeyEncryptionKeys::class,
+        ));
+        $this->app->bind(\App\Modules\Traveler\Domain\TravelerIdentityProofs::class, fn ($app) => $this->configuredProvider(
+            $app, 'traveler_sensitive.identity_proof_provider', \App\Modules\Traveler\Domain\TravelerIdentityProofs::class, \App\Modules\Traveler\Infrastructure\UnconfiguredTravelerIdentityProofs::class,
+        ));
+        $this->app->bind(\App\Modules\Traveler\Domain\Encryption\SensitiveTravelerVault::class, \App\Modules\Traveler\Infrastructure\Persistence\DatabaseSensitiveTravelerVault::class);
+        $this->app->bind(\App\Modules\Traveler\Domain\TravelerSubjectBindings::class, \App\Modules\Traveler\Infrastructure\Persistence\DatabaseTravelerSubjectBindings::class);
+        $this->app->bind(\App\Modules\TripBuilder\Contracts\TripDirectory::class, \App\Modules\TripBuilder\Infrastructure\Persistence\DatabaseTripDirectory::class);
         $this->app->bind(SensitiveDataAccessLog::class, LogSensitiveDataAccessLog::class);
     }
 
     /**
      * Bootstrap any application services.
      */
+    /** A provider is used only when configured in code and of the required type; anything else stays the refusing default. */
+    private function configuredProvider(\Illuminate\Contracts\Foundation\Application $app, string $configKey, string $contract, string $default): object
+    {
+        $provider = config($configKey);
+
+        return $app->make(is_string($provider) && is_subclass_of($provider, $contract) ? $provider : $default);
+    }
+
     public function boot(): void
     {
         // Header login/logout state only (ADR-010 browser session); no identity detail reaches the view.

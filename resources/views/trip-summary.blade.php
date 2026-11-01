@@ -10,7 +10,6 @@
 @section('header-container', 'container container-wide')
 
 @php
-    $statusLabels = ['SEARCHABLE' => 'Aramaya hazır', 'DRAFT' => 'Taslak'];
     $searchable = $tripRequest->status === 'SEARCHABLE';
     $pace = $tripRequest->preferences['pace_preference'] ?? null;
     $composition = $tripRequest->passengerComposition;
@@ -62,7 +61,7 @@
                     @endif
                 </p>
                 <span class="badge {{ $searchable ? 'badge-success' : 'badge-neutral' }}" data-status="{{ $tripRequest->status }}">
-                    {{ $statusLabels[$tripRequest->status] ?? $tripRequest->status }}
+                    {{ $statusLabel }}
                 </span>
             </div>
 
@@ -165,7 +164,7 @@
                                     {{ $place['label'] }}
                                     <span class="trip-row-sub">{{ $place['kind'] }} · Yerel saat dilimi: {{ $place['timezone'] }}</span>
                                     @unless ($place['resolved'])
-                                        <span class="trip-row-sub">{{ $place['catalog_identity'] ? 'Konum adı katalogdan şu anda alınamadı; kayıtlı konum kimliği teknik ayrıntılarda yer alır.' : 'Konum adı katalogdan şu anda alınamadı; kayıtlı konum değeri gösteriliyor.' }}</span>
+                                        <span class="trip-row-sub">Konum adı katalogdan şu anda alınamadı; doğrulanmamış bir ad gösterilmiyor.</span>
                                     @endunless
                                 </dd>
                             </div>
@@ -177,15 +176,6 @@
                         <details class="trip-disclosure">
                             <summary><x-ui.icon name="users" /><span><strong>Yolcu bilgileri</strong> <span aria-hidden="true">·</span> <span class="trip-disclosure-note">Henüz eklenemiyor</span></span><x-ui.icon name="chevron-down" size="sm" class="trip-disclosure-chevron" /></summary>
                             <p>Yaş kategorisi için onaylı değer listesi ve yolcuların bağlanacağı seyahat kaydı henüz tanımlı olmadığından yolcu bilgileri bu arayüzden eklenemiyor.</p>
-                        </details>
-                        <details class="technical">
-                            <summary><x-ui.icon name="layers" /><span><strong>Teknik ayrıntılar</strong></span><x-ui.icon name="chevron-down" size="sm" class="trip-disclosure-chevron" /></summary>
-                            <dl class="summary-list compact">
-                                <div><dt>Talep numarası</dt><dd><code>{{ $tripRequestId }}</code></dd></div>
-                                <div><dt>Durum kodu</dt><dd><code>{{ $tripRequest->status }}</code></dd></div>
-                                <div><dt>Başlangıç konum kimliği</dt><dd><code>{{ $origin['value'] }}</code></dd></div>
-                                <div><dt>Varış konum kimliği</dt><dd><code>{{ $destination['value'] }}</code></dd></div>
-                            </dl>
                         </details>
                     </div>
                 </section>

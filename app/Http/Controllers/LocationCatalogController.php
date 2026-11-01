@@ -74,14 +74,10 @@ final class LocationCatalogController extends Controller
         }
 
         try {
-            $locations = $this->aviationCatalog->search($query);
+            // The optional country narrows the provider's suggestions by their own canonical country code.
+            $locations = $this->aviationCatalog->search($query, is_string($countryCode) ? strtoupper($countryCode) : null);
         } catch (ProviderFailure $failure) {
             return $this->error($failure->kind->reasonCode(), $failure->kind->messageTr().' Havalimanı ve şehir araması şu anda yapılamıyor.', 503);
-        }
-
-        // The optional country narrows the provider's suggestions by their own canonical country code.
-        if (is_string($countryCode)) {
-            $locations = array_values(array_filter($locations, fn (LocationOption $location): bool => $location->countryCode === strtoupper($countryCode)));
         }
 
         return response()->json(['locations' => array_map(fn (LocationOption $location): array => $this->flightEntry($location), $locations)]);

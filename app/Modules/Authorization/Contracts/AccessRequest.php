@@ -12,6 +12,8 @@ final readonly class AccessRequest
      * @param  list<TripRole>  $rolesInTrip  roles the subject holds in $tripId
      * @param  list<string>  $tripTravelerIds  travelers that belong to $tripId
      * @param  list<string>  $ownTravelerIds  traveler records that represent the subject
+     * @param  bool  $creatingTraveler  the Traveler does not exist yet, so $travelerId must be null
+     * @param  string|null  $operationId  joins this decision to its AccessOutcomeLog record
      */
     public function __construct(
         public string $subjectId,
@@ -24,5 +26,7 @@ final readonly class AccessRequest
         public array $ownTravelerIds = [],
         public bool $travelerIsMinor = false,
         public ?string $systemWorkflow = null,
+        public bool $creatingTraveler = false,
+        public ?string $operationId = null,
     ) {}
 }

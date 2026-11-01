@@ -36,4 +36,9 @@ final class StaticTripRequestService implements TripRequestService
             returnDate: $legacy ? null : ['type' => 'EXACT', 'date' => '2026-10-27'],
         );
     }
+
+    public function ownedBy(\App\Modules\Authorization\Contracts\PrincipalRef $owner): array
+    {
+        return [];
+    }
 }

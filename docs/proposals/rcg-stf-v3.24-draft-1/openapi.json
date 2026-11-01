@@ -1,0 +1,20 @@
+{
+  "openapi": "3.1.0",
+  "info": {"title": "RCG/STF proposal", "version": "3.24.0-draft.1", "description": "PROPOSED_INACTIVE; existing v3.23 operations remain authoritative."},
+  "paths": {
+    "/api/v1/trip-requests/{tripRequestId}/route-search-jobs": {
+      "post": {"operationId": "OP-startRouteSearch", "security": [{"bearerAuth": []}], "x-status": "PROPOSED_INACTIVE", "responses": {"202": {"description": "Bounded route search queued"}, "401": {"description": "RC-AUTHN-REQUIRED"}, "403": {"description": "RC-AUTHZ-DENIED"}, "409": {"description": "RC-DECISION-ROUTE-SEARCH-NOT-AVAILABLE"}, "503": {"description": "RC-CONFIG-SEARCH-BUDGET-UNAVAILABLE"}}}
+    },
+    "/api/v1/trip-requests/{tripRequestId}/route-search-jobs/{searchId}": {
+      "get": {"operationId": "OP-pollRouteSearch", "security": [{"bearerAuth": []}], "x-status": "PROPOSED_INACTIVE", "responses": {"200": {"description": "Route results; may be PARTIAL"}, "401": {"description": "RC-AUTHN-REQUIRED"}, "403": {"description": "RC-AUTHZ-DENIED"}, "404": {"description": "RC-RESOURCE-NOT-FOUND"}}}
+    },
+    "/api/v1/trip-requests/{tripRequestId}/route-selection": {
+      "get": {"operationId": "OP-getRouteSelection", "security": [{"bearerAuth": []}], "x-status": "PROPOSED_INACTIVE", "responses": {"200": {"description": "Current multi-offer selection"}, "404": {"description": "No selection"}}},
+      "put": {"operationId": "OP-selectRoute", "security": [{"bearerAuth": []}], "x-status": "PROPOSED_INACTIVE", "responses": {"200": {"description": "All referenced offers repriced and selection persisted atomically"}, "401": {"description": "RC-AUTHN-REQUIRED"}, "403": {"description": "RC-AUTHZ-DENIED"}, "409": {"description": "RC-DECISION-ROUTE-RECONFIRMATION-REQUIRED"}}}
+    },
+    "/api/v1/trip-requests/{tripRequestId}/plan/routes": {
+      "post": {"operationId": "OP-addSelectedRouteToTripPlan", "security": [{"bearerAuth": []}], "x-status": "PROPOSED_INACTIVE", "responses": {"201": {"description": "Immutable route references added in a new PlanRevision; no booking"}, "401": {"description": "RC-AUTHN-REQUIRED"}, "403": {"description": "RC-AUTHZ-DENIED"}, "409": {"description": "RC-CONFLICT-REVISION-STALE or selection unavailable"}}}
+    }
+  },
+  "components": {"securitySchemes": {"bearerAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}}}
+}

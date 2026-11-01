@@ -22,20 +22,21 @@ final class TripFlowContinuityTest extends TestCase
     {
         $content = $this->get('/planlar/trip-1')
             ->assertOk()
-            ->assertSee('Aramaya hazır')
+            ->assertSee('Uçuş aramaya hazır')
             ->assertSee('Gidiş-dönüş')
             ->assertSee('15 Ekim 2026, Perşembe – 20 Ekim 2026, Salı')
             ->assertSee('Esnek tarih aralığı (başlangıç ve bitiş dahil)')
             ->assertSee('27 Ekim 2026, Salı')
-            ->assertSee('kayıtlı konum kimliği teknik ayrıntılarda yer alır')
+            ->assertSee('Konum adı katalogdan şu anda alınamadı; doğrulanmamış bir ad gösterilmiyor.')
             ->assertDontSee('ROUND_TRIP')
             ->assertDontSee('FLEXIBLE')
+            ->assertDontSee('geonames:745044')
+            ->assertDontSee('geonames:6299784')
+            ->assertDontSee('Durum kodu')
             ->getContent();
 
         // GeoNames is not configured, so names cannot be resolved: the visible title uses Turkish kind labels.
         self::assertMatchesRegularExpression('/<h1 class="page-title">Şehir <span aria-hidden="true">→<\/span><span class="visually-hidden">ile<\/span> Havaalanı<\/h1>/', $content);
-        self::assertMatchesRegularExpression('/<details class="technical">.*geonames:745044.*geonames:6299784.*<\/details>/s', $content);
-        self::assertSame(1, substr_count($content, 'geonames:745044'));
         self::assertStringContainsString('href="'.route('flights.search', ['tripRequestId' => 'trip-1']).'"', $content);
     }
 
@@ -44,7 +45,7 @@ final class TripFlowContinuityTest extends TestCase
     {
         $this->get('/planlar/trip-legacy')
             ->assertOk()
-            ->assertSee('Aramaya hazır')
+            ->assertSee('Uçuş aramaya hazır')
             ->assertSee('Bu talep eski tarih biçimiyle kaydedildi.')
             ->assertSee('15 Ekim 2026, Perşembe – 20 Ekim 2026, Salı')
             ->assertSee('Eski tarih biçimi: gidiş/dönüş bilgisi yok')

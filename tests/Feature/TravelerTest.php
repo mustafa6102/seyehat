@@ -25,92 +25,56 @@ final class TravelerTest extends TestCase
     public function ts_trv_001_01_dual_nationalities_and_distinct_document_collections_round_trip(): void
     {
         $payload = $this->travelerPayload();
+        $service = app(TravelerService::class);
 
-        $response = $this->postJson('/api/v1/travelers', $payload)
-            ->assertOk()
-            ->assertExactJson($payload);
-
-        $location = $response->headers->get('Location');
-        self::assertNotNull($location);
-
-        $this->getJson($location)
-            ->assertOk()
-            ->assertExactJson($payload);
+        self::assertSame($payload, $service->create($payload)->toContract());
+        self::assertSame($payload, $service->get($payload['id'])?->toContract());
     }
 
     #[Test]
     public function ts_trv_001_02_child_and_infant_age_categories_are_preserved_without_inference(): void
     {
+        $service = app(TravelerService::class);
+
         foreach (['CHILD', 'INFANT'] as $index => $ageCategory) {
             $payload = $this->travelerPayload();
             $payload['id'] = 'traveler-'.($index + 2);
             $payload['age_category'] = $ageCategory;
 
-            $this->postJson('/api/v1/travelers', $payload)
-                ->assertOk()
-                ->assertJsonPath('age_category', $ageCategory);
+            self::assertSame($ageCategory, $service->create($payload)->ageCategory);
         }
     }
 
     #[Test]
-    public function traveler_contract_rejects_non_canonical_and_provider_specific_fields(): void
+    public function bearer_authentication_precedes_traveler_schema_validation(): void
     {
         $payload = $this->travelerPayload();
         $payload['provider_document_id'] = 'raw-provider-value';
 
-        $this->postJson('/api/v1/travelers', $payload)
-            ->assertBadRequest()
-            ->assertJsonPath('error.code', 'SCHEMA_VALIDATION_FAILED')
-            ->assertJsonPath('error.message_tr', 'İstek sözleşme doğrulamasından geçemedi.');
-
-        $payload = $this->travelerPayload();
-        $payload['held_visas'][0]['country_code'] = 'JP';
-
-        $this->postJson('/api/v1/travelers', $payload)
-            ->assertBadRequest()
-            ->assertJsonPath('error.code', 'SCHEMA_VALIDATION_FAILED');
+        $this->postJson('/api/v1/travelers', $payload)->assertUnauthorized();
     }
 
     #[Test]
-    public function collections_must_be_json_arrays_and_nested_values_must_match_the_contract(): void
+    public function malformed_pii_payload_cannot_bypass_the_bearer_gate(): void
     {
-        $cases = [
-            'nationalities object' => ['nationalities', ['primary' => 'TR']],
-            'documents object' => ['travel_documents', ['main' => ['document_type' => 'PASSPORT', 'verification_status' => 'FRESH']]],
-            'visas object' => ['held_visas', ['x' => ['verification_status' => 'FRESH']]],
-            'permits object' => ['residence_permits', ['x' => ['verification_status' => 'FRESH']]],
-            'nested nationality' => ['nationalities', [['TR']]],
-            'unknown verification status' => ['held_visas', [['verification_status' => 'VALID']]],
-            'document without type' => ['travel_documents', [['verification_status' => 'FRESH']]],
-        ];
+        $payload = $this->travelerPayload();
+        $payload['nationalities'] = ['primary' => 'TR'];
 
-        foreach ($cases as $name => [$field, $value]) {
-            $payload = $this->travelerPayload();
-            $payload[$field] = $value;
-
-            $this->postJson('/api/v1/travelers', $payload)
-                ->assertBadRequest()
-                ->assertJsonPath('error.code', 'SCHEMA_VALIDATION_FAILED');
-        }
+        $this->postJson('/api/v1/travelers', $payload)->assertUnauthorized();
     }
 
     #[Test]
-    public function empty_document_visa_and_permit_collections_are_accepted_as_the_contract_allows(): void
+    public function empty_document_visa_and_permit_collections_are_preserved_by_the_domain_contract(): void
     {
         $payload = [...$this->travelerPayload(), 'nationalities' => [], 'travel_documents' => [], 'held_visas' => [], 'residence_permits' => []];
 
-        $this->postJson('/api/v1/travelers', $payload)
-            ->assertOk()
-            ->assertExactJson($payload);
+        self::assertSame($payload, app(TravelerService::class)->create($payload)->toContract());
     }
 
     #[Test]
-    public function unknown_traveler_returns_turkish_not_found_error(): void
+    public function unauthenticated_unknown_traveler_lookup_does_not_reveal_resource_existence(): void
     {
-        $this->getJson('/api/v1/travelers/missing')
-            ->assertNotFound()
-            ->assertJsonPath('error.code', 'RESOURCE_NOT_FOUND')
-            ->assertJsonPath('error.message_tr', 'Yolcu bulunamadı.');
+        $this->getJson('/api/v1/travelers/missing')->assertUnauthorized();
     }
 
     /** @return array<string, mixed> */

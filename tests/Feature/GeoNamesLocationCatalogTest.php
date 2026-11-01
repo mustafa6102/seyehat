@@ -173,11 +173,11 @@ final class GeoNamesLocationCatalogTest extends TestCase
         self::assertLessThan(1000, $perHour);
         self::assertLessThan(10000, $perHour * 24);
         // Only scoped profiles exist: two location-discovery profiles, the Duffel Flights profile adopted for the
-        // first concrete flight adapter (v3.11), the Duffel Stays profile (v3.14, OD-023) and the dev-only OSM Overpass
-        // POI profile (v3.15, OD-025). ADR-006 itself and OD-001 stay OPEN; there is no global default.
+        // first concrete flight adapter (v3.11), Duffel Stays (v3.14, OD-023), dev-only OSM Overpass
+        // POI (v3.15, OD-025) and Ticketmaster event discovery (v3.22, OD-EVT-001-TM). There is no global default.
         self::assertSame([], array_diff_key(
             (require config_path('provider_resilience.php'))['providers'],
-            ['geonames' => true, 'duffel_places' => true, 'duffel_flights' => true, 'duffel_stays' => true, 'osm_overpass' => true],
+            ['geonames' => true, 'duffel_places' => true, 'duffel_flights' => true, 'duffel_stays' => true, 'osm_overpass' => true, 'ticketmaster' => true],
         ));
     }
 

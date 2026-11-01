@@ -149,6 +149,9 @@ final class SessionScopedTripRequestService implements TripRequestService
     /** @var array<string, TripRequestView> */
     private array $stored;
 
+    /** @var array<string, \App\Modules\Authorization\Contracts\PrincipalRef> */
+    private array $owners = [];
+
     public function __construct()
     {
         $place = fn (string $value): array => ['kind' => 'city', 'value' => $value, 'iana_timezone' => 'Europe/Istanbul'];
@@ -162,6 +165,7 @@ final class SessionScopedTripRequestService implements TripRequestService
     public function create(array $input, \App\Modules\Authorization\Contracts\PrincipalRef $owner): CreatedTripRequest
     {
         $id = 'trip-'.++$this->created;
+        $this->owners[$id] = $owner;
         $this->stored[$id] = new TripRequestView(
             status: 'SEARCHABLE',
             originPlace: $input['origin_place'],
@@ -180,5 +184,17 @@ final class SessionScopedTripRequestService implements TripRequestService
     public function get(string $id): ?TripRequestView
     {
         return $this->stored[$id] ?? null;
+    }
+
+    public function ownedBy(\App\Modules\Authorization\Contracts\PrincipalRef $owner): array
+    {
+        $owned = [];
+        foreach ($this->owners as $id => $recordOwner) {
+            if ($recordOwner->equals($owner)) {
+                $owned[] = ['id' => $id, 'trip_request' => $this->stored[$id]];
+            }
+        }
+
+        return $owned;
     }
 }

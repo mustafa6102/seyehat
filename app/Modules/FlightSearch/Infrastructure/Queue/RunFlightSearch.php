@@ -10,6 +10,7 @@ use App\Modules\FlightSearch\Contracts\UnsupportedFlightSearchDate;
 use App\Modules\FlightSearch\Domain\FlightOffer;
 use App\Modules\FlightSearch\Domain\FlightOfferRepository;
 use App\Modules\FlightSearch\Domain\FlightSearchJobRepository;
+use App\Modules\SelfTransfer\Application\SelfTransferDiscoveryOrchestrator;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -31,7 +32,7 @@ final class RunFlightSearch implements ShouldBeUnique, ShouldQueue
         return $this->searchId;
     }
 
-    public function handle(FlightSearchJobRepository $jobs, FlightSearchExecutor $executor, ?FlightOfferRepository $offers = null, ?TripRequestService $tripRequests = null): void
+    public function handle(FlightSearchJobRepository $jobs, FlightSearchExecutor $executor, ?FlightOfferRepository $offers = null, ?TripRequestService $tripRequests = null, ?SelfTransferDiscoveryOrchestrator $selfTransfers = null): void
     {
         $record = $jobs->find($this->searchId);
         if ($record === null || $record->isSettled()) {
@@ -86,6 +87,10 @@ final class RunFlightSearch implements ShouldBeUnique, ShouldQueue
             return;
         }
         $result = ['offers' => $this->serialize($outcome->offers)];
+        $selfTransfer = ($selfTransfers ?? app(SelfTransferDiscoveryOrchestrator::class))->discover($criteria, $outcome->offers);
+        if ($selfTransfer !== null) {
+            $result['self_transfer'] = $selfTransfer;
+        }
         // Offers shown in results must be retrievable for detail and reprice (OP-getOffer, OP-repriceOffer).
         $offers ??= app(FlightOfferRepository::class);
         foreach ($outcome->offers as $offer) {

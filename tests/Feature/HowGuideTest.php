@@ -28,50 +28,6 @@ final class HowGuideTest extends TestCase
         config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:']);
         DB::purge('sqlite');
         $this->artisan('migrate', ['--force' => true])->assertSuccessful();
-        Schema::table('trip_requests', function ($table): void {
-            $table->string('owner_issuer', 255)->nullable();
-            $table->string('owner_subject', 255)->nullable();
-        });
-        Schema::create('pois', function ($table): void {
-            $table->char('poi_id', 36)->primary();
-            $table->string('provider_id', 64);
-            $table->string('provider_place_id', 64);
-            $table->longText('poi_json');
-            $table->timestamps(6);
-        });
-        Schema::create('trips', function ($table): void {
-            $table->char('trip_id', 36)->primary();
-            $table->string('trip_request_id', 255)->unique();
-            $table->timestamp('created_at', 6);
-        });
-        Schema::create('plan_revisions', function ($table): void {
-            $table->char('trip_id', 36);
-            $table->unsignedInteger('version');
-            $table->string('status', 16);
-            $table->longText('items_json');
-            $table->longText('change_json');
-            $table->string('idempotency_key', 255);
-            $table->char('request_fingerprint', 64);
-            $table->timestamp('created_at', 6);
-            $table->primary(['trip_id', 'version']);
-            $table->unique(['trip_id', 'idempotency_key']);
-        });
-        Schema::create('how_operation_idempotency', function ($table): void {
-            $table->char('scope_hash', 64);
-            $table->char('principal_hash', 64);
-            $table->string('operation', 64);
-            $table->string('trip_request_id', 255);
-            $table->string('item_id', 255);
-            $table->unsignedInteger('base_revision_version');
-            $table->string('idempotency_key', 255);
-            $table->char('request_fingerprint', 64);
-            $table->string('status', 16);
-            $table->unsignedSmallInteger('response_status')->nullable();
-            $table->longText('response_json')->nullable();
-            $table->timestamp('created_at', 6);
-            $table->timestamp('completed_at', 6)->nullable();
-            $table->primary(['scope_hash', 'idempotency_key']);
-        });
         Http::fake();
         $this->app->instance(FlightSelectionReader::class, new class implements FlightSelectionReader
         {

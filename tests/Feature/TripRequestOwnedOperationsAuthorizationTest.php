@@ -55,37 +55,6 @@ final class TripRequestOwnedOperationsAuthorizationTest extends TestCase
         config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:']);
         DB::purge('sqlite');
         $this->artisan('migrate', ['--force' => true])->assertSuccessful();
-        Schema::table('trip_requests', function ($table): void {
-            $table->string('owner_issuer', 255)->nullable();
-            $table->string('owner_subject', 255)->nullable();
-        });
-        foreach (['accommodation_search_jobs', 'poi_discovery_jobs'] as $name) {
-            Schema::create($name, function ($table): void {
-                $table->char('search_id', 36)->primary();
-                $table->string('idempotency_key', 255)->unique();
-                $table->string('trip_request_id', 255);
-                $table->string('status', 16);
-                $table->longText('result_json')->nullable();
-                $table->string('error_code', 64)->nullable();
-                $table->string('error_message_tr', 255)->nullable();
-                $table->dateTime('expires_at')->nullable();
-                $table->timestamps();
-            });
-        }
-        foreach (['trip_request_flight_selections', 'trip_request_accommodation_selections'] as $name) {
-            Schema::create($name, function ($table): void {
-                $table->string('trip_request_id', 255)->primary();
-                $table->string('status', 32);
-                $table->longText('offer_snapshot');
-                $table->string('provider_id', 64);
-                $table->string('provider_offer_id', 255);
-                $table->bigInteger('verified_price_minor_units')->nullable();
-                $table->char('verified_price_currency', 3)->nullable();
-                $table->dateTime('verified_at');
-                $table->dateTime('expires_at');
-                $table->timestamps();
-            });
-        }
         Http::fake();
         Queue::fake();
 

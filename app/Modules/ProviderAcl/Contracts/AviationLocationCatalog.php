@@ -13,9 +13,10 @@ interface AviationLocationCatalog
     public function isAvailable(): bool;
 
     /**
+     * @param  string|null  $countryCode  ISO 3166-1 alpha-2; narrows the entries before the result limit is applied
      * @return list<LocationOption> airport/city entries whose aviationIdentity is set
      *
      * @throws ProviderFailure
      */
-    public function search(string $query): array;
+    public function search(string $query, ?string $countryCode = null): array;
 }

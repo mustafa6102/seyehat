@@ -32,7 +32,7 @@
         </button>
         <nav class="app-nav" id="primary-nav" aria-label="Ana gezinme">
             <a class="nav-link" href="{{ route('trip-planner.index') }}" @if (request()->routeIs('trip-planner.index')) aria-current="page" @endif>Ana sayfa</a>
-            <a class="nav-link" href="{{ route('trip-requests.mine') }}" @if (request()->routeIs('trip-requests.mine') || request()->routeIs('trip-planner.show') || request()->routeIs('flights.*') || request()->routeIs('trip-plan.*') || request()->routeIs('ground-connections.*')) aria-current="page" @endif>Seyahatlerim</a>
+            <a class="nav-link" href="{{ route('trip-requests.mine') }}" @if (request()->routeIs('trip-requests.mine') || request()->routeIs('trip-planner.show') || request()->routeIs('flights.*') || request()->routeIs('trip-plan.*') || request()->routeIs('ground-connections.*') || request()->routeIs('traveler-screens.*')) aria-current="page" @endif>Seyahatlerim</a>
             <a class="nav-link" href="{{ route('trip-planner.index') }}#yeni-plan">Yeni plan</a>
             <a class="nav-link" href="{{ route('journey.index') }}" @if (request()->routeIs('journey.*') || request()->routeIs('capabilities.show')) aria-current="page" @endif>Yolculuk rehberi</a>
             {{-- ADR-010 browser login state; no identity detail is shown or exposed. --}}
@@ -73,6 +73,7 @@
             <a href="{{ route('trip-requests.mine') }}">Seyahatlerim</a>
             <a href="{{ route('journey.index') }}">Yolculuk rehberi</a>
             <a href="{{ route('capabilities.index') }}">Teknik özellik dizini</a>
+            <a href="{{ route('privacy.traveler-notice') }}">Aydınlatma metni</a>
         </nav>
     </div>
 </footer>

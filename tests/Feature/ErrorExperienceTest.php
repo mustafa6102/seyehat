@@ -46,6 +46,11 @@ final class ErrorExperienceTest extends TestCase
             {
                 throw new RuntimeException(ErrorExperienceTest::LEAK);
             }
+
+            public function ownedBy(\App\Modules\Authorization\Contracts\PrincipalRef $owner): array
+            {
+                throw new RuntimeException(ErrorExperienceTest::LEAK);
+            }
         });
         $catalog = $this->createMock(LocationCatalog::class);
         $catalog->method('isAvailable')->willReturn(true);

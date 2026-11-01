@@ -38,6 +38,7 @@ $connectedRoutes = [
     'TRIP-BLD-001' => 'trip-requests.mine',
     'ACC-001' => 'trip-requests.mine',
     'POI-001' => 'trip-requests.mine',
+    'EVT-001' => 'trip-requests.mine',
     'DAY-001' => 'trip-requests.mine',
     // HOW-001 completes AC/TS-HOW-001-01..03 through the active v3.19 owner-only guide contract:
     // unknown facts are not invented, verified links are preserved, and STALE evidence refreshes fail closed.
@@ -92,6 +93,11 @@ $deliveredCoverage = [
         'requirements' => ['RULE-POI-001-07'],
         'acceptance_criteria' => ['AC-POI-001-08'],
         'test_scenarios' => ['TS-POI-001-08'],
+    ],
+    'EVT-001' => [
+        'requirements' => ['RULE-EVT-001-01', 'RULE-EVT-001-02', 'RULE-EVT-001-03', 'FR-EVT-001-01'],
+        'acceptance_criteria' => ['AC-EVT-001-01', 'AC-EVT-001-02', 'AC-EVT-001-03'],
+        'test_scenarios' => ['TS-EVT-001-01', 'TS-EVT-001-02', 'TS-EVT-001-03'],
     ],
     'HOW-001' => [
         'requirements' => ['FR-HOW-001-01', 'FR-HOW-001-02'],

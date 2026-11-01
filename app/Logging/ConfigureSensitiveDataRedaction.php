@@ -2,6 +2,7 @@
 
 namespace App\Logging;
 
+use App\Modules\Authorization\Contracts\AuditIdentity;
 use Illuminate\Log\Logger;
 use Monolog\Logger as MonologLogger;
 use Throwable;
@@ -11,12 +12,13 @@ final class ConfigureSensitiveDataRedaction
 {
     /**
      * Configured credentials removed by value from every record ("Loglarda sır/PII sızıntısı yoktur"): provider
-     * tokens and API keys, the GeoNames username (sent as a URL parameter), the diagnostics token, the app key and
-     * the database password.
+     * tokens and API keys, the GeoNames username (sent as a URL parameter), the diagnostics token, the app key, the
+     * audit pseudonym key and the database password.
      */
     private const SECRET_CONFIG_KEYS = [
         'app.key',
         'diagnostics.token',
+        'logging.audit_pseudonym_key',
         'services.duffel.access_token',
         'services.geonames.username',
         'services.postmark.key',
@@ -30,7 +32,19 @@ final class ConfigureSensitiveDataRedaction
     {
         $monolog = $logger->getLogger();
         if ($monolog instanceof MonologLogger) {
-            $monolog->pushProcessor(new RedactSensitiveContext($this->configuredSecrets()));
+            $monolog->pushProcessor(new RedactSensitiveContext($this->configuredSecrets(), $this->travelerPseudonym(...)));
+        }
+    }
+
+    /** Null without an audit key, which redacts the value; logging itself must not fail. */
+    private function travelerPseudonym(string $travelerId): ?string
+    {
+        try {
+            $identity = app(AuditIdentity::class);
+
+            return $identity->isAvailable() ? $identity->travelerCorrelationId($travelerId) : null;
+        } catch (Throwable) {
+            return null;
         }
     }
 

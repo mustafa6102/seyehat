@@ -121,13 +121,13 @@
       const name = document.createElement('h3');
       name.className = 'result-card-title';
       name.textContent = event.name || 'İsimsiz etkinlik';
-      card.appendChild(name);
+      card.append(name);
 
       if (event.venue && (event.venue.name || event.venue.city)) {
         const venue = document.createElement('p');
         venue.className = 'result-card-meta';
         venue.textContent = [event.venue.name, event.venue.city, event.venue.country].filter(Boolean).join(', ');
-        card.appendChild(venue);
+        card.append(venue);
       }
 
       var startFact = event.starts_at;
@@ -141,14 +141,14 @@
         } catch (_) {
           dt.textContent = startFact.value;
         }
-        card.appendChild(dt);
+        card.append(dt);
       }
 
       if (event.categories && event.categories.length > 0) {
         const cats = document.createElement('p');
         cats.className = 'result-card-tags';
         cats.textContent = event.categories.join(' · ');
-        card.appendChild(cats);
+        card.append(cats);
       }
 
       var priceFact = event.price_ranges;
@@ -159,21 +159,43 @@
         const minStr = r.min != null ? r.min : '?';
         const maxStr = r.max != null ? '–' + r.max : '';
         price.textContent = 'Tahmini fiyat: ' + minStr + maxStr + ' ' + r.currency;
-        card.appendChild(price);
+        card.append(price);
+      } else {
+        const priceUnknown = document.createElement('p');
+        priceUnknown.className = 'result-card-meta';
+        priceUnknown.textContent = 'Fiyat bilinmiyor.';
+        card.append(priceUnknown);
       }
 
       var linkFact = event.ticket_link;
-      if (linkFact && linkFact.value) {
+      var statusFact = event.status;
+      var ticketFact = event.ticket_status;
+      var now = Date.now();
+      var fresh = function (fact) {
+        return fact && fact.verification_status === 'FRESH' && fact.expires_at && Date.parse(fact.expires_at) > now;
+      };
+      var eligible = fresh(statusFact) && statusFact.value === 'SCHEDULED' &&
+        fresh(ticketFact) && ticketFact.value === 'AVAILABLE' &&
+        fresh(startFact) && startFact.value && event.iana_timezone;
+
+      if (eligible && fresh(linkFact) && linkFact.value) {
         const a = document.createElement('a');
         a.href = linkFact.value;
         a.target = '_blank';
         a.rel = 'noopener noreferrer';
         a.className = 'result-card-link';
         a.textContent = 'Bilet bilgisi (Ticketmaster)';
-        card.appendChild(a);
+        card.append(a);
+      } else if (!eligible) {
+        const unavailable = document.createElement('p');
+        unavailable.className = 'result-card-meta';
+        unavailable.textContent = statusFact && statusFact.value === 'CANCELLED'
+          ? 'Etkinlik iptal edildi; bilet veya plan önerisi gösterilmiyor.'
+          : 'Bilet uygunluğu ya da etkinlik zamanı doğrulanamadı; plana eklenemez.';
+        card.append(unavailable);
       }
 
-      if (planAccess === 'OWNER' && planAddUrl && event.event_id) {
+      if (eligible && planAccess === 'OWNER' && planAddUrl && event.event_id) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = planAddUrl;
@@ -187,17 +209,17 @@
         submitBtn.type = 'submit';
         submitBtn.className = 'btn btn-secondary btn-sm';
         submitBtn.textContent = 'Plana ekle';
-        form.appendChild(submitBtn);
-        card.appendChild(form);
-      } else if (planAccess === 'SIGNED_OUT' && loginUrl) {
+        form.append(submitBtn);
+        card.append(form);
+      } else if (eligible && planAccess === 'SIGNED_OUT' && loginUrl) {
         const loginA = document.createElement('a');
         loginA.href = loginUrl;
         loginA.className = 'btn btn-secondary btn-sm';
         loginA.textContent = 'Plana eklemek için giriş yap';
-        card.appendChild(loginA);
+        card.append(loginA);
       }
 
-      resultsEl.appendChild(card);
+      resultsEl.append(card);
     });
   }
 
@@ -206,7 +228,7 @@
     inp.type = 'hidden';
     inp.name = name;
     inp.value = value;
-    form.appendChild(inp);
+    form.append(inp);
   }
 
   function request(method, url, body, idempotencyKey) {

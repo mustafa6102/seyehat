@@ -46,6 +46,17 @@ final readonly class DatabaseTripPlanRepository
         return $this->revision(($lock ? $query->lockForUpdate() : $query)->first());
     }
 
+    /** @return list<array<string, mixed>> SCH-PlanRevision records, newest first. */
+    public function revisions(string $tripId): array
+    {
+        return $this->database->table('plan_revisions')
+            ->where('trip_id', $tripId)
+            ->orderByDesc('version')
+            ->get()
+            ->map(fn (object $row): array => $this->revision($row))
+            ->all();
+    }
+
     /** @return array{revision: array<string, mixed>, fingerprint: string}|null */
     public function revisionByIdempotencyKey(string $tripId, string $key): ?array
     {

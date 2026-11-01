@@ -13,6 +13,7 @@ use App\Modules\Opportunity\Infrastructure\Http\FlightOpportunityController;
 use App\Modules\Poi\Infrastructure\Http\PoiController;
 use App\Modules\Event\Infrastructure\Http\EventDiscoveryController;
 use App\Modules\Poi\Infrastructure\Http\PoiDiscoveryController;
+use App\Modules\Traveler\Infrastructure\Http\BasicTravelerController;
 use App\Modules\Traveler\Infrastructure\Http\TravelerController;
 use App\Modules\TripBuilder\Infrastructure\Http\TripPlanController;
 use Illuminate\Support\Facades\Route;
@@ -91,6 +92,13 @@ Route::prefix('v1')->group(function (): void {
         ->middleware('auth.bearer')->name('trip-requests.plan.items.guide.show');
     Route::post('/trip-requests/{tripRequestId}/plan/items/{itemId}/guide/refresh', [HowGuideController::class, 'refresh'])
         ->middleware('auth.bearer')->name('trip-requests.plan.items.guide.refresh');
+    // TRV-001 Basic Traveler (D1-D6): the activation gate runs first, so these answer 404 until Legal and v3.24 allow them.
+    Route::post('/trip-requests/{tripRequestId}/travelers', [BasicTravelerController::class, 'store'])
+        ->middleware(['traveler.basic', 'auth.bearer'])->name('trip-requests.travelers.store');
+    Route::get('/trip-requests/{tripRequestId}/travelers', [BasicTravelerController::class, 'index'])
+        ->middleware(['traveler.basic', 'auth.bearer'])->name('trip-requests.travelers.index');
+    Route::get('/trip-requests/{tripRequestId}/travelers/{travelerId}', [BasicTravelerController::class, 'show'])
+        ->middleware(['traveler.basic', 'auth.bearer'])->name('trip-requests.travelers.show');
     Route::post('/travelers', [TravelerController::class, 'store'])->middleware('auth.bearer');
     Route::get('/travelers/{travelerId}', [TravelerController::class, 'show'])
         ->middleware('auth.bearer')->name('travelers.show');

@@ -1,0 +1,10 @@
+{
+  "proposal_version": "3.24.0-draft.1",
+  "status": "PROPOSED_INACTIVE",
+  "base_contract": "3.23.0",
+  "authoritative_http_artifact": "openapi.json",
+  "schema_artifact": "schemas.json",
+  "governance_artifact": "registries.json",
+  "config_artifact": "config.json",
+  "activation_rule": "Must be published as a versioned active contract; proposal files alone grant no runtime authority."
+}

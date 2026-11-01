@@ -436,7 +436,8 @@ test('details are a collapsed, keyboard-accessible disclosure that keeps the can
     assert.match(body, /Varış: 9 Eki 2026 08:40 \(yerel saat\)/);
     assert.match(body, /Teklif geçerliliği:/);
     assert.match(body, /Zorunlu ek ücret bildirilmedi\./);
-    assert.match(body, /Kaynak: duffel_flights/);
+    assert.match(body, /Teklif bilgileri kayıtlı sağlayıcı kaynağından alınmıştır\./);
+    assert.doesNotMatch(body, /duffel_flights|Kaynak:|provider_id/);
     assert.match(body, /Yalnız arama sonucu; satın alınabilir olarak işaretlenmez\./);
     // Unknown carrier model is not shown at all.
     assert.doesNotMatch(body, /Taşıyıcı modeli bilinmiyor/);
