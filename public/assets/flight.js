@@ -429,6 +429,18 @@
         return `${Math.floor(safe / 3600)} sa ${Math.floor((safe % 3600) / 60)} dk`;
     };
 
+    const SELF_TRANSFER_RISKS = {
+        SEPARATE_TICKETS: 'Uçuşlar ayrı biletlerle düzenlenir.',
+        MISSED_CONNECTION_NOT_PROTECTED: 'İlk uçuş gecikirse sonraki uçuş korunmaz; yeniden bilet gerekebilir.',
+        BAGGAGE_RECHECK_REQUIRES_VERIFICATION: 'Bagajı teslim alıp yeniden vermeniz gerekebilir; koşullar doğrulanmalıdır.',
+        IMMIGRATION_TRANSIT_REQUIRES_VERIFICATION: 'Transit, vize ve ülkeye giriş koşulları doğrulanmalıdır.',
+    };
+    const SELF_TRANSFER_UNKNOWN_COSTS = {
+        GROUND_TRANSFER_COST: 'Havalimanları arası veya şehir içi ulaşım maliyeti',
+        CHECKED_BAGGAGE_COST: 'Kayıtlı bagaj maliyeti',
+        INCOMPATIBLE_OR_INCOMPLETE_FLIGHT_PRICE: 'Uçuşların toplam fiyatı',
+    };
+
     const renderSelfTransferRoute = (route) => {
         const card = el('article', 'offer-card self-transfer-card');
         const header = el('header', 'offer-card-header');
@@ -442,9 +454,9 @@
         const price = route.price;
         header.append(
             summary,
-            el('p', 'offer-price', price
-                ? `${price.minor_units} ${price.currency} (minor birim)`
-                : 'Toplam fiyat doğrulanamadı'),
+            el('div', 'offer-price', price
+                ? `Bilinen uçuş bedeli: ${formatMoney(price)}`
+                : 'Uçuş bedelleri doğrulanamadı'),
         );
         card.append(header);
 
@@ -467,10 +479,13 @@
         const facts = el('ul', 'facts');
         facts.append(
             el('li', 'fact', `Aktarma: ${formatSeconds(route.connection_duration_seconds)}`),
-            el('li', 'fact', `Risk: ${route.risk_level === 'UNKNOWN' ? 'Doğrulama gerekli' : route.risk_level}`),
+            el('li', 'fact', 'Bağlantı güvenliği: Doğrulama gerekli'),
         );
+        (Array.isArray(route.reason_codes) ? route.reason_codes : []).forEach((reason) => {
+            facts.append(el('li', 'fact', SELF_TRANSFER_RISKS[reason] ?? 'Ek bağlantı riski doğrulanmalıdır.'));
+        });
         (Array.isArray(route.unknown_costs) ? route.unknown_costs : []).forEach((cost) => {
-            facts.append(el('li', 'fact', `Bilinmeyen ek maliyet: ${cost}`));
+            facts.append(el('li', 'fact', `Doğrulanmayan maliyet: ${SELF_TRANSFER_UNKNOWN_COSTS[cost] ?? 'Ek ücret bilgisi'}`));
         });
         footer.append(
             facts,

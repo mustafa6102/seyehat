@@ -39,7 +39,9 @@ final class ContextualDuffelCandidateLegSearch implements BudgetedCandidateLegSe
             return 0;
         }
         if ($leg->toId === $this->destinationId) {
-            return $this->singleArrivalDate($leg->fromId) === null ? 0 : 1;
+            // Preflight happens before the first leg runs. Its result must not determine
+            // the second leg's reserved cost, or a two-request route can reserve only one.
+            return isset($this->hubPlaces[$leg->fromId]) ? 1 : 0;
         }
 
         return isset($this->hubPlaces[$leg->toId]) ? 1 : 0;
@@ -87,13 +89,16 @@ final class ContextualDuffelCandidateLegSearch implements BudgetedCandidateLegSe
     private function singleArrivalDate(string $hubId): ?string
     {
         $timezone = $this->hubPlaces[$hubId]['iana_timezone'] ?? null;
-        if (! is_string($timezone) || ($offers = $this->first[$hubId] ?? []) === []) {
+        if (! is_string($timezone) || trim($timezone) === ''
+            || ! in_array($timezone, DateTimeZone::listIdentifiers(DateTimeZone::ALL), true)
+            || ($offers = $this->first[$hubId] ?? []) === []) {
             return null;
         }
+        $zone = new DateTimeZone($timezone);
         $dates = [];
         foreach ($offers as $offer) {
             $last = $offer->offer->segments[array_key_last($offer->offer->segments)];
-            $dates[] = $last->arrival->utcInstant->setTimezone(new DateTimeZone($timezone))->format('Y-m-d');
+            $dates[] = $last->arrival->utcInstant->setTimezone($zone)->format('Y-m-d');
         }
         $dates = array_values(array_unique($dates));
 
